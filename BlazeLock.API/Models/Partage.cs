@@ -5,9 +5,9 @@ namespace BlazeLock.API.Models;
 
 public partial class Partage
 {
-    public string IdUtilisateur { get; set; } = null!;
+    public Guid IdUtilisateur { get; set; } = default!;
 
-    public string IdCoffre { get; set; } = null!;
+    public Guid IdCoffre { get; set; } = default!;
 
     public bool? IsAdmin { get; set; }
 

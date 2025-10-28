@@ -5,7 +5,7 @@ namespace BlazeLock.API.Models;
 
 public partial class Coffre
 {
-    public string IdCoffre { get; set; } = null!;
+    public Guid IdCoffre { get; set; } = default!;
 
     public string? Libelle { get; set; }
 
@@ -13,7 +13,7 @@ public partial class Coffre
 
     public string? Salt { get; set; }
 
-    public string IdUtilisateur { get; set; } = null!;
+    public Guid IdUtilisateur { get; set; } = default!;
 
     public virtual Utilisateur IdUtilisateurNavigation { get; set; } = null!;
 

@@ -30,8 +30,7 @@ public partial class BlazeLockContext : DbContext
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;Database=BlazeLock;Trusted_Connection=True;TrustServerCertificate=True;");
+       => optionsBuilder.UseSqlServer("Server=localhost;Database=BlazeLock;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,10 +76,10 @@ public partial class BlazeLockContext : DbContext
                     {
                         j.HasKey("IdCoffre", "IdDossier").HasName("PK__Organise__B318C125E234F68B");
                         j.ToTable("Organiser");
-                        j.IndexerProperty<string>("IdCoffre")
+                        j.IndexerProperty<Guid>("IdCoffre")
                             .HasMaxLength(50)
                             .HasColumnName("id_coffre");
-                        j.IndexerProperty<string>("IdDossier")
+                        j.IndexerProperty<Guid>("IdDossier")
                             .HasMaxLength(50)
                             .HasColumnName("Id_dossier");
                     });
@@ -121,10 +120,10 @@ public partial class BlazeLockContext : DbContext
                     {
                         j.HasKey("IdDossier", "IdEntree").HasName("PK__Stocker__7F0E28E12110E1D5");
                         j.ToTable("Stocker");
-                        j.IndexerProperty<string>("IdDossier")
+                        j.IndexerProperty<Guid>("IdDossier")
                             .HasMaxLength(50)
                             .HasColumnName("Id_dossier");
-                        j.IndexerProperty<string>("IdEntree")
+                        j.IndexerProperty<Guid>("IdEntree")
                             .HasMaxLength(50)
                             .HasColumnName("id_entree");
                     });

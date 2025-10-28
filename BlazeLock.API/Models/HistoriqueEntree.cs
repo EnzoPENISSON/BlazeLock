@@ -5,7 +5,7 @@ namespace BlazeLock.API.Models;
 
 public partial class HistoriqueEntree
 {
-    public string IdHistorique { get; set; } = null!;
+    public Guid IdHistorique { get; set; } = default!;
 
     public string? Libelle { get; set; }
 
@@ -39,7 +39,7 @@ public partial class HistoriqueEntree
 
     public string? CommentaireVi { get; set; }
 
-    public string IdEntree { get; set; } = null!;
+    public Guid IdEntree { get; set; } = default!;
 
     public virtual Entree IdEntreeNavigation { get; set; } = null!;
 }

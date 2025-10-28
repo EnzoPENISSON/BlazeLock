@@ -5,11 +5,11 @@ namespace BlazeLock.API.Models;
 
 public partial class Dossier
 {
-    public string IdDossier { get; set; } = null!;
+    public Guid IdDossier { get; set; } = default!;
 
     public string? Libelle { get; set; }
 
-    public string? IdDossier1 { get; set; }
+    public Guid? IdDossier1 { get; set; }
 
     public virtual Dossier? IdDossier1Navigation { get; set; }
 

@@ -5,13 +5,13 @@ namespace BlazeLock.API.Models;
 
 public partial class Log
 {
-    public string IdLog { get; set; } = null!;
+    public Guid IdLog { get; set; } = default!;
 
     public string? Texte { get; set; }
 
     public DateTime? Timestamp { get; set; }
 
-    public string IdCoffre { get; set; } = null!;
+    public Guid IdCoffre { get; set; } = default!;
 
     public virtual Coffre IdCoffreNavigation { get; set; } = null!;
 }

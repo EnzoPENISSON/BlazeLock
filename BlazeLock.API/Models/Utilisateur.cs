@@ -5,7 +5,7 @@ namespace BlazeLock.API.Models;
 
 public partial class Utilisateur
 {
-    public string IdUtilisateur { get; set; } = null!;
+    public Guid IdUtilisateur { get; set; } = default!;
 
     public virtual ICollection<Coffre> Coffres { get; set; } = new List<Coffre>();
 

@@ -5,7 +5,7 @@ namespace BlazeLock.API.Models;
 
 public partial class Entree
 {
-    public string IdEntree { get; set; } = null!;
+    public Guid IdEntree { get; set; } = default!;
 
     public DateTime? DateCreation { get; set; }
 
