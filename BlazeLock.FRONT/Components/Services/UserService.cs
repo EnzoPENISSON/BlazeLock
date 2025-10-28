@@ -5,6 +5,7 @@
     public interface IUserService
     {
         Task<Guid?> GetUserIdAsync();
+        Task<string?> GetUsernameAsync(); 
     }
 
     public class UserService : IUserService
@@ -25,6 +26,20 @@
             {
                 var objectIdClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier");
                 return objectIdClaim != null && Guid.TryParse(objectIdClaim.Value, out Guid userId) ? userId : null;
+            }
+
+            return null;
+        }
+
+        public async Task<string?> GetUsernameAsync()
+        {
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var usernameClaim = user.FindFirst("preferred_username") ?? user.FindFirst("upn");
+                return usernameClaim?.Value;
             }
 
             return null;
