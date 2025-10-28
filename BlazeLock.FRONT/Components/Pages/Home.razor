@@ -1,8 +1,24 @@
 ﻿@page "/"
 @attribute [Authorize]
+@inject IUserService UserService
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h3>Welcome!</h3>
+@if (_userId != null)
+{
+    <p>Your User GUID is: @_userId</p>
+}
+else
+{
+    <p>Loading...</p>
+}
 
-Welcome to your new app.
+@code {
+    private Guid? _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userId = await UserService.GetUserIdAsync();
+    }
+}

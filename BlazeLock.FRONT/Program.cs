@@ -1,4 +1,5 @@
 using BlazeLock.FRONT.Components;
+using BlazeLock.FRONT.Components.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 
@@ -12,6 +13,8 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration)
     .EnableTokenAcquisitionToCallDownstreamApi()
     .AddInMemoryTokenCaches();
+
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddCascadingAuthenticationState();
 
