@@ -30,7 +30,13 @@ public partial class BlazeLockContext : DbContext
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-       => optionsBuilder.UseSqlServer("Server=localhost;Database=BlazeLock;Trusted_Connection=True;TrustServerCertificate=True;");
+    {
+
+        if (optionsBuilder.IsConfigured == false)
+        {
+           optionsBuilder.UseSqlServer("Server=localhost;Database=BlazeLock;Trusted_Connection=True;TrustServerCertificate=True;");
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

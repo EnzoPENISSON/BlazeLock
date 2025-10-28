@@ -17,9 +17,9 @@ public partial class Coffre
 
     public virtual Utilisateur IdUtilisateurNavigation { get; set; } = null!;
 
-    public virtual ICollection<Log> Logs { get; set; } = new List<Log>();
+    public virtual HashSet<Log>? Logs { get; set; }
 
-    public virtual ICollection<Partage> Partages { get; set; } = new List<Partage>();
+    public virtual HashSet<Partage>? Partages { get; set; }
 
-    public virtual ICollection<Dossier> IdDossiers { get; set; } = new List<Dossier>();
+    public virtual HashSet<Dossier>? IdDossiers { get; set; }
 }

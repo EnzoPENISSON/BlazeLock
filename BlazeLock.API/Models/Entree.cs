@@ -7,9 +7,9 @@ public partial class Entree
 {
     public Guid IdEntree { get; set; } = default!;
 
-    public DateTime? DateCreation { get; set; }
+    public DateTime DateCreation { get; set; }
 
-    public virtual ICollection<HistoriqueEntree> HistoriqueEntrees { get; set; } = new List<HistoriqueEntree>();
+    public virtual HashSet<HistoriqueEntree>? HistoriqueEntrees { get; set; }
 
-    public virtual ICollection<Dossier> IdDossiers { get; set; } = new List<Dossier>();
+    public virtual HashSet<Dossier>? IdDossiers { get; set; }
 }
