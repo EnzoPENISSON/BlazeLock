@@ -16,14 +16,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await UserService.GetUserIdAsync();
-        var username = await UserService.GetUsernameAsync();
+        _userId = await UserService.GetUserIdAsync();
+        _username = await UserService.GetUsernameAsync();
 
-        if (userId.HasValue)
+        if (_userId.HasValue)
         {
             var newUser = new UtilisateurDto
             {
-                IdUtilisateur = userId.Value
+                IdUtilisateur = _userId.Value
             };
 
             var response = await Http.PostAsJsonAsync("/api/Utilisateur", newUser);
