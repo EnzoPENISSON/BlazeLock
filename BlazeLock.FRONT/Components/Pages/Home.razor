@@ -1,18 +1,45 @@
 ﻿@page "/"
 @attribute [Authorize]
 @inject IUserService UserService
-@inject HttpClient Http
 @using BlazeLock.DbLib
 
+<PageTitle>Welcome</PageTitle>
 
-<PageTitle>Home</PageTitle>
+@if (_isLoading)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container mt-5">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body text-center p-5">
+                <h1 class="display-5 fw-bold mb-3">Welcome, @_username! 👋</h1>
 
-<p>Username: @_username</p>
-<p>User GUID: @_userId</p>
+                <p class="text-muted mb-4">
+                    You are successfully signed in with your Entra ID account.
+                </p>
+
+                <p class="text-secondary mt-4">
+                    You can now access your dashboard, manage your data, or explore the application.
+                </p>
+
+                <a href="/profile" class="btn btn-primary btn-lg mt-3">
+                    Go to my profile
+                </a>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private string? _username;
     private Guid? _userId;
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -21,21 +48,9 @@
 
         if (_userId.HasValue)
         {
-            var newUser = new UtilisateurDto
-            {
-                IdUtilisateur = _userId.Value
-            };
-
-            var response = await Http.PostAsJsonAsync("/api/Utilisateur", newUser);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("Utilisateur créé avec succès !");
-            }
-            else
-            {
-                Console.WriteLine($"Erreur API : {response.StatusCode}");
-            }
+            await UserService.InsertUtilisateurAsync(_userId);
         }
+
+        _isLoading = false;
     }
 }

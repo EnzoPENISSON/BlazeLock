@@ -1,20 +1,27 @@
 ﻿namespace BlazeLock.FRONT.Components.Services
 {
+    using BlazeLock.DbLib;
     using Microsoft.AspNetCore.Components.Authorization;
+    using System.Net.Http;
+    using System.Net.Http.Json;
+    using System.Threading.Tasks;
 
     public interface IUserService
     {
         Task<Guid?> GetUserIdAsync();
-        Task<string?> GetUsernameAsync(); 
+        Task<string?> GetUsernameAsync();
+        Task InsertUtilisateurAsync(Guid? userId);
     }
 
     public class UserService : IUserService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly HttpClient _http; // <-- add this
 
-        public UserService(AuthenticationStateProvider authenticationStateProvider)
+        public UserService(AuthenticationStateProvider authenticationStateProvider, HttpClient http)
         {
             _authenticationStateProvider = authenticationStateProvider;
+            _http = http;
         }
 
         public async Task<Guid?> GetUserIdAsync()
@@ -43,6 +50,21 @@
             }
 
             return null;
+        }
+
+        public async Task InsertUtilisateurAsync(Guid? userId)
+        {
+            if (userId == null)
+                return;
+
+            var newUser = new UtilisateurDto
+            {
+                IdUtilisateur = userId.Value,
+            };
+
+            var response = await _http.PostAsJsonAsync("/api/Utilisateur", newUser);
+
+            response.EnsureSuccessStatusCode();
         }
     }
 
