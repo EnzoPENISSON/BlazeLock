@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DbLib\DbLib.csproj" />
+  </ItemGroup>
+
 </Project>

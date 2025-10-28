@@ -44,14 +44,19 @@ namespace BlazeLock.API.Controllers
 
         group.MapPost("/", async (Utilisateur utilisateur, BlazeLockContext db) =>
         {
+            var exists = await db.Utilisateurs.AnyAsync(u => u.IdUtilisateur == utilisateur.IdUtilisateur);
+            if (exists)
+            {
+                return Results.Ok();
+            }
             db.Utilisateurs.Add(utilisateur);
             await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/Utilisateur/{utilisateur.IdUtilisateur}",utilisateur);
+            return TypedResults.Created($"/api/Utilisateur/{utilisateur.IdUtilisateur}", utilisateur);
         })
         .WithName("CreateUtilisateur")
         .WithOpenApi();
 
-        group.MapDelete("/{id}", async Task<Results<Ok, NotFound>> (Guid idutilisateur, BlazeLockContext db) =>
+            group.MapDelete("/{id}", async Task<Results<Ok, NotFound>> (Guid idutilisateur, BlazeLockContext db) =>
         {
             var affected = await db.Utilisateurs
                 .Where(model => model.IdUtilisateur == idutilisateur)

@@ -1,4 +1,5 @@
 using BlazeLock.FRONT.Components;
+using BlazeLock.FRONT.Components.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 
@@ -13,7 +14,17 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .EnableTokenAcquisitionToCallDownstreamApi()
     .AddInMemoryTokenCaches();
 
+builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddHttpClient("BlazeLockAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7250/");
+});
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BlazeLockAPI"));
+
 
 var app = builder.Build();
 
