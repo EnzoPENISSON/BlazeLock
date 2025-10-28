@@ -28,4 +28,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapUtilisateurEndpoints();
+
+app.MapCoffreEndpoints();
+
+app.MapEntreeEndpoints();
+
+app.MapHistoriqueEntreeEndpoints();
+
+app.MapLogEndpoints();
+
+app.MapPartageEndpoints();
+
 app.Run();
