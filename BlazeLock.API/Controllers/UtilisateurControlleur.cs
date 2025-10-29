@@ -1,10 +1,12 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Services;
-using DbLib;
+using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/utilisateur")]
     public class UtilisateurController : ControllerBase
@@ -17,6 +19,7 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = Roles.User_Administrator)]
         public async Task<IActionResult> GetAll()
         {
             var utilisateurs = await _service.GetAllAsync();
@@ -24,6 +27,7 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = Roles.User_Administrator)]
         public async Task<IActionResult> GetById(Guid id)
         {
             var utilisateur = await _service.GetByIdAsync(id);
@@ -32,11 +36,16 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = Roles.User_Administrator)]
         public async Task<IActionResult> Create(UtilisateurDto dto)
-
         {
-            await _service.AddUtilisateurAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
+            var existingUser = await this.GetById(dto.IdUtilisateur);
+            if (existingUser == null)
+            {
+                await _service.AddUtilisateurAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
+            }
+            return Ok();
         }
     }
 }

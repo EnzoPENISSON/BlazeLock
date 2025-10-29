@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /BlazeLock.FRONT/appsettings.json
 /BlazeLock.API/appsettings.json
+/BlazeLock.API/appsettings.json
+/BlazeLock.FRONT/wwwroot/appsettings.json
