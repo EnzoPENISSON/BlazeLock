@@ -1,0 +1,29 @@
+﻿@page "/"
+@attribute [Authorize]
+@using System.Security.Claims
+@inject IAccessTokenProvider TokenProvider
+@using Microsoft.AspNetCore.Components.Authorization
+
+<CascadingAuthenticationState>
+    <h3>Welcome, @User?.Identity?.Name!</h3>
+</CascadingAuthenticationState>
+
+@code {
+    private ClaimsPrincipal? User;
+    private AccessToken? AccessToken;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        User = authState.User;
+
+        var tokenResult = await TokenProvider.RequestAccessToken();
+        if (tokenResult.TryGetToken(out var token))
+        {
+            AccessToken = token;
+        }
+    }
+}

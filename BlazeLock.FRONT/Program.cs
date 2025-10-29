@@ -1,59 +1,24 @@
-using BlazeLock.FRONT.Components;
-using BlazeLock.FRONT.Components.Services;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
+using BlazeLock.FRONT;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+// HttpClient simple compatible WASM
+var apiBase = builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7142/";
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBase) });
 
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration)
-    .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddInMemoryTokenCaches();
-
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor()
-       .AddMicrosoftIdentityConsentHandler();
-
-builder.Services.AddScoped<IUserService, UserService>();
-
-builder.Services.AddCascadingAuthenticationState();
-
-builder.Services.AddControllersWithViews()
-    .AddMicrosoftIdentityUI();
-
-builder.Services.AddHttpClient("BlazeLockAPI", client =>
+// Auth Entra ID
+builder.Services.AddMsalAuthentication(options =>
 {
-    client.BaseAddress = new Uri("https://localhost:7250/");
+    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+    options.ProviderOptions.DefaultAccessTokenScopes.Add("openid");
+    options.ProviderOptions.DefaultAccessTokenScopes.Add("offline_access");
+    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/User.Read");
+    options.ProviderOptions.LoginMode = "redirect";
 });
 
-
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BlazeLockAPI"));
-
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-app.UseAntiforgery();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.Run();
+await builder.Build().RunAsync();
