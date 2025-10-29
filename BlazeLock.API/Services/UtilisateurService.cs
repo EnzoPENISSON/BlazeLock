@@ -1,6 +1,6 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
-using DbLib;
+using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Services
 {

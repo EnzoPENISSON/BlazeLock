@@ -1,4 +1,4 @@
-﻿using DbLib;
+﻿using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Services
 {
