@@ -33,6 +33,7 @@ namespace BlazeLock.API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Create(UtilisateurDto dto)
+
         {
             await _service.AddUtilisateurAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);

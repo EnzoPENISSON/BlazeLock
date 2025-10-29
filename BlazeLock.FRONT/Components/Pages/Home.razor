@@ -1,8 +1,41 @@
 ﻿@page "/"
 @attribute [Authorize]
+@inject IUserService UserService
+@inject HttpClient Http
+@using BlazeLock.DbLib
+
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<p>Username: @_username</p>
+<p>User GUID: @_userId</p>
 
-Welcome to your new app.
+@code {
+    private string? _username;
+    private Guid? _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userId = await UserService.GetUserIdAsync();
+        _username = await UserService.GetUsernameAsync();
+
+        if (_userId.HasValue)
+        {
+            var newUser = new UtilisateurDto
+            {
+                IdUtilisateur = _userId.Value
+            };
+
+            var response = await Http.PostAsJsonAsync("/api/Utilisateur", newUser);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Utilisateur créé avec succès !");
+            }
+            else
+            {
+                Console.WriteLine($"Erreur API : {response.StatusCode}");
+            }
+        }
+    }
+}
