@@ -1,50 +1,39 @@
-using BlazeLock.FRONT.Components;
-using BlazeLock.FRONT.Components.Services;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Identity.Web;
+using BlazeLock.FRONT;
+using BlazeLock.FRONT.Core;
+using BlazeLock.FRONT.Services;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration)
-    .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddInMemoryTokenCaches();
+// HttpClient simple compatible WASM
+string apiEndpoint = builder.Configuration.GetValue<string>("WebAPI:Endpoint") ?? throw new InvalidOperationException("WebAPI is not configured");
+string apiScope = builder.Configuration.GetValue<string>("WebAPI:Scope") ?? throw new InvalidOperationException("WebAPI is not configured");
 
-builder.Services.AddScoped<IUserService, UserService>();
-
-builder.Services.AddCascadingAuthenticationState();
-
-builder.Services.AddHttpClient("BlazeLockAPI", client =>
+// Auth Entra ID
+builder.Services.AddMsalAuthentication(options =>
 {
-    client.BaseAddress = new Uri("https://localhost:7250/");
-});
+    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(apiScope);
+    options.ProviderOptions.LoginMode = "redirect";
+}).AddAccountClaimsPrincipalFactory<CustomAccountClaimsPrincipalFactory>();
 
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BlazeLockAPI"));
 
+//Ajout d'un service WebAPIClient qui dépend d'un HttpClient
+builder.Services.AddHttpClient<UserAPIService>(client => client.BaseAddress = new Uri(apiEndpoint))
+    //Le HttpClient précise l'utilisation d'un MessageHandler qui se charge de transférer le jeton d'identification de l'utilisateur connecté.
+    .AddHttpMessageHandler(sp =>
+    {
+        AuthorizationMessageHandler handler = sp.GetRequiredService<AuthorizationMessageHandler>()
+            .ConfigureHandler(
+                authorizedUrls: [apiEndpoint],
+                scopes: [apiScope]);
 
-var app = builder.Build();
+        return handler;
+    });
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-app.UseAntiforgery();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.Run();
+await builder.Build().RunAsync();

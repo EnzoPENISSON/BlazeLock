@@ -1,41 +1,45 @@
 ﻿@page "/"
 @attribute [Authorize]
-@inject IUserService UserService
-@inject HttpClient Http
+@using System.Security.Claims
+@inject IAccessTokenProvider TokenProvider
+@inject UserAPIService UserAPIService
 @using BlazeLock.DbLib
 
+<PageTitle>Page d'accueil</PageTitle>
 
-<PageTitle>Home</PageTitle>
-
-<p>Username: @_username</p>
-<p>User GUID: @_userId</p>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body text-center p-5">
+            <h1 class="display-5 fw-bold mb-3">Bonjour</h1>
+        </div>
+    </div>
+</div>
 
 @code {
-    private string? _username;
-    private Guid? _userId;
+    private ClaimsPrincipal? User;
+    private AccessToken? AccessToken;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        _userId = await UserService.GetUserIdAsync();
-        _username = await UserService.GetUsernameAsync();
+        var authState = await AuthenticationStateTask;
+        User = authState.User;
 
-        if (_userId.HasValue)
+        var tokenResult = await TokenProvider.RequestAccessToken();
+        if (tokenResult.TryGetToken(out var token))
         {
-            var newUser = new UtilisateurDto
-            {
-                IdUtilisateur = _userId.Value
-            };
+            AccessToken = token;
+        }
 
-            var response = await Http.PostAsJsonAsync("/api/Utilisateur", newUser);
+        var userIdClaim = User?.FindFirst(claim => claim.Type == "oid") ??
+                          User?.FindFirst(claim => claim.Type == "sub");
 
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("Utilisateur créé avec succès !");
-            }
-            else
-            {
-                Console.WriteLine($"Erreur API : {response.StatusCode}");
-            }
+        if (userIdClaim != null)
+        {
+            await UserAPIService.InsertUtilisateurAsync(Guid.Parse(userIdClaim.Value));
         }
     }
+
 }
