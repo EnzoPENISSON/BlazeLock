@@ -13,7 +13,7 @@ public partial class HistoriqueEntree
 
     public string? LibelleVi { get; set; }
 
-    public string DateUpdate { get; set; } = null!;
+    public DateTime DateUpdate { get; set; }
 
     public string? Username { get; set; }
 

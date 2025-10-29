@@ -13,9 +13,9 @@ public partial class Dossier
 
     public virtual Dossier? IdDossier1Navigation { get; set; }
 
-    public virtual ICollection<Dossier> InverseIdDossier1Navigation { get; set; } = new List<Dossier>();
+    public virtual HashSet<Dossier>? InverseIdDossier1Navigation { get; set; }
 
-    public virtual ICollection<Coffre> IdCoffres { get; set; } = new List<Coffre>();
+    public virtual HashSet<Coffre>? IdCoffres { get; set; }
 
-    public virtual ICollection<Entree> IdEntrees { get; set; } = new List<Entree>();
+    public virtual HashSet<Entree>? IdEntrees { get; set; }
 }

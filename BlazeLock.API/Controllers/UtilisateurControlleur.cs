@@ -1,72 +1,42 @@
 ﻿using BlazeLock.API.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OpenApi;
+using BlazeLock.API.Services;
+using DbLib;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Controllers
 {
-    public static class UtilisateurControlleur
+    [ApiController]
+    [Route("api/utilisateur")]
+    public class UtilisateurController : ControllerBase
     {
-	public static void MapUtilisateurEndpoints (this IEndpointRouteBuilder routes)
-    {
-        var group = routes.MapGroup("/api/Utilisateur").WithTags(nameof(Utilisateur));
+        private readonly IUtilisateurService _service;
 
-        group.MapGet("/", async (BlazeLockContext db) =>
+        public UtilisateurController(IUtilisateurService service)
         {
-            return await db.Utilisateurs.ToListAsync();
-        })
-        .WithName("GetAllUtilisateurs")
-        .WithOpenApi();
+            _service = service;
+        }
 
-        group.MapGet("/{id}", async Task<Results<Ok<Utilisateur>, NotFound>> (Guid idutilisateur, BlazeLockContext db) =>
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            return await db.Utilisateurs.AsNoTracking()
-                .FirstOrDefaultAsync(model => model.IdUtilisateur == idutilisateur)
-                is Utilisateur model
-                    ? TypedResults.Ok(model)
-                    : TypedResults.NotFound();
-        })
-        .WithName("GetUtilisateurById")
-        .WithOpenApi();
+            var utilisateurs = await _service.GetAllAsync();
+            return Ok(utilisateurs);
+        }
 
-        group.MapPut("/{id}", async Task<Results<Ok, NotFound>> (Guid idutilisateur, Utilisateur utilisateur, BlazeLockContext db) =>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var affected = await db.Utilisateurs
-                .Where(model => model.IdUtilisateur == idutilisateur)
-                .ExecuteUpdateAsync(setters => setters
-                  .SetProperty(m => m.IdUtilisateur, utilisateur.IdUtilisateur)
-                  );
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("UpdateUtilisateur")
-        .WithOpenApi();
+            var utilisateur = await _service.GetByIdAsync(id);
+            if (utilisateur == null) return NotFound();
+            return Ok(utilisateur);
+        }
 
-        group.MapPost("/", async (Utilisateur utilisateur, BlazeLockContext db) =>
-        {
-            var exists = await db.Utilisateurs.AnyAsync(u => u.IdUtilisateur == utilisateur.IdUtilisateur);
-            if (exists)
-            {
-                return Results.Ok();
-            }
-            db.Utilisateurs.Add(utilisateur);
-            await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/Utilisateur/{utilisateur.IdUtilisateur}", utilisateur);
-        })
-        .WithName("CreateUtilisateur")
-        .WithOpenApi();
+        [HttpPost]
+        public async Task<IActionResult> Create(UtilisateurDto dto)
 
-            group.MapDelete("/{id}", async Task<Results<Ok, NotFound>> (Guid idutilisateur, BlazeLockContext db) =>
         {
-            var affected = await db.Utilisateurs
-                .Where(model => model.IdUtilisateur == idutilisateur)
-                .ExecuteDeleteAsync();
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("DeleteUtilisateur")
-        .WithOpenApi();
-    }
-        
-        
+            await _service.AddUtilisateurAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
+        }
     }
 }

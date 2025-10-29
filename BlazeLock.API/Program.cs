@@ -1,16 +1,19 @@
 using BlazeLock.API.Controllers;
 using BlazeLock.API.Models;
+using BlazeLock.API.Repositories;
+using BlazeLock.API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
+using static BlazeLock.API.Services.UtilisateurService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 string? corsFrontEndpoint = builder.Configuration.GetValue<string>("CorsFrontEndpoint");
 
-//CORS permet d'autoriser le front à appeler l'API.
+//CORS permet d'autoriser le front ï¿½ appeler l'API.
 if (string.IsNullOrWhiteSpace(corsFrontEndpoint) == false)
 {
     builder.Services.AddCors(options =>
@@ -43,12 +46,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 builder.Services.AddDbContext<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
+builder.Services.AddScoped<IUtilisateurService, UtilisateurService>();
+
 var app = builder.Build();
 
-//Indique la mise en place de la police CORS créée précédement.
+//Indique la mise en place de la police CORS crï¿½ï¿½e prï¿½cï¿½dement.
 if (string.IsNullOrWhiteSpace(corsFrontEndpoint) == false)
 {
     app.UseCors("WebAssemblyOrigin");
@@ -66,8 +73,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapUtilisateurEndpoints();
 
 app.MapCoffreEndpoints();
 

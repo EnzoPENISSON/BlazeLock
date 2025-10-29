@@ -7,7 +7,7 @@ public partial class Utilisateur
 {
     public Guid IdUtilisateur { get; set; } = default!;
 
-    public virtual ICollection<Coffre> Coffres { get; set; } = new List<Coffre>();
+    public virtual HashSet<Coffre>? Coffres { get; set; }
 
-    public virtual ICollection<Partage> Partages { get; set; } = new List<Partage>();
+    public virtual HashSet<Partage>? Partages { get; set; }
 }
