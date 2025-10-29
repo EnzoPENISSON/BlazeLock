@@ -1,6 +1,6 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
-using DbLib;
+using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Services
 {
@@ -36,7 +36,7 @@ namespace BlazeLock.API.Services
             return new UtilisateurDto { IdUtilisateur = user.IdUtilisateur };
         }
 
-        public async Task AddUtilisateurAsync(UtilisateurDto dto)
+        public async Task AddAsync(UtilisateurDto dto)
         {
             var entity = new Utilisateur { IdUtilisateur = dto.IdUtilisateur };
             await _repository.AddAsync(entity);

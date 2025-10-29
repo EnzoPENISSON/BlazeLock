@@ -1,6 +1,6 @@
 ﻿using BlazeLock.API.Services;
-using DbLib;
 using Microsoft.AspNetCore.Mvc;
+using BlazeLock.DbLib;
 namespace BlazeLock.API.Controllers;
 
 
@@ -41,14 +41,14 @@ public class PartageController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(PartageDto dto)
     {
-        await _service.AddPartageAsync(dto);
+        await _service.AddAsync(dto);
         return Created();
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete(PartageDto dto)
     {
-        await _service.DeletePartage(dto);
+        await _service.Delete(dto);
         return Ok("Partage supprimé");
     }
 

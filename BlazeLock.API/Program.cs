@@ -3,7 +3,6 @@ using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.API.Services;
 using Microsoft.EntityFrameworkCore;
-using static BlazeLock.API.Services.UtilisateurService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +20,13 @@ builder.Services.AddDbContext<BlazeLockContext>(options =>
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
 builder.Services.AddScoped<IUtilisateurService, UtilisateurService>();
 
+builder.Services.AddScoped<IPartageRepository, PartageRepository>();
+builder.Services.AddScoped<IPartageService, PartageService>();
+
+builder.Services.AddScoped<ICoffreRepository, CoffreRepository>();
+builder.Services.AddScoped<ICoffreService, CoffreService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,8 +41,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapCoffreEndpoints();
 
 app.MapEntreeEndpoints();
 

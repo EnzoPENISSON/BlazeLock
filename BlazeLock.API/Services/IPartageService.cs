@@ -1,4 +1,4 @@
-﻿using DbLib;
+﻿using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Services
 {
@@ -7,8 +7,8 @@ namespace BlazeLock.API.Services
         Task<HashSet<PartageDto>> GetAllAsync();
         Task<HashSet<PartageDto>> GetByCoffreAsync(Guid id);
         Task<HashSet<PartageDto>> GetByUtilisateurAsync(Guid id);
-        Task AddPartageAsync(PartageDto dto);
-        Task DeletePartage(PartageDto dto);
+        Task AddAsync(PartageDto dto);
+        Task Delete(PartageDto dto);
 
     }
 }

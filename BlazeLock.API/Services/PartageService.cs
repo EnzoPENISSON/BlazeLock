@@ -1,6 +1,6 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
-using DbLib;
+using BlazeLock.DbLib;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazeLock.API.Services
@@ -61,7 +61,7 @@ namespace BlazeLock.API.Services
             return result;
         }
 
-        public async Task AddPartageAsync(PartageDto dto)
+        public async Task AddAsync(PartageDto dto)
         {
             var entity = new Partage { 
                 IdCoffre = dto.IdCoffre,
@@ -72,7 +72,7 @@ namespace BlazeLock.API.Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task DeletePartage(PartageDto dto)
+        public async Task Delete(PartageDto dto)
         {
             var entity = new Partage
             {

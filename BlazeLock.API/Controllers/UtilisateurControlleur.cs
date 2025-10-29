@@ -1,7 +1,7 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Services;
-using DbLib;
 using Microsoft.AspNetCore.Mvc;
+using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Controllers
 {
@@ -35,7 +35,11 @@ namespace BlazeLock.API.Controllers
         public async Task<IActionResult> Create(UtilisateurDto dto)
 
         {
-            await _service.AddUtilisateurAsync(dto);
+            if(_service.GetByIdAsync(dto.IdUtilisateur).Result != null)
+            {
+                return Ok("L'utilisateur existe déjà.");
+            }
+            await _service.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
         }
     }

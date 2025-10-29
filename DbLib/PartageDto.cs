@@ -1,4 +1,4 @@
-﻿namespace DbLib
+﻿namespace BlazeLock.DbLib
 {
     public class PartageDto
     {
