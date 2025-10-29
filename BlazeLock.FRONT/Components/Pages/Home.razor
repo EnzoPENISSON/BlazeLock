@@ -2,11 +2,18 @@
 @attribute [Authorize]
 @using System.Security.Claims
 @inject IAccessTokenProvider TokenProvider
-@using Microsoft.AspNetCore.Components.Authorization
+@inject UserAPIService UserAPIService
+@using BlazeLock.DbLib
 
-<CascadingAuthenticationState>
-    <h3>Welcome, @User?.Identity?.Name!</h3>
-</CascadingAuthenticationState>
+<PageTitle>Page d'accueil</PageTitle>
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body text-center p-5">
+            <h1 class="display-5 fw-bold mb-3">Bonjour</h1>
+        </div>
+    </div>
+</div>
 
 @code {
     private ClaimsPrincipal? User;
@@ -25,5 +32,14 @@
         {
             AccessToken = token;
         }
+
+        var userIdClaim = User?.FindFirst(claim => claim.Type == "oid") ??
+                          User?.FindFirst(claim => claim.Type == "sub");
+
+        if (userIdClaim != null)
+        {
+            await UserAPIService.InsertUtilisateurAsync(Guid.Parse(userIdClaim.Value));
+        }
     }
+
 }

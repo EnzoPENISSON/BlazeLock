@@ -1,15 +1,18 @@
 using BlazeLock.FRONT;
+using BlazeLock.FRONT.Core;
+using BlazeLock.FRONT.Services;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // HttpClient simple compatible WASM
-var apiBase = builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7142/";
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBase) });
+string apiEndpoint = builder.Configuration.GetValue<string>("WebAPI:Endpoint") ?? throw new InvalidOperationException("WebAPI is not configured");
+string apiScope = builder.Configuration.GetValue<string>("WebAPI:Scope") ?? throw new InvalidOperationException("WebAPI is not configured");
 
 // Auth Entra ID
 builder.Services.AddMsalAuthentication(options =>
@@ -18,7 +21,22 @@ builder.Services.AddMsalAuthentication(options =>
     options.ProviderOptions.DefaultAccessTokenScopes.Add("openid");
     options.ProviderOptions.DefaultAccessTokenScopes.Add("offline_access");
     options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/User.Read");
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(apiScope);
     options.ProviderOptions.LoginMode = "redirect";
-});
+}).AddAccountClaimsPrincipalFactory<CustomAccountClaimsPrincipalFactory>();
+
+
+//Ajout d'un service WebAPIClient qui dépend d'un HttpClient
+builder.Services.AddHttpClient<UserAPIService>(client => client.BaseAddress = new Uri(apiEndpoint))
+    //Le HttpClient précise l'utilisation d'un MessageHandler qui se charge de transférer le jeton d'identification de l'utilisateur connecté.
+    .AddHttpMessageHandler(sp =>
+    {
+        AuthorizationMessageHandler handler = sp.GetRequiredService<AuthorizationMessageHandler>()
+            .ConfigureHandler(
+                authorizedUrls: [apiEndpoint],
+                scopes: [apiScope]);
+
+        return handler;
+    });
 
 await builder.Build().RunAsync();
