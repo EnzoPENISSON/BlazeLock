@@ -1,4 +1,4 @@
-﻿namespace BlazeLock.DbLib
+﻿namespace DbLib
 {
     public class UtilisateurDto
     {
