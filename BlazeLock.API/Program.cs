@@ -44,6 +44,4 @@ app.MapHistoriqueEntreeEndpoints();
 
 app.MapLogEndpoints();
 
-app.MapPartageEndpoints();
-
 app.Run();
