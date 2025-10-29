@@ -18,9 +18,6 @@ string apiScope = builder.Configuration.GetValue<string>("WebAPI:Scope") ?? thro
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-    options.ProviderOptions.DefaultAccessTokenScopes.Add("openid");
-    options.ProviderOptions.DefaultAccessTokenScopes.Add("offline_access");
-    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/User.Read");
     options.ProviderOptions.DefaultAccessTokenScopes.Add(apiScope);
     options.ProviderOptions.LoginMode = "redirect";
 }).AddAccountClaimsPrincipalFactory<CustomAccountClaimsPrincipalFactory>();
