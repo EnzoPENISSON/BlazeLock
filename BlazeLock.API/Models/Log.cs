@@ -9,9 +9,9 @@ public partial class Log
 
     public string? Texte { get; set; }
 
-    public DateTime? Timestamp { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 
-    public Guid IdCoffre { get; set; } = default!;
+    public Guid IdCoffre { get; set; }
 
     public virtual Coffre IdCoffreNavigation { get; set; } = null!;
 }

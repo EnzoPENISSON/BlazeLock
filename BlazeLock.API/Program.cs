@@ -26,6 +26,9 @@ builder.Services.AddScoped<IPartageService, PartageService>();
 builder.Services.AddScoped<ICoffreRepository, CoffreRepository>();
 builder.Services.AddScoped<ICoffreService, CoffreService>();
 
+builder.Services.AddScoped<ILogRepository, LogRepository>();
+builder.Services.AddScoped<ILogService, LogService>();
+
 
 var app = builder.Build();
 
@@ -45,7 +48,5 @@ app.MapControllers();
 app.MapEntreeEndpoints();
 
 app.MapHistoriqueEntreeEndpoints();
-
-app.MapLogEndpoints();
 
 app.Run();
