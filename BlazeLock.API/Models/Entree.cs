@@ -9,7 +9,8 @@ public partial class Entree
 
     public DateTime DateCreation { get; set; }
 
-    public virtual HashSet<HistoriqueEntree>? HistoriqueEntrees { get; set; }
+    public Guid IdDossier { get; set; }
 
-    public virtual HashSet<Dossier>? IdDossiers { get; set; }
+    public virtual Dossier Dossier { get; set; } = null!;
+    public virtual HashSet<HistoriqueEntree> HistoriqueEntrees { get; set; } = null!;
 }

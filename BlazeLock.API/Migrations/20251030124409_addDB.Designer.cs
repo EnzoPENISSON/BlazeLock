@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazeLock.API.Migrations
 {
     [DbContext(typeof(BlazeLockContext))]
-    [Migration("20251028102507_ajoutguid")]
-    partial class ajoutguid
+    [Migration("20251030124409_addDB")]
+    partial class addDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,9 +33,10 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_coffre");
 
-                    b.Property<string>("HashMasterkey")
+                    b.Property<byte[]>("HashMasterkey")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("hash_masterkey");
 
                     b.Property<Guid>("IdUtilisateur")
@@ -44,17 +45,18 @@ namespace BlazeLock.API.Migrations
                         .HasColumnName("id_utilisateur");
 
                     b.Property<string>("Libelle")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("libelle");
 
                     b.Property<string>("Salt")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("salt");
 
-                    b.HasKey("IdCoffre")
-                        .HasName("PK__Coffre__47508D12F46D3B31");
+                    b.HasKey("IdCoffre");
 
                     b.HasIndex("IdUtilisateur");
 
@@ -69,20 +71,19 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("Id_dossier");
 
-                    b.Property<Guid?>("IdDossier1")
-                        .HasMaxLength(50)
+                    b.Property<Guid>("IdCoffre")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("Id_dossier_1");
+                        .HasColumnName("id_coffre");
 
                     b.Property<string>("Libelle")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("libelle");
 
-                    b.HasKey("IdDossier")
-                        .HasName("PK__Dossier__4484C37EEDA5F640");
+                    b.HasKey("IdDossier");
 
-                    b.HasIndex("IdDossier1");
+                    b.HasIndex("IdCoffre");
 
                     b.ToTable("Dossier", (string)null);
                 });
@@ -95,12 +96,18 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_entree");
 
-                    b.Property<DateTime?>("DateCreation")
+                    b.Property<DateTime>("DateCreation")
                         .HasColumnType("datetime")
                         .HasColumnName("date_creation");
 
-                    b.HasKey("IdEntree")
-                        .HasName("PK__Entree__B8AEB9F2EB302244");
+                    b.Property<Guid>("IdDossier")
+                        .HasMaxLength(50)
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id_dossier");
+
+                    b.HasKey("IdEntree");
+
+                    b.HasIndex("IdDossier");
 
                     b.ToTable("Entree", (string)null);
                 });
@@ -113,25 +120,27 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_historique");
 
-                    b.Property<string>("Commentaire")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("commentaire");
-
-                    b.Property<string>("CommentaireTag")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("commentaire_tag");
-
-                    b.Property<string>("CommentaireVi")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("commentaire_vi");
-
-                    b.Property<string>("DateUpdate")
+                    b.Property<byte[]>("Commentaire")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
+                        .HasColumnName("commentaire");
+
+                    b.Property<byte[]>("CommentaireTag")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varbinary(50)")
+                        .HasColumnName("commentaire_tag");
+
+                    b.Property<byte[]>("CommentaireVi")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varbinary(50)")
+                        .HasColumnName("commentaire_vi");
+
+                    b.Property<DateTime>("DateUpdate")
+                        .HasMaxLength(50)
+                        .HasColumnType("datetime2")
                         .HasColumnName("date_update");
 
                     b.Property<Guid>("IdEntree")
@@ -139,71 +148,79 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_entree");
 
-                    b.Property<string>("Libelle")
+                    b.Property<byte[]>("Libelle")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("libelle");
 
-                    b.Property<string>("LibelleTag")
+                    b.Property<byte[]>("LibelleTag")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("libelle_tag");
 
-                    b.Property<string>("LibelleVi")
+                    b.Property<byte[]>("LibelleVi")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("libelle_vi");
 
-                    b.Property<string>("Password")
+                    b.Property<byte[]>("Password")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("password");
 
-                    b.Property<string>("PasswordTag")
+                    b.Property<byte[]>("PasswordTag")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("password_tag");
 
-                    b.Property<string>("PasswordVi")
+                    b.Property<byte[]>("PasswordVi")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("password_vi");
 
-                    b.Property<string>("Url")
+                    b.Property<byte[]>("Url")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("url");
 
-                    b.Property<string>("UrlTag")
+                    b.Property<byte[]>("UrlTag")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("url_tag");
 
-                    b.Property<string>("UrlVi")
+                    b.Property<byte[]>("UrlVi")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("url_vi");
 
-                    b.Property<string>("Username")
+                    b.Property<byte[]>("Username")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("username");
 
-                    b.Property<string>("UsernameTag")
+                    b.Property<byte[]>("UsernameTag")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("username_tag");
 
-                    b.Property<string>("UsernameVi")
+                    b.Property<byte[]>("UsernameVi")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("username_vi");
 
-                    b.HasKey("IdHistorique")
-                        .HasName("PK__Historiq__33F46ECB49A6FF51");
+                    b.HasKey("IdHistorique");
 
                     b.HasIndex("IdEntree");
 
@@ -228,12 +245,11 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("texte");
 
-                    b.Property<DateTime?>("Timestamp")
+                    b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime")
                         .HasColumnName("timestamp_");
 
-                    b.HasKey("IdLog")
-                        .HasName("PK__Log__6CC851FE0CAB883A");
+                    b.HasKey("IdLog");
 
                     b.HasIndex("IdCoffre");
 
@@ -252,12 +268,11 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_coffre");
 
-                    b.Property<bool?>("IsAdmin")
+                    b.Property<bool>("IsAdmin")
                         .HasColumnType("bit")
                         .HasColumnName("isAdmin");
 
-                    b.HasKey("IdUtilisateur", "IdCoffre")
-                        .HasName("PK__Partage__2E3AAD6978ABB493");
+                    b.HasKey("IdUtilisateur", "IdCoffre");
 
                     b.HasIndex("IdCoffre");
 
@@ -272,146 +287,82 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_utilisateur");
 
-                    b.HasKey("IdUtilisateur")
-                        .HasName("PK__Utilisat__1A4FA5B84005D655");
+                    b.HasKey("IdUtilisateur");
 
                     b.ToTable("Utilisateur", (string)null);
                 });
 
-            modelBuilder.Entity("Organiser", b =>
-                {
-                    b.Property<Guid>("IdCoffre")
-                        .HasMaxLength(50)
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_coffre");
-
-                    b.Property<Guid>("IdDossier")
-                        .HasMaxLength(50)
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("Id_dossier");
-
-                    b.HasKey("IdCoffre", "IdDossier")
-                        .HasName("PK__Organise__B318C125E234F68B");
-
-                    b.HasIndex("IdDossier");
-
-                    b.ToTable("Organiser", (string)null);
-                });
-
-            modelBuilder.Entity("Stocker", b =>
-                {
-                    b.Property<Guid>("IdDossier")
-                        .HasMaxLength(50)
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("Id_dossier");
-
-                    b.Property<Guid>("IdEntree")
-                        .HasMaxLength(50)
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id_entree");
-
-                    b.HasKey("IdDossier", "IdEntree")
-                        .HasName("PK__Stocker__7F0E28E12110E1D5");
-
-                    b.HasIndex("IdEntree");
-
-                    b.ToTable("Stocker", (string)null);
-                });
-
             modelBuilder.Entity("BlazeLock.API.Models.Coffre", b =>
                 {
-                    b.HasOne("BlazeLock.API.Models.Utilisateur", "IdUtilisateurNavigation")
+                    b.HasOne("BlazeLock.API.Models.Utilisateur", "Utilisateur")
                         .WithMany("Coffres")
                         .HasForeignKey("IdUtilisateur")
-                        .IsRequired()
-                        .HasConstraintName("FK__Coffre__id_utili__398D8EEE");
+                        .IsRequired();
 
-                    b.Navigation("IdUtilisateurNavigation");
+                    b.Navigation("Utilisateur");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.Dossier", b =>
                 {
-                    b.HasOne("BlazeLock.API.Models.Dossier", "IdDossier1Navigation")
-                        .WithMany("InverseIdDossier1Navigation")
-                        .HasForeignKey("IdDossier1")
-                        .HasConstraintName("FK__Dossier__Id_doss__3C69FB99");
+                    b.HasOne("BlazeLock.API.Models.Coffre", "Coffre")
+                        .WithMany("Dossiers")
+                        .HasForeignKey("IdCoffre")
+                        .IsRequired();
 
-                    b.Navigation("IdDossier1Navigation");
+                    b.Navigation("Coffre");
+                });
+
+            modelBuilder.Entity("BlazeLock.API.Models.Entree", b =>
+                {
+                    b.HasOne("BlazeLock.API.Models.Dossier", "Dossier")
+                        .WithMany("Entrees")
+                        .HasForeignKey("IdDossier")
+                        .IsRequired();
+
+                    b.Navigation("Dossier");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.HistoriqueEntree", b =>
                 {
-                    b.HasOne("BlazeLock.API.Models.Entree", "IdEntreeNavigation")
+                    b.HasOne("BlazeLock.API.Models.Entree", "Entree")
                         .WithMany("HistoriqueEntrees")
                         .HasForeignKey("IdEntree")
-                        .IsRequired()
-                        .HasConstraintName("FK__Historiqu__id_en__412EB0B6");
+                        .IsRequired();
 
-                    b.Navigation("IdEntreeNavigation");
+                    b.Navigation("Entree");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.Log", b =>
                 {
-                    b.HasOne("BlazeLock.API.Models.Coffre", "IdCoffreNavigation")
+                    b.HasOne("BlazeLock.API.Models.Coffre", "Coffre")
                         .WithMany("Logs")
                         .HasForeignKey("IdCoffre")
-                        .IsRequired()
-                        .HasConstraintName("FK__Log__id_coffre__440B1D61");
+                        .IsRequired();
 
-                    b.Navigation("IdCoffreNavigation");
+                    b.Navigation("Coffre");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.Partage", b =>
                 {
-                    b.HasOne("BlazeLock.API.Models.Coffre", "IdCoffreNavigation")
+                    b.HasOne("BlazeLock.API.Models.Coffre", "Coffre")
                         .WithMany("Partages")
                         .HasForeignKey("IdCoffre")
-                        .IsRequired()
-                        .HasConstraintName("FK__Partage__id_coff__47DBAE45");
+                        .IsRequired();
 
-                    b.HasOne("BlazeLock.API.Models.Utilisateur", "IdUtilisateurNavigation")
+                    b.HasOne("BlazeLock.API.Models.Utilisateur", "Utilisateur")
                         .WithMany("Partages")
                         .HasForeignKey("IdUtilisateur")
-                        .IsRequired()
-                        .HasConstraintName("FK__Partage__id_util__46E78A0C");
+                        .IsRequired();
 
-                    b.Navigation("IdCoffreNavigation");
+                    b.Navigation("Coffre");
 
-                    b.Navigation("IdUtilisateurNavigation");
-                });
-
-            modelBuilder.Entity("Organiser", b =>
-                {
-                    b.HasOne("BlazeLock.API.Models.Coffre", null)
-                        .WithMany()
-                        .HasForeignKey("IdCoffre")
-                        .IsRequired()
-                        .HasConstraintName("FK__Organiser__id_co__4AB81AF0");
-
-                    b.HasOne("BlazeLock.API.Models.Dossier", null)
-                        .WithMany()
-                        .HasForeignKey("IdDossier")
-                        .IsRequired()
-                        .HasConstraintName("FK__Organiser__Id_do__4BAC3F29");
-                });
-
-            modelBuilder.Entity("Stocker", b =>
-                {
-                    b.HasOne("BlazeLock.API.Models.Dossier", null)
-                        .WithMany()
-                        .HasForeignKey("IdDossier")
-                        .IsRequired()
-                        .HasConstraintName("FK__Stocker__Id_doss__4E88ABD4");
-
-                    b.HasOne("BlazeLock.API.Models.Entree", null)
-                        .WithMany()
-                        .HasForeignKey("IdEntree")
-                        .IsRequired()
-                        .HasConstraintName("FK__Stocker__id_entr__4F7CD00D");
+                    b.Navigation("Utilisateur");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.Coffre", b =>
                 {
+                    b.Navigation("Dossiers");
+
                     b.Navigation("Logs");
 
                     b.Navigation("Partages");
@@ -419,7 +370,7 @@ namespace BlazeLock.API.Migrations
 
             modelBuilder.Entity("BlazeLock.API.Models.Dossier", b =>
                 {
-                    b.Navigation("InverseIdDossier1Navigation");
+                    b.Navigation("Entrees");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.Entree", b =>

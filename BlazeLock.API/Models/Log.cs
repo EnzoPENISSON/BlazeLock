@@ -13,5 +13,5 @@ public partial class Log
 
     public Guid IdCoffre { get; set; }
 
-    public virtual Coffre IdCoffreNavigation { get; set; } = null!;
+    public virtual Coffre Coffre { get; set; } = null!;
 }
