@@ -47,7 +47,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-builder.Services.AddDbContext<BlazeLockContext>(options =>
+builder.Services.AddDbContextFactory<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
@@ -61,6 +61,9 @@ builder.Services.AddScoped<ICoffreService, CoffreService>();
 
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
+
+builder.Services.AddScoped<IEntreeRepository, EntreeRepository>();
+//builder.Services.AddScoped<IEntreeService, EntreeService>();
 
 
 var app = builder.Build();
