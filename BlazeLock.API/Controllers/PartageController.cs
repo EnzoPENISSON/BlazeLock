@@ -1,64 +1,55 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BlazeLock.API.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OpenApi;
+﻿using BlazeLock.API.Services;
+using Microsoft.AspNetCore.Mvc;
+using BlazeLock.DbLib;
 namespace BlazeLock.API.Controllers;
 
-public static class PartageController
+
+[ApiController]
+[Route("api/partage")]
+public class PartageController : ControllerBase
 {
-    public static void MapPartageEndpoints (this IEndpointRouteBuilder routes)
+    private readonly IPartageService _service;
+
+    public PartageController(IPartageService service)
     {
-        var group = routes.MapGroup("/api/Partage").WithTags(nameof(Partage));
-
-        group.MapGet("/", async (BlazeLockContext db) =>
-        {
-            return await db.Partages.ToListAsync();
-        })
-        .WithName("GetAllPartages")
-        .WithOpenApi();
-
-        group.MapGet("/{id}", async Task<Results<Ok<Partage>, NotFound>> (Guid idutilisateur, BlazeLockContext db) =>
-        {
-            return await db.Partages.AsNoTracking()
-                .FirstOrDefaultAsync(model => model.IdUtilisateur == idutilisateur)
-                is Partage model
-                    ? TypedResults.Ok(model)
-                    : TypedResults.NotFound();
-        })
-        .WithName("GetPartageById")
-        .WithOpenApi();
-
-        group.MapPut("/{id}", async Task<Results<Ok, NotFound>> (Guid idutilisateur, Partage partage, BlazeLockContext db) =>
-        {
-            var affected = await db.Partages
-                .Where(model => model.IdUtilisateur == idutilisateur)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.IdUtilisateur, partage.IdUtilisateur)
-                    .SetProperty(m => m.IdCoffre, partage.IdCoffre)
-                    .SetProperty(m => m.IsAdmin, partage.IsAdmin)
-                    );
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("UpdatePartage")
-        .WithOpenApi();
-
-        group.MapPost("/", async (Partage partage, BlazeLockContext db) =>
-        {
-            db.Partages.Add(partage);
-            await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/Partage/{partage.IdUtilisateur}",partage);
-        })
-        .WithName("CreatePartage")
-        .WithOpenApi();
-
-        group.MapDelete("/{id}", async Task<Results<Ok, NotFound>> (Guid idutilisateur, BlazeLockContext db) =>
-        {
-            var affected = await db.Partages
-                .Where(model => model.IdUtilisateur == idutilisateur)
-                .ExecuteDeleteAsync();
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("DeletePartage")
-        .WithOpenApi();
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var partages = await _service.GetAllAsync();
+        return Ok(partages);
+    }
+
+    [HttpGet("utilisateur/{id}")]
+    public async Task<IActionResult> GetByUtilisateur(Guid id)
+    {
+        var partages = await _service.GetByUtilisateurAsync(id);
+        if (partages == null) return NotFound();
+        return Ok(partages);
+    }
+
+    [HttpGet("coffre/{id}")]
+    public async Task<IActionResult> GetByCoffre(Guid id)
+    {
+        var partages = await _service.GetByCoffreAsync(id);
+        if (partages == null) return NotFound();
+        return Ok(partages);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(PartageDto dto)
+    {
+        await _service.AddAsync(dto);
+        return Created();
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> Delete(PartageDto dto)
+    {
+        await _service.Delete(dto);
+        return Ok("Partage supprimé");
+    }
+
 }

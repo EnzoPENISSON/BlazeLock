@@ -53,6 +53,16 @@ builder.Services.AddDbContext<BlazeLockContext>(options =>
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
 builder.Services.AddScoped<IUtilisateurService, UtilisateurService>();
 
+builder.Services.AddScoped<IPartageRepository, PartageRepository>();
+builder.Services.AddScoped<IPartageService, PartageService>();
+
+builder.Services.AddScoped<ICoffreRepository, CoffreRepository>();
+builder.Services.AddScoped<ICoffreService, CoffreService>();
+
+builder.Services.AddScoped<ILogRepository, LogRepository>();
+builder.Services.AddScoped<ILogService, LogService>();
+
+
 var app = builder.Build();
 
 //Indique la mise en place de la police CORS cr��e pr�c�dement.
@@ -76,14 +86,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapCoffreEndpoints();
-
 app.MapEntreeEndpoints();
 
 app.MapHistoriqueEntreeEndpoints();
-
-app.MapLogEndpoints();
-
-app.MapPartageEndpoints();
 
 app.Run();

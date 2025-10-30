@@ -1,8 +1,8 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Services;
-using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Controllers
 {
@@ -39,13 +39,13 @@ namespace BlazeLock.API.Controllers
         [Authorize(Roles = Roles.User_Administrator)]
         public async Task<IActionResult> Create(UtilisateurDto dto)
         {
-            var existingUser = await this.GetById(dto.IdUtilisateur);
-            if (existingUser == null)
+            if(_service.GetByIdAsync(dto.IdUtilisateur).Result != null)
             {
-                await _service.AddUtilisateurAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
+                return Ok("L'utilisateur existe déjà.");
             }
-            return Ok();
+            await _service.AddAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
+
         }
     }
 }
