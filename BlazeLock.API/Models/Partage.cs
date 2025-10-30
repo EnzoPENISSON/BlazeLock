@@ -11,7 +11,7 @@ public partial class Partage
 
     public bool IsAdmin { get; set; }
 
-    public virtual Coffre IdCoffreNavigation { get; set; } = null!;
+    public virtual Coffre Coffre { get; set; } = null!;
 
-    public virtual Utilisateur IdUtilisateurNavigation { get; set; } = null!;
+    public virtual Utilisateur Utilisateur { get; set; } = null!;
 }

@@ -15,7 +15,7 @@ namespace BlazeLock.API.Repositories
 
         public async Task<HashSet<Coffre>> GetAllAsync()
         {
-            var coffres = await _context.Coffres.ToListAsync();
+            var coffres = await _context.Coffres.AsNoTracking().ToListAsync();
             return coffres.ToHashSet();
         }
 

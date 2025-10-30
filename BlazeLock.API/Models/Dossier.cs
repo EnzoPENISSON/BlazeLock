@@ -7,15 +7,11 @@ public partial class Dossier
 {
     public Guid IdDossier { get; set; } = default!;
 
-    public string? Libelle { get; set; }
+    public string Libelle { get; set; } = "default";
 
-    public Guid? IdDossier1 { get; set; }
+    public Guid IdCoffre { get; set; }
 
-    public virtual Dossier? IdDossier1Navigation { get; set; }
+    public virtual Coffre Coffre { get; set; } = null!;
 
-    public virtual HashSet<Dossier>? InverseIdDossier1Navigation { get; set; }
-
-    public virtual HashSet<Coffre>? IdCoffres { get; set; }
-
-    public virtual HashSet<Entree>? IdEntrees { get; set; }
+    public virtual HashSet<Entree>? Entrees { get; set; }
 }

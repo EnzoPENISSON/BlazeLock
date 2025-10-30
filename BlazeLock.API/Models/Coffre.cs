@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BlazeLock.API.Models;
@@ -7,19 +8,19 @@ public partial class Coffre
 {
     public Guid IdCoffre { get; set; } = default!;
 
-    public string? Libelle { get; set; }
+    public string Libelle { get; set; } = null!;
 
-    public string? HashMasterkey { get; set; }
+    public byte[] HashMasterkey { get; set; } = null!;
 
-    public string? Salt { get; set; }
+    public string Salt { get; set; } = null!;
 
     public Guid IdUtilisateur { get; set; } = default!;
 
-    public virtual Utilisateur IdUtilisateurNavigation { get; set; } = null!;
+    public virtual Utilisateur Utilisateur { get; set; } = null!;
 
     public virtual HashSet<Log>? Logs { get; set; }
 
     public virtual HashSet<Partage>? Partages { get; set; }
 
-    public virtual HashSet<Dossier>? IdDossiers { get; set; }
+    public virtual HashSet<Dossier> Dossiers { get; set; } = null!;
 }

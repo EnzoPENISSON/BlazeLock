@@ -42,7 +42,7 @@ public partial class BlazeLockContext : DbContext
     {
         modelBuilder.Entity<Coffre>(entity =>
         {
-            entity.HasKey(e => e.IdCoffre).HasName("PK__Coffre__47508D12F46D3B31");
+            entity.HasKey(e => e.IdCoffre);
 
             entity.ToTable("Coffre");
 
@@ -62,82 +62,34 @@ public partial class BlazeLockContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("salt");
 
-            entity.HasOne(d => d.IdUtilisateurNavigation).WithMany(p => p.Coffres)
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.Coffres)
                 .HasForeignKey(d => d.IdUtilisateur)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Coffre__id_utili__398D8EEE");
-
-            entity.HasMany(d => d.IdDossiers).WithMany(p => p.IdCoffres)
-                .UsingEntity<Dictionary<string, object>>(
-                    "Organiser",
-                    r => r.HasOne<Dossier>().WithMany()
-                        .HasForeignKey("IdDossier")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Organiser__Id_do__4BAC3F29"),
-                    l => l.HasOne<Coffre>().WithMany()
-                        .HasForeignKey("IdCoffre")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Organiser__id_co__4AB81AF0"),
-                    j =>
-                    {
-                        j.HasKey("IdCoffre", "IdDossier").HasName("PK__Organise__B318C125E234F68B");
-                        j.ToTable("Organiser");
-                        j.IndexerProperty<Guid>("IdCoffre")
-                            .HasMaxLength(50)
-                            .HasColumnName("id_coffre");
-                        j.IndexerProperty<Guid>("IdDossier")
-                            .HasMaxLength(50)
-                            .HasColumnName("Id_dossier");
-                    });
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Dossier>(entity =>
         {
-            entity.HasKey(e => e.IdDossier).HasName("PK__Dossier__4484C37EEDA5F640");
+            entity.HasKey(e => e.IdDossier);
 
             entity.ToTable("Dossier");
 
             entity.Property(e => e.IdDossier)
                 .HasMaxLength(50)
                 .HasColumnName("Id_dossier");
-            entity.Property(e => e.IdDossier1)
-                .HasMaxLength(50)
-                .HasColumnName("Id_dossier_1");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(50)
                 .HasColumnName("libelle");
+            entity.Property(e => e.IdCoffre)
+                .HasColumnName("id_coffre");
 
-            entity.HasOne(d => d.IdDossier1Navigation).WithMany(p => p.InverseIdDossier1Navigation)
-                .HasForeignKey(d => d.IdDossier1)
-                .HasConstraintName("FK__Dossier__Id_doss__3C69FB99");
-
-            entity.HasMany(d => d.IdEntrees).WithMany(p => p.IdDossiers)
-                .UsingEntity<Dictionary<string, object>>(
-                    "Stocker",
-                    r => r.HasOne<Entree>().WithMany()
-                        .HasForeignKey("IdEntree")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Stocker__id_entr__4F7CD00D"),
-                    l => l.HasOne<Dossier>().WithMany()
-                        .HasForeignKey("IdDossier")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Stocker__Id_doss__4E88ABD4"),
-                    j =>
-                    {
-                        j.HasKey("IdDossier", "IdEntree").HasName("PK__Stocker__7F0E28E12110E1D5");
-                        j.ToTable("Stocker");
-                        j.IndexerProperty<Guid>("IdDossier")
-                            .HasMaxLength(50)
-                            .HasColumnName("Id_dossier");
-                        j.IndexerProperty<Guid>("IdEntree")
-                            .HasMaxLength(50)
-                            .HasColumnName("id_entree");
-                    });
+            entity.HasOne(d => d.Coffre).WithMany(p => p.Dossiers)
+                .HasForeignKey(d => d.IdCoffre)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Entree>(entity =>
         {
-            entity.HasKey(e => e.IdEntree).HasName("PK__Entree__B8AEB9F2EB302244");
+            entity.HasKey(e => e.IdEntree);
 
             entity.ToTable("Entree");
 
@@ -147,11 +99,18 @@ public partial class BlazeLockContext : DbContext
             entity.Property(e => e.DateCreation)
                 .HasColumnType("datetime")
                 .HasColumnName("date_creation");
+            entity.Property(e => e.IdDossier)
+                .HasMaxLength(50)
+                .HasColumnName("id_dossier");
+
+            entity.HasOne(d => d.Dossier).WithMany(p => p.Entrees)
+                .HasForeignKey(d => d.IdDossier)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<HistoriqueEntree>(entity =>
         {
-            entity.HasKey(e => e.IdHistorique).HasName("PK__Historiq__33F46ECB49A6FF51");
+            entity.HasKey(e => e.IdHistorique);
 
             entity.ToTable("Historique_entree");
 
@@ -210,15 +169,14 @@ public partial class BlazeLockContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("username_vi");
 
-            entity.HasOne(d => d.IdEntreeNavigation).WithMany(p => p.HistoriqueEntrees)
+            entity.HasOne(d => d.Entree).WithMany(p => p.HistoriqueEntrees)
                 .HasForeignKey(d => d.IdEntree)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Historiqu__id_en__412EB0B6");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Log>(entity =>
         {
-            entity.HasKey(e => e.IdLog).HasName("PK__Log__6CC851FE0CAB883A");
+            entity.HasKey(e => e.IdLog);
 
             entity.ToTable("Log");
 
@@ -235,15 +193,14 @@ public partial class BlazeLockContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("timestamp_");
 
-            entity.HasOne(d => d.IdCoffreNavigation).WithMany(p => p.Logs)
+            entity.HasOne(d => d.Coffre).WithMany(p => p.Logs)
                 .HasForeignKey(d => d.IdCoffre)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Log__id_coffre__440B1D61");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Partage>(entity =>
         {
-            entity.HasKey(e => new { e.IdUtilisateur, e.IdCoffre }).HasName("PK__Partage__2E3AAD6978ABB493");
+            entity.HasKey(e => new { e.IdUtilisateur, e.IdCoffre });
 
             entity.ToTable("Partage");
 
@@ -255,20 +212,18 @@ public partial class BlazeLockContext : DbContext
                 .HasColumnName("id_coffre");
             entity.Property(e => e.IsAdmin).HasColumnName("isAdmin");
 
-            entity.HasOne(d => d.IdCoffreNavigation).WithMany(p => p.Partages)
+            entity.HasOne(d => d.Coffre).WithMany(p => p.Partages)
                 .HasForeignKey(d => d.IdCoffre)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Partage__id_coff__47DBAE45");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.IdUtilisateurNavigation).WithMany(p => p.Partages)
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.Partages)
                 .HasForeignKey(d => d.IdUtilisateur)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Partage__id_util__46E78A0C");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Utilisateur>(entity =>
         {
-            entity.HasKey(e => e.IdUtilisateur).HasName("PK__Utilisat__1A4FA5B84005D655");
+            entity.HasKey(e => e.IdUtilisateur);
 
             entity.ToTable("Utilisateur");
 

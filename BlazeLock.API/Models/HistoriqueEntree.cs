@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BlazeLock.API.Models;
@@ -7,39 +8,39 @@ public partial class HistoriqueEntree
 {
     public Guid IdHistorique { get; set; } = default!;
 
-    public string? Libelle { get; set; }
+    public byte[] Libelle { get; set; } = null!;
 
-    public string? LibelleTag { get; set; }
+    public byte[] LibelleTag { get; set; } = null!;
 
-    public string? LibelleVi { get; set; }
+    public byte[] LibelleVi { get; set; } = null!;
 
     public DateTime DateUpdate { get; set; }
 
-    public string? Username { get; set; }
+    public byte[] Username { get; set; } = null!;
 
-    public string? UsernameTag { get; set; }
+    public byte[] UsernameTag { get; set; } = null!;
 
-    public string? UsernameVi { get; set; }
+    public byte[] UsernameVi { get; set; } = null!;
 
-    public string? Url { get; set; }
+    public byte[] Url { get; set; } = null!;
 
-    public string? UrlTag { get; set; }
+    public byte[] UrlTag { get; set; } = null!;
 
-    public string? UrlVi { get; set; }
+    public byte[] UrlVi { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public byte[] Password { get; set; } = null!;
 
-    public string PasswordTag { get; set; } = null!;
+    public byte[] PasswordTag { get; set; } = null!;
 
-    public string PasswordVi { get; set; } = null!;
+    public byte[] PasswordVi { get; set; } = null!;
 
-    public string? Commentaire { get; set; }
+    public byte[] Commentaire { get; set; } = null!;
 
-    public string? CommentaireTag { get; set; }
+    public byte[] CommentaireTag { get; set; } = null!;
 
-    public string? CommentaireVi { get; set; }
+    public byte[] CommentaireVi { get; set; } = null!;
 
     public Guid IdEntree { get; set; } = default!;
 
-    public virtual Entree IdEntreeNavigation { get; set; } = null!;
+    public virtual Entree Entree { get; set; } = null!;
 }
