@@ -1,10 +1,8 @@
 ﻿namespace BlazeLock.DbLib
 {
-    public class EntreeDto
+    public class HistoriqueDto
     {
         public Guid IdEntree { get; set; }
-        public Guid IdDossier { get; set; }
-        public DateTime DateCreation { get; set; }
         public byte[]? Libelle { get; set; }
         public byte[]? LibelleTag { get; set; }
         public byte[]? LibelleVi { get; set; }

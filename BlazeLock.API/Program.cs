@@ -89,8 +89,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapEntreeEndpoints();
-
 app.MapHistoriqueEntreeEndpoints();
 
 app.Run();
