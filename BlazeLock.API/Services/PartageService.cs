@@ -69,7 +69,6 @@ namespace BlazeLock.API.Services
                 IsAdmin = dto.IsAdmin
             };
             await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
         }
 
         public async Task Delete(PartageDto dto)
@@ -81,7 +80,6 @@ namespace BlazeLock.API.Services
                 IsAdmin = dto.IsAdmin
             };
             await _repository.DeletePartage(entity);
-            await _repository.SaveChangesAsync();
         }
     }
 }

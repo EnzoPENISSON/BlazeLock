@@ -5,32 +5,34 @@ namespace BlazeLock.API.Repositories
 {
     public class UtilisateurRepository : IUtilisateurRepository
     {
-        private readonly BlazeLockContext _context;
+        private readonly IDbContextFactory<BlazeLockContext> _contextFactory;
 
-        public UtilisateurRepository(BlazeLockContext context)
+        public UtilisateurRepository(IDbContextFactory<BlazeLockContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<HashSet<Utilisateur>> GetAllAsync()
         {
-            var utilisateurs = await _context.Utilisateurs.ToListAsync();
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var utilisateurs = await context.Utilisateurs.AsNoTracking().ToListAsync();
             return utilisateurs.ToHashSet();
         }
 
         public async Task<Utilisateur?> GetByIdAsync(Guid id)
         {
-            return await _context.Utilisateurs.FindAsync(id);
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Utilisateurs.FindAsync(id);
         }
 
         public async Task AddAsync(Utilisateur utilisateur)
         {
-            await _context.Utilisateurs.AddAsync(utilisateur);
-        }
+            var context = await _contextFactory.CreateDbContextAsync();
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
+            await context.Utilisateurs.AddAsync(utilisateur);
+            await context.SaveChangesAsync();
         }
     }
 }
