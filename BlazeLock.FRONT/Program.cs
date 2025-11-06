@@ -12,13 +12,11 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // HttpClient simple compatible WASM
 string apiEndpoint = builder.Configuration.GetValue<string>("WebAPI:Endpoint") ?? throw new InvalidOperationException("WebAPI is not configured");
-string apiScope = builder.Configuration.GetValue<string>("WebAPI:Scope") ?? throw new InvalidOperationException("WebAPI is not configured");
 
 // Auth Entra ID
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-    options.ProviderOptions.DefaultAccessTokenScopes.Add(apiScope);
     options.ProviderOptions.LoginMode = "redirect";
 }).AddAccountClaimsPrincipalFactory<CustomAccountClaimsPrincipalFactory>();
 
@@ -29,9 +27,7 @@ builder.Services.AddHttpClient<UserAPIService>(client => client.BaseAddress = ne
     .AddHttpMessageHandler(sp =>
     {
         AuthorizationMessageHandler handler = sp.GetRequiredService<AuthorizationMessageHandler>()
-            .ConfigureHandler(
-                authorizedUrls: [apiEndpoint],
-                scopes: [apiScope]);
+            .ConfigureHandler(authorizedUrls: [apiEndpoint]);
 
         return handler;
     });

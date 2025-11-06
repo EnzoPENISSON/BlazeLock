@@ -12,7 +12,7 @@ public partial class Coffre
 
     public byte[] HashMasterkey { get; set; } = null!;
 
-    public string Salt { get; set; } = null!;
+    public byte[] Salt { get; set; } = null!;
 
     public Guid IdUtilisateur { get; set; } = default!;
 

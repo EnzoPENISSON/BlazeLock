@@ -1,6 +1,7 @@
 ﻿using BlazeLock.API.Services;
-using Microsoft.AspNetCore.Mvc;
 using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BlazeLock.API.Controllers;
 
@@ -41,6 +42,16 @@ public class CoffreController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CoffreDto dto)
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized("Impossible de récupérer l'identifiant utilisateur.");
+
+        if (!Guid.TryParse(userIdClaim, out Guid userId))
+            return BadRequest("L'identifiant utilisateur est invalide.");
+
+
+        dto.IdUtilisateur = userId;
         await _service.AddAsync(dto);
         return Created();
     }

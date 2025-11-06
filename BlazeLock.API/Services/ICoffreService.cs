@@ -9,6 +9,5 @@ namespace BlazeLock.API.Services
         Task<HashSet<CoffreDto>> GetByUtilisateurAsync(Guid id);
         Task AddAsync(CoffreDto dto);
         Task Delete(CoffreDto dto);
-
     }
 }
