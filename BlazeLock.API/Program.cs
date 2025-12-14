@@ -6,15 +6,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
-using static BlazeLock.API.Services.UtilisateurService;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- 1. GET CONFIGURATION VARIABLES ---
+var tenantId = builder.Configuration["AzureAd:TenantId"];
+var clientId = builder.Configuration["AzureAd:ClientId"];
+var scope = $"{clientId}/.default";
 
 string? corsFrontEndpoint = builder.Configuration.GetValue<string>("CorsFrontEndpoint");
 
-//CORS permet d'autoriser le front � appeler l'API.
-if (string.IsNullOrWhiteSpace(corsFrontEndpoint) == false)
+// --- 2. CORS SETUP ---
+if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
 {
     builder.Services.AddCors(options =>
     {
@@ -29,24 +33,68 @@ if (string.IsNullOrWhiteSpace(corsFrontEndpoint) == false)
     });
 }
 
-
+// --- 3. AUTHENTICATION ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-//builder.Services.AddAuthorization(options =>
-//{
-//    options.AddPolicy("ROLE_ADMIN", policy =>
-//        policy.RequireClaim("scp", "ROLE_ADMIN"));
+// --- ADD THIS BLOCK TO FIX THE 401 AUDIENCE ERROR ---
+builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    // This allows the API to accept tokens issued for itself (GUID) 
+    // AND tokens issued for its URI (api://GUID)
+    var clientId = builder.Configuration["AzureAd:ClientId"];
+    options.TokenValidationParameters.ValidAudiences = new[]
+    {
+        clientId,              // The GUID (This is what fixed the previous error)
+        $"api://{clientId}"    // The URI (Good practice to keep both)
+    };
+});
 
-//    options.AddPolicy("ROLE_USER", policy =>
-//        policy.RequireClaim("scp", "ROLE_USER"));
-//});
-
+// --- 4. SWAGGER CONFIGURATION ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+// ONLY CALL THIS ONCE
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BlazeLock API", Version = "v1" });
 
+    // Define OAuth2 Security Scheme
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/authorize"),
+                TokenUrl = new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { scope, "Access API as User" }
+                }
+            }
+        }
+    });
+
+    // Add Security Requirement
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "oauth2"
+                }
+            },
+            new[] { scope }
+        }
+    });
+});
+
+// --- 5. DEPENDENCY INJECTION ---
 builder.Services.AddDbContext<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -62,33 +110,35 @@ builder.Services.AddScoped<ICoffreService, CoffreService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
-builder.Services.AddScoped<IEncryptService, EncryptService>();
+// Register your new EntreeService here
+builder.Services.AddScoped<IEntreeService, EntreeService>();
 
 var app = builder.Build();
 
-//Indique la mise en place de la police CORS cr��e pr�c�dement.
-if (string.IsNullOrWhiteSpace(corsFrontEndpoint) == false)
+// --- 6. PIPELINE CONFIGURATION ---
+
+if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
 {
     app.UseCors("WebAssemblyOrigin");
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    // YOU MUST CONFIGURE UI HERE FOR OAUTH TO WORK
+    app.UseSwaggerUI(c =>
+    {
+        c.OAuthClientId(clientId); // Tells the UI which app it is
+        c.OAuthUsePkce();          // Secure flow
+        c.OAuthScopeSeparator(" ");
+    });
 }
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapEntreeEndpoints();
-
-app.MapHistoriqueEntreeEndpoints();
 
 app.Run();
