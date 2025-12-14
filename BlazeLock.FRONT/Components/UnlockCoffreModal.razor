@@ -1,0 +1,65 @@
+﻿@using BlazeLock.FRONT.ViewModels
+
+@if (IsVisible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @onclick="OnClose"></div>
+
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="bg-blue-600 px-6 py-8 text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-white/10 opacity-30 pattern-grid-lg"></div>
+                <div class="relative z-10 bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-md shadow-inner">
+                    <i class="bi bi-key-fill text-3xl text-white"></i>
+                </div>
+                <h3 class="relative z-10 text-xl font-bold text-white">Déverrouillage</h3>
+                <p class="relative z-10 text-blue-100 text-sm mt-1">Saisissez votre clé maître</p>
+
+                <button class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors" @onclick="OnClose">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 pt-8">
+                @if (!string.IsNullOrEmpty(ViewModel.FeedbackMessage))
+                {
+                    <div class="flex items-center p-3 mb-4 text-sm border rounded-lg @(ViewModel.IsSuccess ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200")">
+                        <i class="bi @(ViewModel.IsSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") mr-2 text-base"></i>
+                        @ViewModel.FeedbackMessage
+                    </div>
+                }
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="bi bi-lock text-gray-400"></i>
+                    </div>
+                    <input type="password"
+                           class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium text-gray-800 placeholder-gray-400"
+                           placeholder="Mot de passe..."
+                           @bind="ViewModel.UnlockPassword"
+                           @onkeyup="@(e => e.Key == "Enter" ? OnSubmit.InvokeAsync() : Task.CompletedTask)"
+                           autofocus />
+                </div>
+
+                <button class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition-all duration-200 mt-6 flex justify-center items-center disabled:opacity-70"
+                        @onclick="OnSubmit"
+                        disabled="@ViewModel.IsProcessing">
+                    @if (ViewModel.IsProcessing)
+                    {
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    }
+                    else
+                    {
+                        <span>Déverrouiller</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public HomeViewModel ViewModel { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+}

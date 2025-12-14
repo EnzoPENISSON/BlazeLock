@@ -1,0 +1,67 @@
+﻿@using BlazeLock.FRONT.ViewModels
+
+@if (IsVisible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @onclick="OnClose"></div>
+
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800">Nouveau Coffre</h3>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" @onclick="OnClose">
+                    <i class="bi bi-x-lg text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                @if (!string.IsNullOrEmpty(ViewModel.FeedbackMessage))
+                {
+                    <div class="flex items-center p-3 mb-4 text-sm border rounded-lg @(ViewModel.IsSuccess ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200")">
+                        <i class="bi @(ViewModel.IsSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") mr-2 text-base"></i>
+                        @ViewModel.FeedbackMessage
+                    </div>
+                }
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom du coffre</label>
+                    <input type="text"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                           placeholder="Ex: Personnel"
+                           @bind="ViewModel.NewLibelle"
+                           disabled="@ViewModel.IsProcessing" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe Maître</label>
+                    <input type="password"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                           placeholder="••••••••"
+                           @bind="ViewModel.NewPassword"
+                           disabled="@ViewModel.IsProcessing" />
+                    <p class="mt-1 text-xs text-gray-500">Ce mot de passe chiffrera vos données localement.</p>
+                </div>
+
+                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200 mt-2 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
+                        @onclick="OnSubmit"
+                        disabled="@ViewModel.IsProcessing">
+                    @if (ViewModel.IsProcessing)
+                    {
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>Chiffrement en cours...</span>
+                    }
+                    else
+                    {
+                        <span><i class="bi bi-shield-lock-fill mr-2"></i>Chiffrer et Créer</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public HomeViewModel ViewModel { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+}

@@ -1,0 +1,31 @@
+﻿@using BlazeLock.DbLib
+
+<div class="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden cursor-pointer h-full"
+     @onclick="OnClick">
+
+    <div class="absolute left-0 top-0 bottom-0 w-1.5 @(IsUnlocked ? "bg-green-500" : "bg-gray-300 group-hover:bg-blue-400") transition-colors duration-300"></div>
+
+    <div class="p-6 pl-8">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-3 rounded-xl transition-colors duration-300 @(IsUnlocked ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500")">
+                <i class="bi @(IsUnlocked ? "bi-unlock-fill" : "bi-lock-fill") text-2xl"></i>
+            </div>
+            @if (IsUnlocked)
+            {
+                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">Ouvert</span>
+            }
+        </div>
+
+        <h5 class="text-lg font-bold truncate mb-1 @(IsUnlocked ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800") transition-colors">
+            @DisplayName
+        </h5>
+        <p class="text-xs text-gray-400 font-mono">ID: ...@Coffre.IdCoffre.ToString().Substring(24)</p>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CoffreDto Coffre { get; set; } = default!;
+    [Parameter] public bool IsUnlocked { get; set; }
+    [Parameter] public string DisplayName { get; set; } = "";
+    [Parameter] public EventCallback<CoffreDto> OnClick { get; set; }
+}
