@@ -1,6 +1,7 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazeLock.API.Services
 {
@@ -41,6 +42,15 @@ namespace BlazeLock.API.Services
             var entity = new Utilisateur { IdUtilisateur = dto.IdUtilisateur };
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExistsAsync(Guid id)
+        {
+            if (await _repository.GetByIdAsync(id) != null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

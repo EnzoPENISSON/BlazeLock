@@ -10,26 +10,26 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// HttpClient simple compatible WASM
-string apiEndpoint = builder.Configuration.GetValue<string>("WebAPI:Endpoint") ?? throw new InvalidOperationException("WebAPI is not configured");
+// 1. Get Configuration
+string apiEndpoint = builder.Configuration.GetValue<string>("WebAPI:Endpoint")
+    ?? throw new InvalidOperationException("WebAPI:Endpoint is not configured");
 
-// Auth Entra ID
+string apiClientId = builder.Configuration["AzureAd:ClientId"]!;
+string apiScope = $"{apiClientId}/access_as_user";
+
+builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
+
+builder.Services.AddHttpClient<UserAPIService>(client =>
+    client.BaseAddress = new Uri(apiEndpoint))
+    .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
     options.ProviderOptions.LoginMode = "redirect";
-}).AddAccountClaimsPrincipalFactory<CustomAccountClaimsPrincipalFactory>();
 
-
-//Ajout d'un service WebAPIClient qui dépend d'un HttpClient
-builder.Services.AddHttpClient<UserAPIService>(client => client.BaseAddress = new Uri(apiEndpoint))
-    //Le HttpClient précise l'utilisation d'un MessageHandler qui se charge de transférer le jeton d'identification de l'utilisateur connecté.
-    .AddHttpMessageHandler(sp =>
-    {
-        AuthorizationMessageHandler handler = sp.GetRequiredService<AuthorizationMessageHandler>()
-            .ConfigureHandler(authorizedUrls: [apiEndpoint]);
-
-        return handler;
-    });
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(apiScope);
+})
+.AddAccountClaimsPrincipalFactory<CustomAccountClaimsPrincipalFactory>();
 
 await builder.Build().RunAsync();

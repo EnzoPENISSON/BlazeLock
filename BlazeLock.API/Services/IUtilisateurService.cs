@@ -7,5 +7,6 @@ namespace BlazeLock.API.Services
         Task<HashSet<UtilisateurDto>> GetAllAsync();
         Task<UtilisateurDto?> GetByIdAsync(Guid id);
         Task AddAsync(UtilisateurDto dto);
+        Task<bool> ExistsAsync(Guid id);
     }
 }

@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 var tenantId = builder.Configuration["AzureAd:TenantId"];
 var clientId = builder.Configuration["AzureAd:ClientId"];
 var scope = $"{clientId}/.default";
+var frontendUrl = builder.Configuration["Front:Url"];
 
 string? corsFrontEndpoint = builder.Configuration.GetValue<string>("CorsFrontEndpoint");
 
@@ -123,20 +124,26 @@ if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    // YOU MUST CONFIGURE UI HERE FOR OAUTH TO WORK
+
     app.UseSwaggerUI(c =>
     {
-        c.OAuthClientId(clientId); // Tells the UI which app it is
-        c.OAuthUsePkce();          // Secure flow
+        c.OAuthClientId(clientId);
+        c.OAuthUsePkce();
         c.OAuthScopeSeparator(" ");
     });
 }
 
 app.UseHttpsRedirection();
 
+// --- CORS --
+app.UseCors(policy => policy
+    .WithOrigins(frontendUrl)
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

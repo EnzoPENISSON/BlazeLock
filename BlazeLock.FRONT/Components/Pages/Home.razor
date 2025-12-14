@@ -1,7 +1,7 @@
 ﻿@page "/"
 @attribute [Authorize]
 @using System.Security.Claims
-@inject IAccessTokenProvider TokenProvider
+@using Microsoft.AspNetCore.Components.Authorization
 @inject UserAPIService UserAPIService
 
 <PageTitle>Page d'accueil</PageTitle>
@@ -9,36 +9,50 @@
 <div class="container mt-5">
     <div class="card shadow-lg border-0 rounded-4">
         <div class="card-body text-center p-5">
-            <h1 class="display-5 fw-bold mb-3">Bonjour</h1>
+            <h1 class="display-5 fw-bold mb-3">Bonjour @UserName</h1>
+            @if (IsLoading)
+            {
+                <p>Initialisation de votre compte...</p>
+            }
         </div>
     </div>
 </div>
 
 @code {
-    private ClaimsPrincipal? User;
-    private AccessToken? AccessToken;
-
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private string UserName = "";
+    private bool IsLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateTask;
-        User = authState.User;
+        var user = authState.User;
 
-        var tokenResult = await TokenProvider.RequestAccessToken();
-        if (tokenResult.TryGetToken(out var token))
+        if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-            AccessToken = token;
+            UserName = user.Identity.Name ?? "";
+
+            // 1. Récupération robuste de l'ID (OID est le standard pour le GUID Entra ID)
+            var userIdClaim = user.FindFirst("oid") ??
+                              user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier");
+
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                // 2. Appel à l'API pour s'assurer que l'utilisateur existe en base
+                // On utilise un try/catch pour ne pas bloquer l'accueil si l'API échoue ou si l'user existe déjà
+                try
+                {
+                    await UserAPIService.InsertUtilisateurAsync(userId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erreur lors de la création utilisateur : {ex.Message}");
+                }
+            }
         }
 
-        var userIdClaim = User?.FindFirst(claim => claim.Type == "oid") ??
-                          User?.FindFirst(claim => claim.Type == "sub");
-
-        if (userIdClaim != null)
-        {
-            await UserAPIService.InsertUtilisateurAsync(Guid.Parse(userIdClaim.Value));
-        }
+        IsLoading = false;
     }
-
 }
