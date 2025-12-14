@@ -4,50 +4,56 @@ using NuGet.Protocol.Core.Types;
 
 namespace BlazeLock.API.Repositories
 {
-    //public class EntreeRepository : IEntreeRepository
-    //{
-    //    private readonly BlazeLockContext _context;
+    public class EntreeRepository : IEntreeRepository
+    {
+        private readonly IDbContextFactory<BlazeLockContext> _contextFactory;
 
-    //    public EntreeRepository(BlazeLockContext context)
-    //    {
-    //        _context = context;
-    //    }
+        public EntreeRepository(IDbContextFactory<BlazeLockContext> contextFactory)
+        {
+            _contextFactory = contextFactory;
+        }
 
-    //    public async Task<HashSet<Entree>> GetAllAsync()
-    //    {
-    //        var coffres = await _context.Entrees.ToListAsync();
-    //        return coffres.ToHashSet();
-    //    }
+        public async Task<HashSet<Entree>> GetAllAsync()
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
 
-    //    public async Task<Entree?> GetByIdAsync(Guid idEntree)
-    //    {
-    //        return await _context.Entrees.FindAsync(idEntree);
-    //    }
+            var coffres = await context.Entrees.AsNoTracking().ToListAsync();
+            return coffres.ToHashSet();
+        }
 
-    //    public async Task<HashSet<Entree>> GetByDossierAsync(Guid idDossier)
-    //    {
-    //        //var coffres = await _context.Entrees
-    //        //    .Where(e => e.IdDossiers == idDossier)
-    //        //    .AsNoTracking()
-    //        //    .ToListAsync();
+        public async Task<Entree?> GetByIdAsync(Guid idEntree)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
 
-    //        //return coffres.ToHashSet();
-    //    }
+            return await context.Entrees.FindAsync(idEntree);
+        }
 
-    //    public async Task AddAsync(Entree coffre)
-    //    {
-    //        await _context.Entrees.AddAsync(coffre);
-    //    }
+        public async Task<HashSet<Entree>> GetAllByDossierAsync(Guid idDossier)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
 
-    //    public async Task SaveChangesAsync()
-    //    {
-    //        await _context.SaveChangesAsync();
-    //    }
+            var coffres = await context.Entrees
+                .Where(e => e.IdDossier == idDossier)
+                .AsNoTracking()
+                .ToListAsync();
 
-    //    public Task DeleteEntree(Entree coffre)
-    //    {
-    //        _context.Entrees.Remove(coffre);
-    //        return Task.CompletedTask;
-    //    }
-    //}
+            return coffres.ToHashSet();
+        }
+
+        public async Task AddAsync(Entree coffre)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            await context.Entrees.AddAsync(coffre);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task DeleteEntree(Entree coffre)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            context.Entrees.Remove(coffre);
+            await context.SaveChangesAsync();
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿using BlazeLock.API.Models;
+using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -8,6 +8,5 @@ namespace BlazeLock.API.Repositories
         Task<Log?> GetByIdAsync(Guid idLog);
         Task<HashSet<Log>> GetByCoffreAsync(Guid idCoffre);
         Task AddAsync(Log utilisateur);
-        Task SaveChangesAsync();
     }
 }

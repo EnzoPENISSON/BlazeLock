@@ -78,7 +78,6 @@ namespace BlazeLock.API.Services
                 Salt = dto.Salt 
             };
             await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
         }
 
         public async Task Delete(CoffreDto dto)
@@ -92,7 +91,6 @@ namespace BlazeLock.API.Services
                 Salt = dto.Salt
             };
             await _repository.DeleteCoffre(entity);
-            await _repository.SaveChangesAsync();
         }
     }
 }

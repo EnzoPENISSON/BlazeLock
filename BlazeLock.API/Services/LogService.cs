@@ -52,7 +52,6 @@ namespace BlazeLock.API.Services
                 Texte = dto.Texte
             };
             await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
         }
     }
 }

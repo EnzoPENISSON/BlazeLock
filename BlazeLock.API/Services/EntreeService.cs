@@ -1,4 +1,4 @@
-﻿using BlazeLock.API.Models;
+using BlazeLock.API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazeLock.API.Services
