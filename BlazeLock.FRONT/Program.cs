@@ -1,6 +1,7 @@
 using BlazeLock.FRONT;
 using BlazeLock.FRONT.Core;
 using BlazeLock.FRONT.Services;
+using BlazeLock.FRONT.ViewModels;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -18,6 +19,9 @@ string apiClientId = builder.Configuration["AzureAd:ClientId"]!;
 string apiScope = $"{apiClientId}/access_as_user";
 
 builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
+
+builder.Services.AddScoped<VaultKeyStore>();
+builder.Services.AddScoped<HomeViewModel>();
 
 builder.Services.AddHttpClient<UserAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))

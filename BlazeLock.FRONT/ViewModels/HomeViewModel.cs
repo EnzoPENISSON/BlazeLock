@@ -1,0 +1,153 @@
+﻿using BlazeLock.DbLib;
+using BlazeLock.FRONT.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+
+namespace BlazeLock.FRONT.ViewModels
+{
+    public class HomeViewModel
+    {
+        private readonly IJSRuntime _js;
+        private readonly UserAPIService _api;
+        private readonly VaultKeyStore _keyStore;
+        private readonly NavigationManager _nav;
+
+        public HomeViewModel(IJSRuntime js, UserAPIService api, VaultKeyStore keyStore, NavigationManager nav)
+        {
+            _js = js;
+            _api = api;
+            _keyStore = keyStore;
+            _nav = nav;
+        }
+
+        // --- DATA ---
+        public List<CoffreDto> MyCoffres { get; private set; } = new();
+        public bool IsLoading { get; private set; } = true;
+
+        // --- UI STATES ---
+        public bool IsCreating { get; private set; }
+        public CoffreDto? SelectedCoffre { get; private set; }
+        public bool IsProcessing { get; private set; }
+
+        // ✅ FIXED: Ensure this is Public
+        public string FeedbackMessage { get; private set; } = "";
+        public bool IsSuccess { get; private set; }
+
+        // --- INPUTS ---
+        public string NewLibelle { get; set; } = "";
+        public string NewPassword { get; set; } = "";
+        public string UnlockPassword { get; set; } = "";
+
+        // --- HELPERS ---
+        public bool IsUnlocked(Guid id) => _keyStore.IsUnlocked(id);
+        public string GetDisplayName(Guid id) => _keyStore.GetName(id) ?? "🔒 Verrouillé";
+        public bool HasCoffres => MyCoffres.Any(); // Helper for UI
+
+        public async Task LoadDataAsync()
+        {
+            IsLoading = true;
+            try { MyCoffres = await _api.GetMyCoffresAsync(); }
+            catch { /* Handle error */ }
+            finally { IsLoading = false; }
+        }
+
+        // --- MODAL ACTIONS ---
+        public void OpenCreateModal()
+        {
+            IsCreating = true;
+            NewLibelle = "";
+            NewPassword = "";
+            FeedbackMessage = "";
+        }
+
+        public void CloseModals()
+        {
+            IsCreating = false;
+            SelectedCoffre = null;
+            FeedbackMessage = "";
+            UnlockPassword = "";
+        }
+
+        public void SelectCoffreToUnlock(CoffreDto coffre)
+        {
+            SelectedCoffre = coffre;
+            UnlockPassword = "";
+            FeedbackMessage = "";
+        }
+
+        // --- ACTION: CREATE ---
+        public async Task CreateCoffreAsync()
+        {
+            if (string.IsNullOrWhiteSpace(NewLibelle) || string.IsNullOrWhiteSpace(NewPassword))
+            {
+                SetFeedback(false, "Veuillez remplir tous les champs.");
+                return;
+            }
+
+            IsProcessing = true;
+            try
+            {
+                var saltB64 = await _js.InvokeAsync<string>("blazeCrypto.generateSalt");
+                var keyB64 = await _js.InvokeAsync<string>("blazeCrypto.deriveKey", NewPassword, saltB64);
+                var cipherB64 = await _js.InvokeAsync<string>("blazeCrypto.encryptData", NewLibelle, keyB64);
+
+                var dto = new CoffreDto
+                {
+                    Libelle = Convert.FromBase64String(cipherB64),
+                    Salt = Convert.FromBase64String(saltB64),
+                    HashMasterkey = Convert.FromBase64String(keyB64)
+                };
+
+                await _api.CreateCoffreAsync(dto);
+
+                _keyStore.Store(dto.IdCoffre, keyB64, NewLibelle);
+                await LoadDataAsync();
+                CloseModals();
+            }
+            catch (Exception ex)
+            {
+                SetFeedback(false, "Erreur : " + ex.Message);
+            }
+            finally { IsProcessing = false; }
+        }
+
+        // --- ACTION: UNLOCK ---
+        public async Task UnlockSelectedAsync()
+        {
+            if (SelectedCoffre == null || string.IsNullOrWhiteSpace(UnlockPassword)) return;
+
+            IsProcessing = true;
+            FeedbackMessage = "";
+
+            try
+            {
+                var saltB64 = Convert.ToBase64String(SelectedCoffre.Salt);
+                var keyB64 = await _js.InvokeAsync<string>("blazeCrypto.deriveKey", UnlockPassword, saltB64);
+                var storedHashB64 = Convert.ToBase64String(SelectedCoffre.HashMasterkey);
+
+                if (keyB64 != storedHashB64)
+                {
+                    SetFeedback(false, "Mot de passe incorrect.");
+                    return;
+                }
+
+                var cipherB64 = Convert.ToBase64String(SelectedCoffre.Libelle);
+                var clearName = await _js.InvokeAsync<string>("blazeCrypto.decryptData", cipherB64, keyB64);
+
+                _keyStore.Store(SelectedCoffre.IdCoffre, keyB64, clearName);
+                CloseModals();
+            }
+            catch (Exception ex)
+            {
+                SetFeedback(false, "Erreur : " + ex.Message);
+            }
+            finally { IsProcessing = false; }
+        }
+
+        private void SetFeedback(bool success, string message)
+        {
+            IsSuccess = success;
+            FeedbackMessage = message;
+        }
+    }
+}

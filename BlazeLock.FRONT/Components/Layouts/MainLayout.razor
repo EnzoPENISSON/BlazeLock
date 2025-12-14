@@ -1,17 +1,49 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<div class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
 
-    <div class="main">
-        <div class="top-row px-4 auth">
-            <LoginDisplay />
+    <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm z-50 sticky top-0">
+        <div class="flex items-center space-x-4">
+            <div class="bg-blue-600 text-white rounded-lg p-2 shadow-md">
+                <i class="bi bi-shield-lock-fill text-2xl"></i>
+            </div>
+            <div>
+                <a href="/" class="text-xl font-bold text-gray-900 tracking-tight hover:text-blue-600 transition-colors no-underline">
+                    BlazeLock
+                </a>
+                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Secure Vault</p>
+            </div>
         </div>
-
-        <div class="content px-4">
-            @Body
+        <div class="flex items-center">
+            @if (!string.IsNullOrEmpty(UserName))
+            {
+                <span class="inline-flex items-center bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-full text-sm font-semibold transition hover:bg-gray-200 cursor-default">
+                    <i class="bi bi-person-circle mr-2 text-lg"></i>@UserName
+                </span>
+            }
         </div>
-    </div>
+    </header>
+
+    <main class="flex-grow">
+        @Body
+    </main>
+
 </div>
+
+@code {
+    private string UserName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            UserName = user.Identity.Name ?? "Utilisateur";
+        }
+    }
+}

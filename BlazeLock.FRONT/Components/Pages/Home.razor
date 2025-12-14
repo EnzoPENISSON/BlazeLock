@@ -1,58 +1,236 @@
 ﻿@page "/"
 @attribute [Authorize]
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
+@using BlazeLock.DbLib
+@using BlazeLock.FRONT.Services
+@using BlazeLock.FRONT.ViewModels
+@inject HomeViewModel ViewModel
+@inject AuthenticationStateProvider AuthStateProvider
 @inject UserAPIService UserAPIService
+@inject NavigationManager Nav
 
-<PageTitle>Page d'accueil</PageTitle>
+<PageTitle>Dashboard - BlazeLock</PageTitle>
 
-<div class="container mt-5">
-    <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-body text-center p-5">
-            <h1 class="display-5 fw-bold mb-3">Bonjour @UserName</h1>
-            @if (IsLoading)
+<div class="flex flex-col h-screen bg-gray-50 font-sans text-gray-900">
+
+    <div class="flex-grow p-6 overflow-y-auto">
+        <div class="max-w-7xl mx-auto">
+
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-3xl font-extrabold text-gray-800">Mes Coffres</h2>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-1 flex items-center"
+                        @onclick="ViewModel.OpenCreateModal">
+                    <i class="bi bi-plus-lg mr-2 text-lg"></i>Nouveau Coffre
+                </button>
+            </div>
+
+            @if (ViewModel.IsLoading)
             {
-                <p>Initialisation de votre compte...</p>
+                <div class="flex flex-col justify-center items-center py-20">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+                    <p class="mt-4 text-gray-500 animate-pulse">Chargement de vos données...</p>
+                </div>
+            }
+            else if (!ViewModel.MyCoffres.Any())
+            {
+                <div class="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-300 rounded-3xl bg-white/50">
+                    <div class="bg-gray-100 p-6 rounded-full mb-4">
+                        <i class="bi bi-safe text-5xl text-gray-400"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-700 mb-2">Aucun coffre trouvé</h4>
+                    <p class="text-gray-500 max-w-sm">Vos secrets sont en sécurité, mais vous devez d'abord créer un coffre pour commencer.</p>
+                    <button class="mt-6 text-blue-600 font-semibold hover:underline" @onclick="ViewModel.OpenCreateModal">Créer maintenant &rarr;</button>
+                </div>
+            }
+            else
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    @foreach (var coffre in ViewModel.MyCoffres)
+                    {
+                        var isUnlocked = ViewModel.IsUnlocked(coffre.IdCoffre);
+                        var name = ViewModel.GetDisplayName(coffre.IdCoffre);
+
+                        <div class="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden cursor-pointer"
+                             @onclick="() => HandleCoffreClick(coffre)">
+
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5 @(isUnlocked ? "bg-green-500" : "bg-gray-300 group-hover:bg-blue-400") transition-colors duration-300"></div>
+
+                            <div class="p-6 pl-8">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-3 rounded-xl transition-colors duration-300 @(isUnlocked ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500")">
+                                        <i class="bi @(isUnlocked ? "bi-unlock-fill" : "bi-lock-fill") text-2xl"></i>
+                                    </div>
+                                    @if (isUnlocked)
+                                    {
+                                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">Ouvert</span>
+                                    }
+                                </div>
+
+                                <h5 class="text-lg font-bold truncate mb-1 @(isUnlocked ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800") transition-colors">
+                                    @name
+                                </h5>
+                                <p class="text-xs text-gray-400 font-mono">ID: ...@coffre.IdCoffre.ToString().Substring(24)</p>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
         </div>
     </div>
 </div>
 
-@code {
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+@if (ViewModel.IsCreating)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @onclick="ViewModel.CloseModals"></div>
 
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800">Nouveau Coffre</h3>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" @onclick="ViewModel.CloseModals">
+                    <i class="bi bi-x-lg text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                @if (!string.IsNullOrEmpty(ViewModel.FeedbackMessage))
+                {
+                    <div class="flex items-center p-3 mb-4 text-sm border rounded-lg @(ViewModel.IsSuccess ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200")">
+                        <i class="bi @(ViewModel.IsSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") mr-2 text-base"></i>
+                        @ViewModel.FeedbackMessage
+                    </div>
+                }
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom du coffre</label>
+                    <input type="text"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                           placeholder="Ex: Personnel"
+                           @bind="ViewModel.NewLibelle"
+                           disabled="@ViewModel.IsProcessing" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe Maître</label>
+                    <input type="password"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                           placeholder="••••••••"
+                           @bind="ViewModel.NewPassword"
+                           disabled="@ViewModel.IsProcessing" />
+                    <p class="mt-1 text-xs text-gray-500">Ce mot de passe chiffrera vos données localement.</p>
+                </div>
+
+                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200 mt-2 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
+                        @onclick="ViewModel.CreateCoffreAsync"
+                        disabled="@ViewModel.IsProcessing">
+                    @if (ViewModel.IsProcessing)
+                    {
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>Chiffrement en cours...</span>
+                    }
+                    else
+                    {
+                        <span><i class="bi bi-shield-lock-fill mr-2"></i>Chiffrer et Créer</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ViewModel.SelectedCoffre != null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @onclick="ViewModel.CloseModals"></div>
+
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="bg-blue-600 px-6 py-8 text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-white/10 opacity-30 pattern-grid-lg"></div>
+                <div class="relative z-10 bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-md shadow-inner">
+                    <i class="bi bi-key-fill text-3xl text-white"></i>
+                </div>
+                <h3 class="relative z-10 text-xl font-bold text-white">Déverrouillage</h3>
+                <p class="relative z-10 text-blue-100 text-sm mt-1">Saisissez votre clé maître</p>
+
+                <button class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors" @onclick="ViewModel.CloseModals">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 pt-8">
+                @if (!string.IsNullOrEmpty(ViewModel.FeedbackMessage))
+                {
+                    <div class="flex items-center p-3 mb-4 text-sm border rounded-lg @(ViewModel.IsSuccess ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200")">
+                        <i class="bi @(ViewModel.IsSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") mr-2 text-base"></i>
+                        @ViewModel.FeedbackMessage
+                    </div>
+                }
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="bi bi-lock text-gray-400"></i>
+                    </div>
+                    <input type="password"
+                           class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium text-gray-800 placeholder-gray-400"
+                           placeholder="Mot de passe..."
+                           @bind="ViewModel.UnlockPassword"
+                           @onkeyup="@(e => e.Key == "Enter" ? UnlockWrapper() : Task.CompletedTask)"
+                           autofocus />
+                </div>
+
+                <button class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition-all duration-200 mt-6 flex justify-center items-center disabled:opacity-70"
+                        @onclick="UnlockWrapper"
+                        disabled="@ViewModel.IsProcessing">
+                    @if (ViewModel.IsProcessing)
+                    {
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    }
+                    else
+                    {
+                        <span>Déverrouiller</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
     private string UserName = "";
-    private bool IsLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateTask;
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user.Identity != null && user.Identity.IsAuthenticated)
+        if (user.Identity?.IsAuthenticated == true)
         {
-            UserName = user.Identity.Name ?? "";
+            UserName = user.Identity.Name ?? "Utilisateur";
 
-            // 1. Récupération robuste de l'ID (OID est le standard pour le GUID Entra ID)
-            var userIdClaim = user.FindFirst("oid") ??
-                              user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier");
-
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            var oid = user.FindFirst("oid")?.Value ?? user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            if (Guid.TryParse(oid, out Guid userId))
             {
-                // 2. Appel à l'API pour s'assurer que l'utilisateur existe en base
-                // On utilise un try/catch pour ne pas bloquer l'accueil si l'API échoue ou si l'user existe déjà
-                try
-                {
-                    await UserAPIService.InsertUtilisateurAsync(userId);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erreur lors de la création utilisateur : {ex.Message}");
-                }
+                _ = UserAPIService.InsertUtilisateurAsync(userId);
             }
-        }
 
-        IsLoading = false;
+            await ViewModel.LoadDataAsync();
+        }
+    }
+
+    private void HandleCoffreClick(CoffreDto coffre)
+    {
+        if (ViewModel.IsUnlocked(coffre.IdCoffre))
+        {
+            Nav.NavigateTo($"/coffre/{coffre.IdCoffre}");
+        }
+        else
+        {
+            ViewModel.SelectCoffreToUnlock(coffre);
+        }
+    }
+
+    private async Task UnlockWrapper()
+    {
+        await ViewModel.UnlockSelectedAsync();
+        StateHasChanged();
     }
 }

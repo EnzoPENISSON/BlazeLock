@@ -12,7 +12,7 @@ namespace BlazeLock.API.Controllers
     public class CoffreController : ControllerBase
     {
         private readonly ICoffreService _coffreService;
-        private readonly IUtilisateurService _utilisateurService; // <--- Nouveau
+        private readonly IUtilisateurService _utilisateurService;
 
         public CoffreController(ICoffreService coffreService, IUtilisateurService utilisateurService)
         {
