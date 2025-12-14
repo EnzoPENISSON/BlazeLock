@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
-@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
 <div class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
 
@@ -17,13 +18,41 @@
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Secure Vault</p>
             </div>
         </div>
+
         <div class="flex items-center">
-            @if (!string.IsNullOrEmpty(UserName))
-            {
-                <span class="inline-flex items-center bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-full text-sm font-semibold transition hover:bg-gray-200 cursor-default">
-                    <i class="bi bi-person-circle mr-2 text-lg"></i>@UserName
-                </span>
-            }
+            <AuthorizeView>
+                <Authorized>
+                    <div class="relative">
+
+                        <button @onclick="ToggleUserMenu"
+                                class="inline-flex items-center bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-full text-sm font-semibold transition hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                            <i class="bi bi-person-circle mr-2 text-lg"></i>
+                            @context.User.Identity?.Name
+                            <i class="bi bi-chevron-down ml-2 text-xs text-gray-500"></i>
+                        </button>
+
+                        @if (isUserMenuOpen)
+                        {
+                            <div class="fixed inset-0 z-10 cursor-default" @onclick="CloseUserMenu"></div>
+
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-20 border border-gray-100 ring-1 ring-black ring-opacity-5 animate-in fade-in zoom-in-95 duration-100">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-xs text-gray-500 uppercase font-bold">Compte</p>
+                                    <p class="text-sm font-medium text-gray-900 truncate">@context.User.Identity?.Name</p>
+                                </div>
+
+                                <button @onclick="BeginLogOut"
+                                        class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <i class="bi bi-box-arrow-right mr-2"></i>Déconnexion
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="authentication/login" class="text-sm font-medium text-blue-600 hover:text-blue-500">Se connecter</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
     </header>
 
@@ -34,16 +63,21 @@
 </div>
 
 @code {
-    private string UserName = "";
+    private bool isUserMenuOpen = false;
 
-    protected override async Task OnInitializedAsync()
+    private void ToggleUserMenu()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        isUserMenuOpen = !isUserMenuOpen;
+    }
 
-        if (user.Identity != null && user.Identity.IsAuthenticated)
-        {
-            UserName = user.Identity.Name ?? "Utilisateur";
-        }
+    private void CloseUserMenu()
+    {
+        isUserMenuOpen = false;
+    }
+
+    private void BeginLogOut()
+    {
+        // Standard way to trigger logout in Blazor WebAssembly (MSAL/OIDC)
+        Navigation.NavigateToLogout("authentication/logout");
     }
 }
