@@ -37,16 +37,14 @@ if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-// --- ADD THIS BLOCK TO FIX THE 401 AUDIENCE ERROR ---
 builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     // This allows the API to accept tokens issued for itself (GUID) 
-    // AND tokens issued for its URI (api://GUID)
     var clientId = builder.Configuration["AzureAd:ClientId"];
     options.TokenValidationParameters.ValidAudiences = new[]
     {
-        clientId,              // The GUID (This is what fixed the previous error)
-        $"api://{clientId}"    // The URI (Good practice to keep both)
+        clientId, 
+        $"api://{clientId}"
     };
 });
 
