@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazeLock.API.Migrations
 {
     [DbContext(typeof(BlazeLockContext))]
-    [Migration("20251030124409_addDB")]
-    partial class addDB
+    [Migration("20251106105110_guid")]
+    partial class guid
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,16 +44,16 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_utilisateur");
 
-                    b.Property<string>("Libelle")
+                    b.Property<byte[]>("Libelle")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("libelle");
 
-                    b.Property<string>("Salt")
+                    b.Property<byte[]>("Salt")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("salt");
 
                     b.HasKey("IdCoffre");

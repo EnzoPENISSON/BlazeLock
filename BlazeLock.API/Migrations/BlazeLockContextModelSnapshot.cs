@@ -41,16 +41,16 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_utilisateur");
 
-                    b.Property<string>("Libelle")
+                    b.Property<byte[]>("Libelle")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("libelle");
 
-                    b.Property<string>("Salt")
+                    b.Property<byte[]>("Salt")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("varbinary(50)")
                         .HasColumnName("salt");
 
                     b.HasKey("IdCoffre");

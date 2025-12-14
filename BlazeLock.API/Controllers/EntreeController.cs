@@ -1,63 +1,70 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BlazeLock.API.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OpenApi;
-namespace BlazeLock.API.Controllers;
+﻿using BlazeLock.API.Models;
+using BlazeLock.API.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-public static class EntreeController
+namespace BlazeLock.API.Controllers
 {
-    public static void MapEntreeEndpoints (this IEndpointRouteBuilder routes)
+    [Authorize]
+    [ApiController]
+    [Route("api/entree")]
+    public class EntreeController : ControllerBase
     {
-        var group = routes.MapGroup("/api/Entree").WithTags(nameof(Entree));
+        private readonly IEntreeService _service;
 
-        group.MapGet("/", async (BlazeLockContext db) =>
+        public EntreeController(IEntreeService service)
         {
-            return await db.Entrees.ToListAsync();
-        })
-        .WithName("GetAllEntrees")
-        .WithOpenApi();
+            _service = service;
+        }
 
-        group.MapGet("/{id}", async Task<Results<Ok<Entree>, NotFound>> (Guid identree, BlazeLockContext db) =>
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            return await db.Entrees.AsNoTracking()
-                .FirstOrDefaultAsync(model => model.IdEntree == identree)
-                is Entree model
-                    ? TypedResults.Ok(model)
-                    : TypedResults.NotFound();
-        })
-        .WithName("GetEntreeById")
-        .WithOpenApi();
+            var entrees = await _service.GetAllAsync();
+            return Ok(entrees);
+        }
 
-        group.MapPut("/{id}", async Task<Results<Ok, NotFound>> (Guid identree, Entree entree, BlazeLockContext db) =>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var affected = await db.Entrees
-                .Where(model => model.IdEntree == identree)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.IdEntree, entree.IdEntree)
-                    .SetProperty(m => m.DateCreation, entree.DateCreation)
-                    );
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("UpdateEntree")
-        .WithOpenApi();
+            var entree = await _service.GetByIdAsync(id);
 
-        group.MapPost("/", async (Entree entree, BlazeLockContext db) =>
-        {
-            db.Entrees.Add(entree);
-            await db.SaveChangesAsync();
-            return TypedResults.Created($"/api/Entree/{entree.IdEntree}",entree);
-        })
-        .WithName("CreateEntree")
-        .WithOpenApi();
+            if (entree == null)
+                return NotFound();
 
-        group.MapDelete("/{id}", async Task<Results<Ok, NotFound>> (Guid identree, BlazeLockContext db) =>
+            return Ok(entree);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Entree entree)
         {
-            var affected = await db.Entrees
-                .Where(model => model.IdEntree == identree)
-                .ExecuteDeleteAsync();
-            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
-        })
-        .WithName("DeleteEntree")
-        .WithOpenApi();
+            var createdEntree = await _service.CreateAsync(entree);
+
+            return CreatedAtAction(nameof(GetById), new { id = createdEntree.IdEntree }, createdEntree);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, Entree entree)
+        {
+            if (id != entree.IdEntree) return BadRequest("ID mismatch");
+
+            var updated = await _service.UpdateAsync(id, entree);
+
+            if (!updated)
+                return NotFound();
+
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var deleted = await _service.DeleteAsync(id);
+
+            if (!deleted)
+                return NotFound();
+
+            return Ok();
+        }
     }
 }

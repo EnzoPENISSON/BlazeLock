@@ -69,12 +69,13 @@ namespace BlazeLock.API.Services
 
         public async Task AddAsync(CoffreDto dto)
         {
-            var entity = new Coffre {
-                IdCoffre = dto.IdCoffre,
+            var entity = new Coffre
+            {
+                IdCoffre = Guid.NewGuid(),
                 IdUtilisateur = dto.IdUtilisateur,
                 Libelle = dto.Libelle,
                 HashMasterkey = dto.HashMasterkey,
-                Salt = dto.Salt
+                Salt = dto.Salt 
             };
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();

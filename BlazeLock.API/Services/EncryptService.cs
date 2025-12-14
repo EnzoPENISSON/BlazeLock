@@ -17,7 +17,7 @@ namespace BlazeLock.API.Services
             _serviceCoffre = service;
         }
 
-        public void HashMasterKey(string masterKey, string libelle)
+        public void HashMasterKey(string masterKey, byte[] libelle)
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 

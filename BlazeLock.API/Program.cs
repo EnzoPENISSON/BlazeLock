@@ -62,6 +62,7 @@ builder.Services.AddScoped<ICoffreService, CoffreService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
+builder.Services.AddScoped<IEncryptService, EncryptService>();
 
 var app = builder.Build();
 

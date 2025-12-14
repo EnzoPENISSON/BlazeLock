@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BlazeLock.API.Migrations
 {
     /// <inheritdoc />
-    public partial class addDB : Migration
+    public partial class guid : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,9 +27,9 @@ namespace BlazeLock.API.Migrations
                 columns: table => new
                 {
                     id_coffre = table.Column<Guid>(type: "uniqueidentifier", maxLength: 50, nullable: false),
-                    libelle = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    libelle = table.Column<byte[]>(type: "varbinary(50)", maxLength: 50, nullable: false),
                     hash_masterkey = table.Column<byte[]>(type: "varbinary(50)", maxLength: 50, nullable: false),
-                    salt = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    salt = table.Column<byte[]>(type: "varbinary(50)", maxLength: 50, nullable: false),
                     id_utilisateur = table.Column<Guid>(type: "uniqueidentifier", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
