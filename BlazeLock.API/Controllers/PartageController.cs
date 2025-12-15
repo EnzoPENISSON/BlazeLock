@@ -20,38 +20,73 @@ namespace BlazeLock.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var partages = await _service.GetAllAsync();
-            return Ok(partages);
+            try
+            {
+                var partages = await _service.GetAllAsync();
+                return Ok(partages);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération des partages.");
+            }
         }
 
         [HttpGet("utilisateur/{id}")]
         public async Task<IActionResult> GetByUtilisateur(Guid id)
         {
-            var partages = await _service.GetByUtilisateurAsync(id);
-            if (partages == null) return NotFound();
-            return Ok(partages);
+            try
+            {
+                var partages = await _service.GetByUtilisateurAsync(id);
+                if (partages == null || !partages.Any()) return NoContent();
+                return Ok(partages);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des partages pour l'utilisateur {id}.");
+            }
         }
 
         [HttpGet("coffre/{id}")]
         public async Task<IActionResult> GetByCoffre(Guid id)
         {
-            var partages = await _service.GetByCoffreAsync(id);
-            if (partages == null) return NotFound();
-            return Ok(partages);
+            try
+            {
+                var partages = await _service.GetByCoffreAsync(id);
+                if (partages == null || !partages.Any()) return NoContent();
+                return Ok(partages);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des partages pour le coffre {id}.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(PartageDto dto)
         {
-            await _service.AddAsync(dto);
-            return Created();
+            try
+            {
+                await _service.AddAsync(dto);
+                return Created(string.Empty, dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création du partage.");
+            }
         }
 
         [HttpDelete]
         public async Task<IActionResult> Delete(PartageDto dto)
         {
-            await _service.Delete(dto);
-            return Ok("Partage supprimé");
+            try
+            {
+                await _service.Delete(dto);
+                return Ok("Partage supprimé");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du partage.");
+            }
         }
 
     }
