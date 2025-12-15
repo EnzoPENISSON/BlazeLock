@@ -42,6 +42,20 @@
             return response ?? new List<CoffreDto>();
         }
 
+        public async Task<bool> VerifyMasterKeyAsync(CoffreDto coffre)
+        {
+            var response = await _http.PostAsJsonAsync("api/coffre/verify-password", coffre);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Erreur API ({response.StatusCode}): {error}");
+            }
+            bool isValid = await response.Content.ReadFromJsonAsync<bool>();
+
+            return isValid;
+        }
+
         public async Task InsertUtilisateurAsync(Guid? userId)
         {
             if (userId == null)

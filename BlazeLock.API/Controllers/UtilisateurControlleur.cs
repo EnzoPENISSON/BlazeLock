@@ -10,24 +10,24 @@ namespace BlazeLock.API.Controllers
     [Route("api/utilisateur")]
     public class UtilisateurController : ControllerBase
     {
-        private readonly IUtilisateurService _service;
+        private readonly IUtilisateurService _serviceUtilisateur;
 
         public UtilisateurController(IUtilisateurService service)
         {
-            _service = service;
+            _serviceUtilisateur = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var utilisateurs = await _service.GetAllAsync();
+            var utilisateurs = await _serviceUtilisateur.GetAllAsync();
             return Ok(utilisateurs);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var utilisateur = await _service.GetByIdAsync(id);
+            var utilisateur = await _serviceUtilisateur.GetByIdAsync(id);
             if (utilisateur == null) return NotFound();
             return Ok(utilisateur);
         }
@@ -35,11 +35,11 @@ namespace BlazeLock.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(UtilisateurDto dto)
         {
-            if(_service.GetByIdAsync(dto.IdUtilisateur).Result != null)
+            if(_serviceUtilisateur.GetByIdAsync(dto.IdUtilisateur).Result != null)
             {
                 return Ok("L'utilisateur existe déjà.");
             }
-            await _service.AddAsync(dto);
+            await _serviceUtilisateur.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
 
         }

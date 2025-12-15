@@ -96,12 +96,16 @@ builder.Services.AddScoped<IPartageService, PartageService>();
 builder.Services.AddScoped<ICoffreRepository, CoffreRepository>();
 builder.Services.AddScoped<ICoffreService, CoffreService>();
 
+builder.Services.AddScoped<IEncryptService, EncryptService>();
+
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
 builder.Services.AddScoped<IEntreeRepository, EntreeRepository>();
 builder.Services.AddScoped<IHistoriqueEntreeRepository, HistoriqueEntreeRepository>();
 builder.Services.AddScoped<IEntreeService, EntreeService>();
+
+
 
 
 var app = builder.Build();
