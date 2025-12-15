@@ -1,4 +1,4 @@
-Susing BlazeLock.API.Models;
+using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. GET CONFIGURATION VARIABLES ---
 var tenantId = builder.Configuration["AzureAd:TenantId"];
 var clientId = builder.Configuration["AzureAd:ClientId"];
 var scope = $"{clientId}/.default";
@@ -17,7 +16,6 @@ var frontendUrl = builder.Configuration["Front:Url"];
 
 string? corsFrontEndpoint = builder.Configuration.GetValue<string>("CorsFrontEndpoint");
 
-// --- 2. CORS SETUP ---
 if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
 {
     builder.Services.AddCors(options =>
@@ -33,13 +31,11 @@ if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
     });
 }
 
-// --- 3. AUTHENTICATION ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
 {
-    // This allows the API to accept tokens issued for itself (GUID) 
     var clientId = builder.Configuration["AzureAd:ClientId"];
     options.TokenValidationParameters.ValidAudiences = new[]
     {
@@ -48,16 +44,13 @@ builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSch
     };
 });
 
-// --- 4. SWAGGER CONFIGURATION ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ONLY CALL THIS ONCE
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "BlazeLock API", Version = "v1" });
 
-    // Define OAuth2 Security Scheme
     c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
@@ -75,7 +68,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    // Add Security Requirement
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -92,7 +84,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// --- 5. DEPENDENCY INJECTION ---
 builder.Services.AddDbContext<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -115,8 +106,6 @@ builder.Services.AddScoped<IEntreeService, EntreeService>();
 
 var app = builder.Build();
 
-// --- 6. PIPELINE CONFIGURATION ---
-
 if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))
 {
     app.UseCors("WebAssemblyOrigin");
@@ -136,7 +125,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// --- CORS --
 app.UseCors(policy => policy
     .WithOrigins(frontendUrl)
     .AllowAnyMethod()

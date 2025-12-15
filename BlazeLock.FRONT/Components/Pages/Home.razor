@@ -103,6 +103,6 @@
     private async Task UnlockWrapper()
     {
         await ViewModel.UnlockSelectedAsync();
-        StateHasChanged(); // Force update to update the UI (Lock icon -> Unlock icon)
+        StateHasChanged();
     }
 }

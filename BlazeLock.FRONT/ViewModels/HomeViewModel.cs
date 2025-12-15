@@ -20,28 +20,23 @@ namespace BlazeLock.FRONT.ViewModels
             _nav = nav;
         }
 
-        // --- DATA ---
         public List<CoffreDto> MyCoffres { get; private set; } = new();
         public bool IsLoading { get; private set; } = true;
 
-        // --- UI STATES ---
         public bool IsCreating { get; private set; }
         public CoffreDto? SelectedCoffre { get; private set; }
         public bool IsProcessing { get; private set; }
 
-        // ✅ FIXED: Ensure this is Public
         public string FeedbackMessage { get; private set; } = "";
         public bool IsSuccess { get; private set; }
 
-        // --- INPUTS ---
         public string NewLibelle { get; set; } = "";
         public string NewPassword { get; set; } = "";
         public string UnlockPassword { get; set; } = "";
 
-        // --- HELPERS ---
         public bool IsUnlocked(Guid id) => _keyStore.IsUnlocked(id);
         public string GetDisplayName(Guid id) => _keyStore.GetName(id) ?? "🔒 Verrouillé";
-        public bool HasCoffres => MyCoffres.Any(); // Helper for UI
+        public bool HasCoffres => MyCoffres.Any();
 
         public async Task LoadDataAsync()
         {
@@ -51,7 +46,6 @@ namespace BlazeLock.FRONT.ViewModels
             finally { IsLoading = false; }
         }
 
-        // --- MODAL ACTIONS ---
         public void OpenCreateModal()
         {
             IsCreating = true;
@@ -75,7 +69,6 @@ namespace BlazeLock.FRONT.ViewModels
             FeedbackMessage = "";
         }
 
-        // --- ACTION: CREATE ---
         public async Task CreateCoffreAsync()
         {
             if (string.IsNullOrWhiteSpace(NewLibelle) || string.IsNullOrWhiteSpace(NewPassword))
@@ -111,7 +104,6 @@ namespace BlazeLock.FRONT.ViewModels
             finally { IsProcessing = false; }
         }
 
-        // --- ACTION: UNLOCK ---
         public async Task UnlockSelectedAsync()
         {
             if (SelectedCoffre == null || string.IsNullOrWhiteSpace(UnlockPassword)) return;

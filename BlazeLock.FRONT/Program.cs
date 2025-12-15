@@ -3,7 +3,6 @@ using BlazeLock.FRONT.Core;
 using BlazeLock.FRONT.Services;
 using BlazeLock.FRONT.ViewModels;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -11,7 +10,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 1. Get Configuration
 string apiEndpoint = builder.Configuration.GetValue<string>("WebAPI:Endpoint")
     ?? throw new InvalidOperationException("WebAPI:Endpoint is not configured");
 
