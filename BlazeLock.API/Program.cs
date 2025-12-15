@@ -1,4 +1,4 @@
-using BlazeLock.API.Models;
+Susing BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -108,8 +108,10 @@ builder.Services.AddScoped<ICoffreService, CoffreService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
-// Register your new EntreeService here
+builder.Services.AddScoped<IEntreeRepository, EntreeRepository>();
+builder.Services.AddScoped<IHistoriqueEntreeRepository, HistoriqueEntreeRepository>();
 builder.Services.AddScoped<IEntreeService, EntreeService>();
+
 
 var app = builder.Build();
 

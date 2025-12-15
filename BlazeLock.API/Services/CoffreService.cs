@@ -3,6 +3,7 @@ using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace BlazeLock.API.Services
 {
@@ -26,7 +27,7 @@ namespace BlazeLock.API.Services
                     IdCoffre = c.IdCoffre,
                     IdUtilisateur = c.IdUtilisateur,
                     Libelle = c.Libelle,
-                    HashMasterkey = c.HashMasterkey,
+                    HashMasterkey = c.HashMasterkey.ToString(),
                     Salt = c.Salt
                 })
                 .ToHashSet();
@@ -44,7 +45,7 @@ namespace BlazeLock.API.Services
                     IdCoffre = c.IdCoffre,
                     IdUtilisateur = c.IdUtilisateur,
                     Libelle = c.Libelle,
-                    HashMasterkey = c.HashMasterkey,
+                    HashMasterkey = c.HashMasterkey.ToString(),
                     Salt = c.Salt
                 })
                 .ToHashSet();
@@ -62,7 +63,7 @@ namespace BlazeLock.API.Services
                 IdCoffre = result.IdCoffre,
                 IdUtilisateur = result.IdUtilisateur,
                 Libelle = result.Libelle,
-                HashMasterkey = result.HashMasterkey,
+                HashMasterkey = result.HashMasterkey.ToString(),
                 Salt = result.Salt
             };
         }
@@ -74,11 +75,10 @@ namespace BlazeLock.API.Services
                 IdCoffre = Guid.NewGuid(),
                 IdUtilisateur = dto.IdUtilisateur,
                 Libelle = dto.Libelle,
-                HashMasterkey = dto.HashMasterkey,
-                Salt = dto.Salt 
+                HashMasterkey = Encoding.UTF8.GetBytes(dto.HashMasterkey),
+                Salt = dto.Salt
             };
             await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
         }
 
         public async Task Delete(CoffreDto dto)
@@ -88,11 +88,10 @@ namespace BlazeLock.API.Services
                 IdCoffre = dto.IdCoffre,
                 IdUtilisateur = dto.IdUtilisateur,
                 Libelle = dto.Libelle,
-                HashMasterkey = dto.HashMasterkey,
+                HashMasterkey = Encoding.UTF8.GetBytes(dto.HashMasterkey),
                 Salt = dto.Salt
             };
             await _repository.DeleteCoffre(entity);
-            await _repository.SaveChangesAsync();
         }
     }
 }

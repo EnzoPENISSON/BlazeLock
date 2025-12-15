@@ -1,13 +1,15 @@
-﻿using BlazeLock.API.Models;
+using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Services
 {
     public interface IEntreeService
     {
-        Task<IEnumerable<Entree>> GetAllAsync();
-        Task<Entree?> GetByIdAsync(Guid id);
-        Task<Entree> CreateAsync(Entree entree);
-        Task<bool> UpdateAsync(Guid id, Entree entree);
-        Task<bool> DeleteAsync(Guid id);
+        Task<HashSet<EntreeDto>> GetAllAsync();
+        Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid IdDossier);
+        Task<EntreeDto?> GetByIdAsync(Guid idEntree);
+        Task<EntreeHistoriqueDto?> GetByIdWithHistoriaqueAsync(Guid idEntree);
+        Task AddAsync(EntreeDto dto);
+        //Task Delete(EntreeDto dto);
+
     }
 }

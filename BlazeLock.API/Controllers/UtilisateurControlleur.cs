@@ -6,7 +6,6 @@ using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/utilisateur")]
     public class UtilisateurController : ControllerBase

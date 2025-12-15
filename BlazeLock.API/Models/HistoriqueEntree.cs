@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlazeLock.DbLib;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ public partial class HistoriqueEntree
 
     public byte[] LibelleVi { get; set; } = null!;
 
-    public DateTime DateUpdate { get; set; }
+    public DateTime DateUpdate { get; set; } = default!;
 
     public byte[] Username { get; set; } = null!;
 
@@ -43,4 +44,9 @@ public partial class HistoriqueEntree
     public Guid IdEntree { get; set; } = default!;
 
     public virtual Entree Entree { get; set; } = null!;
+
+    internal object Select(Func<object, HistoriqueDto> value)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -6,22 +6,26 @@ namespace BlazeLock.API.Repositories
 {
     public class PartageRepository : IPartageRepository
     {
-        private readonly BlazeLockContext _context;
+        private readonly IDbContextFactory<BlazeLockContext> _contextFactory;
 
-        public PartageRepository(BlazeLockContext context)
+        public PartageRepository(IDbContextFactory<BlazeLockContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<HashSet<Partage>> GetAllAsync()
         {
-            var partages = await _context.Partages.ToListAsync();
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var partages = await context.Partages.AsNoTracking().ToListAsync();
             return partages.ToHashSet();
         }
 
         public async Task<HashSet<Partage>> GetByCoffreAsync(Guid idCoffre)
         {
-            var partages = await _context.Partages
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var partages = await context.Partages
                 .Where(p => p.IdCoffre == idCoffre)
                 .AsNoTracking()
                 .ToListAsync();
@@ -31,7 +35,9 @@ namespace BlazeLock.API.Repositories
 
         public async Task<HashSet<Partage>> GetByUtilisateurAsync(Guid idUtilisateur)
         {
-            var partages = await _context.Partages
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var partages = await context.Partages
                 .Where(p => p.IdUtilisateur == idUtilisateur)
                 .AsNoTracking()
                 .ToListAsync();
@@ -41,18 +47,18 @@ namespace BlazeLock.API.Repositories
 
         public async Task AddAsync(Partage partage)
         {
-            await _context.Partages.AddAsync(partage);
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            await context.Partages.AddAsync(partage);
+            await context.SaveChangesAsync();
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
 
-        public Task DeletePartage(Partage partage)
+        public async Task DeletePartage(Partage partage)
         {
-            _context.Partages.Remove(partage);
-            return Task.CompletedTask;
+            var context = await _contextFactory.CreateDbContextAsync();
+            context.Partages.Remove(partage);
+            await context.SaveChangesAsync();
         }
     }
 }

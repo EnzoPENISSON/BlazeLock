@@ -7,6 +7,5 @@ namespace BlazeLock.API.Repositories
         Task<HashSet<Utilisateur>> GetAllAsync();
         Task<Utilisateur?> GetByIdAsync(Guid id);
         Task AddAsync(Utilisateur utilisateur);
-        Task SaveChangesAsync();
     }
 }

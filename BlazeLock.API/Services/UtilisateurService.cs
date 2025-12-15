@@ -41,7 +41,6 @@ namespace BlazeLock.API.Services
         {
             var entity = new Utilisateur { IdUtilisateur = dto.IdUtilisateur };
             await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
         }
 
         public async Task<bool> ExistsAsync(Guid id)

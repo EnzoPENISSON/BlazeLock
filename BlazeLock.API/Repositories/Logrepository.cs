@@ -6,27 +6,33 @@ namespace BlazeLock.API.Repositories
 {
     public class LogRepository : ILogRepository
     {
-        private readonly BlazeLockContext _context;
+        private readonly IDbContextFactory<BlazeLockContext> _contextFactory;
 
-        public LogRepository(BlazeLockContext context)
+        public LogRepository(IDbContextFactory<BlazeLockContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<HashSet<Log>> GetAllAsync()
         {
-            var coffres = await _context.Logs.ToListAsync();
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var coffres = await context.Logs.AsNoTracking().ToListAsync();
             return coffres.ToHashSet();
         }
 
         public async Task<Log?> GetByIdAsync(Guid idLog)
         {
-            return await _context.Logs.FindAsync(idLog);
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Logs.FindAsync(idLog);
         }
 
         public async Task<HashSet<Log>> GetByCoffreAsync(Guid idCoffre)
         {
-            var logs = await _context.Logs
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var logs = await context.Logs
                 .Where(p => p.IdCoffre == idCoffre)
                 .AsNoTracking()
                 .ToListAsync();
@@ -36,12 +42,10 @@ namespace BlazeLock.API.Repositories
 
         public async Task AddAsync(Log log)
         {
-            await _context.Logs.AddAsync(log);
-        }
+            var context = await _contextFactory.CreateDbContextAsync();
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
+            await context.Logs.AddAsync(log);
+            await context.SaveChangesAsync();
         }
     }
 }
