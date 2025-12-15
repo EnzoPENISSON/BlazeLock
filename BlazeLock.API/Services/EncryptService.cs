@@ -1,9 +1,10 @@
-﻿using BlazeLock.DbLib;
+﻿using BlazeLock.API.Models;
+using BlazeLock.DbLib;
 using System.Security.Cryptography;
 
 namespace BlazeLock.API.Services
 {
-    public class EncryptService
+    public class EncryptService : IEncryptService
     {
         private readonly ICoffreService _serviceCoffre;
 
@@ -17,26 +18,21 @@ namespace BlazeLock.API.Services
             _serviceCoffre = service;
         }
 
-        public void HashMasterKey(string masterKey, string libelle)
+        public async Task HashMasterKey(CoffreDto newCoffre)
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 
             byte[] key = Rfc2898DeriveBytes.Pbkdf2(
-                masterKey,
+                newCoffre.ClearPassword!,
                 salt,
                 Iterations,
                 HashAlgorithmName.SHA256,
                 KeySize
             );
 
-            CoffreDto newCoffre = new CoffreDto
-            {
-                IdCoffre = Guid.NewGuid(),
-                Salt = salt,
-                HashMasterkey = key,
-                Libelle = libelle,
-
-            };
+            newCoffre.Salt = salt;
+            newCoffre.IdCoffre = Guid.NewGuid();
+            newCoffre.HashMasterkey = key;
 
             try
             {
@@ -48,7 +44,7 @@ namespace BlazeLock.API.Services
             }
         }
 
-        public bool VerifyMasterKey(string masterKey, byte[] storedSalt, byte[] storedHash)
+        public async Task<bool> VerifyMasterKey(string masterKey, byte[] storedSalt, byte[] storedHash)
         {
             byte[] keyToCheck = Rfc2898DeriveBytes.Pbkdf2(
                 masterKey,

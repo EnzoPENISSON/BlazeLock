@@ -91,5 +91,6 @@ namespace BlazeLock.API.Services
             };
             await _repository.DeleteCoffre(entity);
         }
+
     }
 }
