@@ -1,4 +1,4 @@
-Susing BlazeLock.API.Models;
+using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -93,7 +93,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // --- 5. DEPENDENCY INJECTION ---
-builder.Services.AddDbContext<BlazeLockContext>(options =>
+builder.Services.AddDbContextFactory<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();

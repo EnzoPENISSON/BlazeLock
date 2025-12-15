@@ -49,9 +49,10 @@ public partial class BlazeLockContext : DbContext
             entity.Property(e => e.IdCoffre)
                 .HasMaxLength(50)
                 .HasColumnName("id_coffre");
+            // Explicit SQL type for binary data
             entity.Property(e => e.HashMasterkey)
-                .HasMaxLength(50)
-                .HasColumnName("hash_masterkey");
+                .HasColumnName("hash_masterkey")
+                .HasColumnType("varbinary(50)");
             entity.Property(e => e.IdUtilisateur)
                 .HasMaxLength(50)
                 .HasColumnName("id_utilisateur");
@@ -59,8 +60,8 @@ public partial class BlazeLockContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("libelle");
             entity.Property(e => e.Salt)
-                .HasMaxLength(50)
-                .HasColumnName("salt");
+                .HasColumnName("salt")
+                .HasColumnType("varbinary(50)");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.Coffres)
                 .HasForeignKey(d => d.IdUtilisateur)
@@ -135,12 +136,6 @@ public partial class BlazeLockContext : DbContext
             entity.Property(e => e.Libelle)
                 .HasMaxLength(50)
                 .HasColumnName("libelle");
-            entity.Property(e => e.LibelleTag)
-                .HasMaxLength(50)
-                .HasColumnName("libelle_tag");
-            entity.Property(e => e.LibelleVi)
-                .HasMaxLength(50)
-                .HasColumnName("libelle_vi");
             entity.Property(e => e.Password)
                 .HasMaxLength(50)
                 .HasColumnName("password");

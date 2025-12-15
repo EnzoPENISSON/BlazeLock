@@ -89,11 +89,10 @@ namespace BlazeLock.FRONT.ViewModels
             {
                 var saltB64 = await _js.InvokeAsync<string>("blazeCrypto.generateSalt");
                 var keyB64 = await _js.InvokeAsync<string>("blazeCrypto.deriveKey", NewPassword, saltB64);
-                var cipherB64 = await _js.InvokeAsync<string>("blazeCrypto.encryptData", NewLibelle, keyB64);
 
                 var dto = new CoffreDto
                 {
-                    Libelle = Convert.FromBase64String(cipherB64),
+                    Libelle = NewLibelle,
                     Salt = Convert.FromBase64String(saltB64),
                     HashMasterkey = Convert.FromBase64String(keyB64)
                 };
@@ -131,10 +130,7 @@ namespace BlazeLock.FRONT.ViewModels
                     return;
                 }
 
-                var cipherB64 = Convert.ToBase64String(SelectedCoffre.Libelle);
-                var clearName = await _js.InvokeAsync<string>("blazeCrypto.decryptData", cipherB64, keyB64);
-
-                _keyStore.Store(SelectedCoffre.IdCoffre, keyB64, clearName);
+                _keyStore.Store(SelectedCoffre.IdCoffre, keyB64, SelectedCoffre.Libelle);
                 CloseModals();
             }
             catch (Exception ex)

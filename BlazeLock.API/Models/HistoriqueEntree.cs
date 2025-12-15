@@ -9,11 +9,7 @@ public partial class HistoriqueEntree
 {
     public Guid IdHistorique { get; set; } = default!;
 
-    public byte[] Libelle { get; set; } = null!;
-
-    public byte[] LibelleTag { get; set; } = null!;
-
-    public byte[] LibelleVi { get; set; } = null!;
+    public string Libelle { get; set; } = null!;
 
     public DateTime DateUpdate { get; set; } = default!;
 

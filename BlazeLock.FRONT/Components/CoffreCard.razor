@@ -27,5 +27,5 @@
     [Parameter, EditorRequired] public CoffreDto Coffre { get; set; } = default!;
     [Parameter] public bool IsUnlocked { get; set; }
     [Parameter] public string DisplayName { get; set; } = "";
-    [Parameter] public EventCallback<CoffreDto> OnClick { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
 }

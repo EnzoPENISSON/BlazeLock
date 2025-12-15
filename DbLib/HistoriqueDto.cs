@@ -3,9 +3,7 @@
     public class HistoriqueDto
     {
         public Guid IdEntree { get; set; }
-        public byte[]? Libelle { get; set; }
-        public byte[]? LibelleTag { get; set; }
-        public byte[]? LibelleVi { get; set; }
+        public string? Libelle { get; set; }
         public DateTime DateUpdate { get; set; }
         public byte[]? Username { get; set; }
         public byte[]? UsernameTag { get; set; }

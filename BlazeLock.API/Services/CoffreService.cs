@@ -27,7 +27,7 @@ namespace BlazeLock.API.Services
                     IdCoffre = c.IdCoffre,
                     IdUtilisateur = c.IdUtilisateur,
                     Libelle = c.Libelle,
-                    HashMasterkey = c.HashMasterkey.ToString(),
+                    HashMasterkey = c.HashMasterkey,
                     Salt = c.Salt
                 })
                 .ToHashSet();
@@ -45,7 +45,7 @@ namespace BlazeLock.API.Services
                     IdCoffre = c.IdCoffre,
                     IdUtilisateur = c.IdUtilisateur,
                     Libelle = c.Libelle,
-                    HashMasterkey = c.HashMasterkey.ToString(),
+                    HashMasterkey = c.HashMasterkey,
                     Salt = c.Salt
                 })
                 .ToHashSet();
@@ -63,7 +63,7 @@ namespace BlazeLock.API.Services
                 IdCoffre = result.IdCoffre,
                 IdUtilisateur = result.IdUtilisateur,
                 Libelle = result.Libelle,
-                HashMasterkey = result.HashMasterkey.ToString(),
+                HashMasterkey = result.HashMasterkey,
                 Salt = result.Salt
             };
         }
@@ -75,10 +75,11 @@ namespace BlazeLock.API.Services
                 IdCoffre = Guid.NewGuid(),
                 IdUtilisateur = dto.IdUtilisateur,
                 Libelle = dto.Libelle,
-                HashMasterkey = Encoding.UTF8.GetBytes(dto.HashMasterkey),
+                HashMasterkey = dto.HashMasterkey,
                 Salt = dto.Salt
             };
             await _repository.AddAsync(entity);
+
         }
 
         public async Task Delete(CoffreDto dto)
@@ -88,7 +89,7 @@ namespace BlazeLock.API.Services
                 IdCoffre = dto.IdCoffre,
                 IdUtilisateur = dto.IdUtilisateur,
                 Libelle = dto.Libelle,
-                HashMasterkey = Encoding.UTF8.GetBytes(dto.HashMasterkey),
+                HashMasterkey = dto.HashMasterkey,
                 Salt = dto.Salt
             };
             await _repository.DeleteCoffre(entity);
