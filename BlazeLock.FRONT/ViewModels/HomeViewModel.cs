@@ -35,15 +35,19 @@ namespace BlazeLock.FRONT.ViewModels
         public string UnlockPassword { get; set; } = "";
 
         public bool IsUnlocked(Guid id) => _keyStore.IsUnlocked(id);
-        public string GetDisplayName(Guid id) => _keyStore.GetName(id) ?? "🔒 Verrouillé";
+        public string GetDisplayName(Guid id) => _keyStore.GetName(id) ?? "";
         public bool HasCoffres => MyCoffres.Any();
 
         public async Task LoadDataAsync()
         {
             IsLoading = true;
-            try { MyCoffres = await _api.GetMyCoffresAsync(); }
+            try {
+                MyCoffres = await _api.GetMyCoffresAsync();
+            }
             catch { /* Handle error */ }
-            finally { IsLoading = false; }
+            finally {
+                IsLoading = false; 
+            }
         }
 
         public void OpenCreateModal()

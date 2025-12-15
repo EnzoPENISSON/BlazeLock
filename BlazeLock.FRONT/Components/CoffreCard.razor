@@ -17,7 +17,7 @@
         </div>
 
         <h5 class="text-lg font-bold truncate mb-1 @(IsUnlocked ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800") transition-colors">
-            @DisplayName
+            @Coffre.Libelle.ToString()
         </h5>
         <p class="text-xs text-gray-400 font-mono">ID: ...@Coffre.IdCoffre.ToString().Substring(24)</p>
     </div>
@@ -26,6 +26,5 @@
 @code {
     [Parameter, EditorRequired] public CoffreDto Coffre { get; set; } = default!;
     [Parameter] public bool IsUnlocked { get; set; }
-    [Parameter] public string DisplayName { get; set; } = "";
     [Parameter] public EventCallback OnClick { get; set; }
 }

@@ -19,6 +19,14 @@
             _decryptedNames[id] = decryptedName;
         }
 
+        public void setName(Guid id, string decryptedName)
+        {
+            if (_decryptedNames.ContainsKey(id))
+            {
+                _decryptedNames[id] = decryptedName;
+            }
+        }
+
         public void Clear()
         {
             _unlockedKeys.Clear();

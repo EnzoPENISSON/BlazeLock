@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazeLock.API.Migrations
 {
     [DbContext(typeof(BlazeLockContext))]
-    [Migration("20251106105110_guid")]
-    partial class guid
+    [Migration("20251215104109_libstring")]
+    partial class libstring
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.21")
+                .HasAnnotation("ProductVersion", "8.0.22")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -35,7 +35,6 @@ namespace BlazeLock.API.Migrations
 
                     b.Property<byte[]>("HashMasterkey")
                         .IsRequired()
-                        .HasMaxLength(50)
                         .HasColumnType("varbinary(50)")
                         .HasColumnName("hash_masterkey");
 
@@ -44,15 +43,14 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_utilisateur");
 
-                    b.Property<byte[]>("Libelle")
+                    b.Property<string>("Libelle")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varbinary(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("libelle");
 
                     b.Property<byte[]>("Salt")
                         .IsRequired()
-                        .HasMaxLength(50)
                         .HasColumnType("varbinary(50)")
                         .HasColumnName("salt");
 
@@ -148,23 +146,11 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_entree");
 
-                    b.Property<byte[]>("Libelle")
+                    b.Property<string>("Libelle")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varbinary(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("libelle");
-
-                    b.Property<byte[]>("LibelleTag")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varbinary(50)")
-                        .HasColumnName("libelle_tag");
-
-                    b.Property<byte[]>("LibelleVi")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varbinary(50)")
-                        .HasColumnName("libelle_vi");
 
                     b.Property<byte[]>("Password")
                         .IsRequired()
