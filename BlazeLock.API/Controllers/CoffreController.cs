@@ -24,69 +24,112 @@ namespace BlazeLock.API.Controllers
         [HttpGet("mine")]
         public async Task<IActionResult> GetMine()
         {
-            var (userId, errorResult) = GetCurrentUserId();
-            if (errorResult != null) return errorResult;
+            try
+            {
+                var (userId, errorResult) = GetCurrentUserId();
+                if (errorResult != null) return errorResult;
 
-            var coffres = await _coffreService.GetByUtilisateurAsync(userId);
+                var coffres = await _coffreService.GetByUtilisateurAsync(userId);
 
-            if (coffres == null || !coffres.Any())
-                return NoContent();
+                if (coffres == null || !coffres.Any())
+                    return NoContent();
 
-            return Ok(coffres);
+                return Ok(coffres);
+            }
+            catch (Exception ex)
+            {
+                // Log l'exception ici si un logger est configuré
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de vos coffres.");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var coffres = await _coffreService.GetAllAsync();
-            return Ok(coffres);
+            try
+            {
+                var coffres = await _coffreService.GetAllAsync();
+                return Ok(coffres);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de tous les coffres.");
+            }
         }
 
         [HttpGet("utilisateur/{id}")]
         public async Task<IActionResult> GetByUtilisateur(Guid id)
         {
-            var coffres = await _coffreService.GetByUtilisateurAsync(id);
-            if (coffres == null) return NotFound();
-            return Ok(coffres);
+            try
+            {
+                var coffres = await _coffreService.GetByUtilisateurAsync(id);
+                if (coffres == null) return NotFound();
+                return Ok(coffres);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des coffres pour l'utilisateur {id}.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var coffre = await _coffreService.GetByIdAsync(id);
+            try
+            {
+                var coffre = await _coffreService.GetByIdAsync(id);
 
-            if (coffre == null) return NotFound();
+                if (coffre == null) return NotFound();
 
-            var (userId, _) = GetCurrentUserId();
-            if (coffre.IdUtilisateur != userId)
-                return NotFound(); // Pour ne pas révéler l'existence du coffre
+                var (userId, _) = GetCurrentUserId();
+                if (coffre.IdUtilisateur != userId)
+                    return Forbid(); 
 
-            return Ok(coffre);
+                return Ok(coffre);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du coffre {id}.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CoffreDto dto)
         {
-            var (userId, errorResult) = GetCurrentUserId();
-            if (errorResult != null) return errorResult;
-
-            var userExists = await _utilisateurService.ExistsAsync(userId);
-            if (!userExists)
+            try
             {
-                return NotFound("Utilisateur non trouvé.");
-            }
+                var (userId, errorResult) = GetCurrentUserId();
+                if (errorResult != null) return errorResult;
 
-            // 3. Créer le coffre
-            dto.IdUtilisateur = userId;
-            await _coffreService.AddAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
+                var userExists = await _utilisateurService.ExistsAsync(userId);
+                if (!userExists)
+                {
+                    return NotFound("Utilisateur non trouvé.");
+                }
+
+                dto.IdUtilisateur = userId;
+                await _coffreService.AddAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création du coffre.");
+            }
         }
 
         [HttpDelete]
         public async Task<IActionResult> Delete(CoffreDto dto)
         {
-            await _coffreService.Delete(dto);
-            return Ok("Coffre supprimé");
+            try
+            {
+                // Idéalement, vérifier ici que l'utilisateur a le droit de supprimer ce coffre.
+                await _coffreService.Delete(dto);
+                return Ok("Coffre supprimé");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du coffre.");
+            }
         }
 
         private (Guid userId, IActionResult? error) GetCurrentUserId()

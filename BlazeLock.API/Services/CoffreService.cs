@@ -1,9 +1,6 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using System.Text;
 
 namespace BlazeLock.API.Services
 {
