@@ -4,6 +4,7 @@ using System.Security.Claims;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Authorization;
+using BlazeLock.API.Extensions;
 
 namespace BlazeLock.API.Controllers
 {
@@ -26,7 +27,7 @@ namespace BlazeLock.API.Controllers
         {
             try
             {
-                var (userId, errorResult) = GetCurrentUserId();
+                var (userId, errorResult) = User.GetCurrentUserId();
                 if (errorResult != null) return errorResult;
 
                 var coffres = await _coffreService.GetByUtilisateurAsync(userId);
@@ -81,7 +82,7 @@ namespace BlazeLock.API.Controllers
 
                 if (coffre == null) return NotFound();
 
-                var (userId, _) = GetCurrentUserId();
+                var (userId, _) = User.GetCurrentUserId();
                 if (coffre.IdUtilisateur != userId)
                     return Forbid(); 
 
@@ -98,7 +99,7 @@ namespace BlazeLock.API.Controllers
         {
             try
             {
-                var (userId, errorResult) = GetCurrentUserId();
+                var (userId, errorResult) = User.GetCurrentUserId();
                 if (errorResult != null) return errorResult;
 
                 var userExists = await _utilisateurService.ExistsAsync(userId);
@@ -130,35 +131,6 @@ namespace BlazeLock.API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du coffre.");
             }
-        }
-
-        private (Guid userId, IActionResult? error) GetCurrentUserId()
-        {
-            
-            var userIdClaim = User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier");
-
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                userIdClaim = User.FindFirstValue("oid");
-            }
-
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            }
-
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                return (Guid.Empty, Unauthorized("Impossible de récupérer l'ID utilisateur (Claims 'oid' ou 'NameIdentifier' manquants)."));
-            }
-
-            if (!Guid.TryParse(userIdClaim, out Guid userId))
-            {
-                Console.WriteLine($"[AUTH ERROR] Valeur reçue non-GUID : {userIdClaim}");
-                return (Guid.Empty, BadRequest($"L'ID utilisateur reçu n'est pas un GUID valide. Valeur reçue : {userIdClaim}"));
-            }
-
-            return (userId, null);
         }
     }
 }

@@ -1,8 +1,9 @@
+using BlazeLock.API.Middleware;
 using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.API.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
@@ -133,6 +134,9 @@ app.UseCors(policy => policy
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Middleware pour la gestion des utilisateurs
+app.UseUserRegistration();
 
 app.MapControllers();
 app.Run();
