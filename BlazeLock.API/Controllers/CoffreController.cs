@@ -67,14 +67,25 @@ namespace BlazeLock.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CoffreDto dto)
         {
-            await _service.AddAsync(dto);
-            return Created();
+            var (userId, errorResult) = GetCurrentUserId();
+            if (errorResult != null) return errorResult;
+
+            var userExists = await _utilisateurService.ExistsAsync(userId);
+            if (!userExists)
+            {
+                return NotFound("Utilisateur non trouvé.");
+            }
+
+            // 3. Créer le coffre
+            dto.IdUtilisateur = userId;
+            await _coffreService.AddAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
         }
 
         [HttpDelete]
         public async Task<IActionResult> Delete(CoffreDto dto)
         {
-            await _service.Delete(dto);
+            await _coffreService.Delete(dto);
             return Ok("Coffre supprimé");
         }
 

@@ -43,6 +43,7 @@ namespace BlazeLock.API.Repositories
         {
             var context = await _contextFactory.CreateDbContextAsync();
             await context.Coffres.AddAsync(coffre);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteCoffre(Coffre coffre)
@@ -51,5 +52,6 @@ namespace BlazeLock.API.Repositories
             context.Coffres.Remove(coffre);
             await context.SaveChangesAsync();
         }
+
     }
 }

@@ -8,7 +8,7 @@ public partial class Coffre
 {
     public Guid IdCoffre { get; set; } = default!;
 
-    public byte[] Libelle { get; set; } = null!;
+    public string Libelle { get; set; } = null!;
 
     public byte[] HashMasterkey { get; set; } = null!;
 

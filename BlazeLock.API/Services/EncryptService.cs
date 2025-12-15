@@ -7,9 +7,9 @@ namespace BlazeLock.API.Services
     {
         private readonly ICoffreService _serviceCoffre;
 
-        private const int SaltSize = 16; // 128 bits
-        private const int KeySize = 32; // 256 bits
-        private const int Iterations = 310_000; // recommandé OWASP 2025
+        private const int SaltSize = 16;
+        private const int KeySize = 32;
+        private const int Iterations = 310_000;
 
 
         public EncryptService(ICoffreService service)
@@ -17,7 +17,7 @@ namespace BlazeLock.API.Services
             _serviceCoffre = service;
         }
 
-        public void HashMasterKey(string masterKey, byte[] libelle)
+        public void HashMasterKey(string masterKey, string libelle)
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 

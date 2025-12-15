@@ -84,7 +84,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<BlazeLockContext>(options =>
+builder.Services.AddDbContextFactory<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
