@@ -4,6 +4,7 @@ using System.Security.Claims;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Authorization;
+using BlazeLock.API.Extensions;
 
 namespace BlazeLock.API.Controllers
 {
@@ -26,56 +27,96 @@ namespace BlazeLock.API.Controllers
         [HttpGet("mine")]
         public async Task<IActionResult> GetMine()
         {
-            var (userId, errorResult) = GetCurrentUserId();
-            if (errorResult != null) return errorResult;
+            try
+            {
+                var (userId, errorResult) = User.GetCurrentUserId();
+                if (errorResult != null) return errorResult;
 
-            var coffres = await _coffreService.GetByUtilisateurAsync(userId);
+                var coffres = await _coffreService.GetByUtilisateurAsync(userId);
 
-            if (coffres == null || !coffres.Any())
-                return NoContent();
+                if (coffres == null || !coffres.Any())
+                    return NoContent();
 
-            return Ok(coffres);
+                return Ok(coffres);
+            }
+            catch (Exception ex)
+            {
+                // Log l'exception ici si un logger est configuré
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de vos coffres.");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var coffres = await _coffreService.GetAllAsync();
-            return Ok(coffres);
+            try
+            {
+                var coffres = await _coffreService.GetAllAsync();
+                return Ok(coffres);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de tous les coffres.");
+            }
         }
 
         [HttpGet("utilisateur/{id}")]
         public async Task<IActionResult> GetByUtilisateur(Guid id)
         {
-            var coffres = await _coffreService.GetByUtilisateurAsync(id);
-            if (coffres == null) return NotFound();
-            return Ok(coffres);
+            try
+            {
+                var coffres = await _coffreService.GetByUtilisateurAsync(id);
+                if (coffres == null) return NotFound();
+                return Ok(coffres);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des coffres pour l'utilisateur {id}.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var coffre = await _coffreService.GetByIdAsync(id);
+            try
+            {
+                var coffre = await _coffreService.GetByIdAsync(id);
 
-            if (coffre == null) return NotFound();
+                if (coffre == null) return NotFound();
 
-            var (userId, _) = GetCurrentUserId();
-            if (coffre.IdUtilisateur != userId)
-                return NotFound();
+                var (userId, _) = User.GetCurrentUserId();
+                if (coffre.IdUtilisateur != userId)
+                    return Forbid(); 
 
-            return Ok(coffre);
+                return Ok(coffre);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du coffre {id}.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CoffreDto dto)
         {
-            var (userId, errorResult) = GetCurrentUserId();
-            if (errorResult != null) return errorResult;
-
-            var userExists = await _utilisateurService.ExistsAsync(userId);
-            if (!userExists)
+            try
             {
-                return NotFound("Utilisateur non trouvé.");
+                var (userId, errorResult) = User.GetCurrentUserId();
+                if (errorResult != null) return errorResult;
+
+                var userExists = await _utilisateurService.ExistsAsync(userId);
+                if (!userExists)
+                {
+                    return NotFound("Utilisateur non trouvé.");
+                }
+
+                dto.IdUtilisateur = userId;
+                await _coffreService.AddAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création du coffre.");
             }
 
             dto.IdUtilisateur = userId;
@@ -128,26 +169,14 @@ namespace BlazeLock.API.Controllers
 
             if (string.IsNullOrEmpty(userIdClaim))
             {
-                userIdClaim = User.FindFirstValue("oid");
+                // Idéalement, vérifier ici que l'utilisateur a le droit de supprimer ce coffre.
+                await _coffreService.Delete(dto);
+                return Ok("Coffre supprimé");
             }
-
-            if (string.IsNullOrEmpty(userIdClaim))
+            catch (Exception ex)
             {
-                userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du coffre.");
             }
-
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                return (Guid.Empty, Unauthorized("Impossible de récupérer l'ID utilisateur (Claims 'oid' ou 'NameIdentifier' manquants)."));
-            }
-
-            if (!Guid.TryParse(userIdClaim, out Guid userId))
-            {
-                Console.WriteLine($"[AUTH ERROR] Valeur reçue non-GUID : {userIdClaim}");
-                return (Guid.Empty, BadRequest($"L'ID utilisateur reçu n'est pas un GUID valide. Valeur reçue : {userIdClaim}"));
-            }
-
-            return (userId, null);
         }
     }
 }
