@@ -84,19 +84,14 @@ namespace BlazeLock.FRONT.ViewModels
             IsProcessing = true;
             try
             {
-                var saltB64 = await _js.InvokeAsync<string>("blazeCrypto.generateSalt");
-                var keyB64 = await _js.InvokeAsync<string>("blazeCrypto.deriveKey", NewPassword, saltB64);
-
                 var dto = new CoffreDto
                 {
                     Libelle = NewLibelle,
-                    Salt = Convert.FromBase64String(saltB64),
-                    HashMasterkey = Convert.FromBase64String(keyB64)
+                    ClearPassword = NewPassword
                 };
 
                 await _api.CreateCoffreAsync(dto);
 
-                _keyStore.Store(dto.IdCoffre, keyB64, NewLibelle);
                 await LoadDataAsync();
                 CloseModals();
             }
@@ -116,17 +111,21 @@ namespace BlazeLock.FRONT.ViewModels
 
             try
             {
-                var saltB64 = Convert.ToBase64String(SelectedCoffre.Salt);
-                var keyB64 = await _js.InvokeAsync<string>("blazeCrypto.deriveKey", UnlockPassword, saltB64);
-                var storedHashB64 = Convert.ToBase64String(SelectedCoffre.HashMasterkey);
+                var coffreToUnlock = new CoffreDto();
+                coffreToUnlock.IdCoffre = SelectedCoffre.IdCoffre;
+                coffreToUnlock.ClearPassword = UnlockPassword;
+                bool isUnlock = await _api.VerifyMasterKeyAsync(coffreToUnlock);
 
-                if (keyB64 != storedHashB64)
+                if (!isUnlock)
                 {
                     SetFeedback(false, "Mot de passe incorrect.");
                     return;
                 }
 
+                var saltB64 = Convert.ToBase64String(SelectedCoffre.Salt);
+                var keyB64 = await _js.InvokeAsync<string>("blazeCrypto.deriveKey", UnlockPassword, saltB64);
                 _keyStore.Store(SelectedCoffre.IdCoffre, keyB64, SelectedCoffre.Libelle);
+
                 CloseModals();
             }
             catch (Exception ex)

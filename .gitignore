@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /BlazeLock.API/appsettings.json
 /BlazeLock.FRONT/wwwroot/appsettings.json
 /BlazeLock.FRONT/wwwroot/appsettings.json
+/BlazeLock.FRONT/Utils/PasswordGenerator.cs

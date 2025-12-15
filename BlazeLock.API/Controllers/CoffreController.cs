@@ -13,12 +13,14 @@ namespace BlazeLock.API.Controllers
     public class CoffreController : ControllerBase
     {
         private readonly ICoffreService _coffreService;
+        private readonly IEncryptService _encryptService;
         private readonly IUtilisateurService _utilisateurService;
 
-        public CoffreController(ICoffreService coffreService, IUtilisateurService utilisateurService)
+        public CoffreController(ICoffreService coffreService, IUtilisateurService utilisateurService, IEncryptService encryptService)
         {
             _coffreService = coffreService;
             _utilisateurService = utilisateurService;
+            _encryptService = encryptService;
         }
 
         [HttpGet("mine")]
@@ -59,7 +61,7 @@ namespace BlazeLock.API.Controllers
 
             var (userId, _) = GetCurrentUserId();
             if (coffre.IdUtilisateur != userId)
-                return NotFound(); // Pour ne pas révéler l'existence du coffre
+                return NotFound();
 
             return Ok(coffre);
         }
@@ -76,9 +78,9 @@ namespace BlazeLock.API.Controllers
                 return NotFound("Utilisateur non trouvé.");
             }
 
-            // 3. Créer le coffre
             dto.IdUtilisateur = userId;
-            await _coffreService.AddAsync(dto);
+            await _encryptService.HashMasterKey(dto);
+
             return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
         }
 
@@ -87,6 +89,36 @@ namespace BlazeLock.API.Controllers
         {
             await _coffreService.Delete(dto);
             return Ok("Coffre supprimé");
+        }
+
+        [HttpPost("verify-password")]
+        public async Task<IActionResult> VerifyMasterKeyPassword([FromBody] CoffreDto dto)
+        {
+            if (dto == null) return BadRequest("Invalid client request");
+
+            var (userId, errorResult) = GetCurrentUserId();
+            if (errorResult != null) return errorResult;
+
+            var existingCoffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
+
+            if (existingCoffre == null)
+            {
+                return NotFound("Coffre not found");
+            }
+
+            if (existingCoffre.IdUtilisateur != userId) return Forbid();
+
+            bool isValid = await _encryptService.VerifyMasterKey(
+                dto.ClearPassword,
+                existingCoffre.Salt,
+                existingCoffre.HashMasterkey
+            );
+
+            if (isValid)
+            {
+                return Ok(isValid);
+            }
+            return Unauthorized(isValid);
         }
 
         private (Guid userId, IActionResult? error) GetCurrentUserId()
