@@ -1,6 +1,8 @@
 ﻿using BlazeLock.API.Services;
-using Microsoft.AspNetCore.Mvc;
 using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BlazeLock.API.Controllers;
 
@@ -39,14 +41,14 @@ public class CoffreController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CoffreDto dto)
+    public async Task<IActionResult> Create([FromBody] CoffreDto dto)
     {
         await _service.AddAsync(dto);
-        return Created();
+        return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete(CoffreDto dto)
+    public async Task<IActionResult> Delete([FromBody] CoffreDto dto)
     {
         await _service.Delete(dto);
         return Ok("Coffre supprimé");

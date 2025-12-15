@@ -6,10 +6,10 @@ namespace BlazeLock.API.Services
     {
         Task<HashSet<EntreeDto>> GetAllAsync();
         Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid IdDossier);
-        Task<EntreeDto?> GetByIdAsync(Guid id);
+        Task<EntreeDto?> GetByIdAsync(Guid idEntree);
         Task<EntreeHistoriqueDto?> GetByIdWithHistoriaqueAsync(Guid idEntree);
         Task AddAsync(EntreeDto dto);
-        Task Delete(EntreeDto dto);
+        //Task Delete(EntreeDto dto);
 
     }
 }

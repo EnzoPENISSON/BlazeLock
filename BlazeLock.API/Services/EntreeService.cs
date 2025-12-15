@@ -157,17 +157,17 @@ namespace BlazeLock.API.Services
             await _historiqueEntreeRepository.AddAsync(newHistorique);
         }
 
-        public async Task Delete(EntreeDto dto)
-        {
-            //var entity = new Entree
-            //{
-            //    IdEntree = dto.IdEntree,
-            //    IdUtilisateur = dto.IdUtilisateur,
-            //    Libelle = dto.Libelle,
-            //    HashMasterkey = dto.HashMasterkey,
-            //    Salt = dto.Salt
-            //};
-            //await _repository.DeleteEntree(entity);
-        }
+        //public async Task Delete(EntreeDto dto)
+        //{
+        //    var entity = new Entree
+        //    {
+        //        IdEntree = dto.IdEntree,
+        //        IdUtilisateur = dto.IdUtilisateur,
+        //        Libelle = dto.Libelle,
+        //        HashMasterkey = dto.HashMasterkey,
+        //        Salt = dto.Salt
+        //    };
+        //    await _repository.DeleteEntree(entity);
+        //}
     }
 }

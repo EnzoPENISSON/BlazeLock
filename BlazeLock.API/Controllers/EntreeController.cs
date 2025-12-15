@@ -53,11 +53,11 @@ public class EntreeController : ControllerBase
         return Created();
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> Delete(EntreeDto dto)
-    {
-        await _service.Delete(dto);
-        return Ok("Entree supprimé");
-    }
+    //[HttpDelete]
+    //public async Task<IActionResult> Delete(EntreeDto dto)
+    //{
+    //    await _service.Delete(dto);
+    //    return Ok("Entree supprimé");
+    //}
 
 }

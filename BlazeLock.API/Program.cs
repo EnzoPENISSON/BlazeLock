@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
-using static BlazeLock.API.Services.UtilisateurService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,7 +62,8 @@ builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
 builder.Services.AddScoped<IEntreeRepository, EntreeRepository>();
-//builder.Services.AddScoped<IEntreeService, EntreeService>();
+builder.Services.AddScoped<IHistoriqueEntreeRepository, HistoriqueEntreeRepository>();
+builder.Services.AddScoped<IEntreeService, EntreeService>();
 
 
 var app = builder.Build();
@@ -88,7 +88,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapHistoriqueEntreeEndpoints();
 
 app.Run();

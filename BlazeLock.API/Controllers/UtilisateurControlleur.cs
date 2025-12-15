@@ -6,7 +6,6 @@ using BlazeLock.DbLib;
 
 namespace BlazeLock.API.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/utilisateur")]
     public class UtilisateurController : ControllerBase
@@ -36,7 +35,6 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = Roles.User_Administrator)]
         public async Task<IActionResult> Create(UtilisateurDto dto)
         {
             if(_service.GetByIdAsync(dto.IdUtilisateur).Result != null)
