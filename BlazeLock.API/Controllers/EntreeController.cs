@@ -87,8 +87,6 @@ public class EntreeController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Attention !!!!!!!!!!!!! : ");
-            Console.WriteLine(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création de l'entrée.");
         }
     }

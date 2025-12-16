@@ -1,9 +1,7 @@
 ﻿using BlazeLock.DbLib;
 using BlazeLock.FRONT.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace BlazeLock.FRONT.ViewModels
 {
@@ -11,28 +9,26 @@ namespace BlazeLock.FRONT.ViewModels
     {
         private readonly IEntreeAPIService _entreeApi;
         private readonly VaultKeyStore _keyStore;
-        private readonly IJSRuntime _js;
+        private readonly CryptoJs _crypto;
         private readonly NavigationManager _nav;
 
         public CoffreDetailViewModel(
             IEntreeAPIService entreeApi,
             VaultKeyStore keyStore,
-            IJSRuntime js,
+            CryptoJs crypto, 
             NavigationManager nav)
         {
             _entreeApi = entreeApi;
             _keyStore = keyStore;
-            _js = js;
+            _crypto = crypto;
             _nav = nav;
         }
 
-        // --- State Properties ---
         public Guid VaultId { get; private set; }
         public string VaultName { get; private set; } = "";
         public bool HasAccess { get; private set; } = false;
         public bool IsLoading { get; private set; } = true;
 
-        // List of entries in the vault
         public List<EntreeDto> Entries { get; private set; } = new();
 
         // --- Creation Modal State ---
@@ -115,41 +111,42 @@ namespace BlazeLock.FRONT.ViewModels
                     DateUpdate = DateTime.UtcNow
                 };
 
-                // 3. Encrypt Password
-                var passResult = await EncryptFieldJS(NewEntryForm.Password, masterKeyBase64);
+                // --- ENCRYPTION LOGIC USING NEW SERVICE ---
+
+                // 1. Password
+                var passResult = await _crypto.EncryptDataAsync(NewEntryForm.Password, masterKeyBase64);
                 dto.Password = Convert.FromBase64String(passResult.CipherText);
                 dto.PasswordVi = Convert.FromBase64String(passResult.Iv);
                 dto.PasswordTag = Convert.FromBase64String(passResult.Tag);
 
-                // 4. Encrypt Username
-                var userResult = await EncryptFieldJS(NewEntryForm.Username, masterKeyBase64);
+                // 2. Username
+                var userResult = await _crypto.EncryptDataAsync(NewEntryForm.Username, masterKeyBase64);
                 dto.Username = Convert.FromBase64String(userResult.CipherText);
                 dto.UsernameVi = Convert.FromBase64String(userResult.Iv);
                 dto.UsernameTag = Convert.FromBase64String(userResult.Tag);
 
-                // 5. Encrypt URL
-                var urlResult = await EncryptFieldJS(NewEntryForm.Url, masterKeyBase64);
+                // 3. URL
+                var urlResult = await _crypto.EncryptDataAsync(NewEntryForm.Url, masterKeyBase64);
                 dto.Url = Convert.FromBase64String(urlResult.CipherText);
                 dto.UrlVi = Convert.FromBase64String(urlResult.Iv);
                 dto.UrlTag = Convert.FromBase64String(urlResult.Tag);
 
-                //6. Commentaire can be added similarly if needed - currently empty
-                var commentaireResult = await EncryptFieldJS("", masterKeyBase64);
-                dto.Commentaire = Convert.FromBase64String(urlResult.CipherText);
-                dto.CommentaireVi = Convert.FromBase64String(urlResult.Iv);
-                dto.CommentaireTag = Convert.FromBase64String(urlResult.Tag);
+                // 4. Commentaire (Fixed Variable Name Bug)
+                var commResult = await _crypto.EncryptDataAsync(NewEntryForm.Commentaire, masterKeyBase64);
+                dto.Commentaire = Convert.FromBase64String(commResult.CipherText);
+                dto.CommentaireVi = Convert.FromBase64String(commResult.Iv);
+                dto.CommentaireTag = Convert.FromBase64String(commResult.Tag);
 
-
-                // 6. Send to API
+                // --- SAVE TO API ---
                 await _entreeApi.CreateEntreeAsync(dto);
 
-                // 7. Success
                 CloseModal();
                 await RefreshEntriesAsync();
             }
             catch (Exception ex)
             {
                 ErrorMessage = "Erreur : " + ex.Message;
+                Console.WriteLine(ex);
             }
             finally
             {
@@ -157,20 +154,11 @@ namespace BlazeLock.FRONT.ViewModels
             }
         }
 
-        private async Task<EncryptionResult> EncryptFieldJS(string clearText, string key)
-        {
-            var res = await _js.InvokeAsync<EncryptionResult>("blazeCrypto.encryptData", clearText, key);
-            Console.WriteLine("Encrypted Password Result: " + res);
-            Console.WriteLine(res.CipherText + " " + res.Iv + " " + res.Tag);
-            return res;
-        }
-
         public void NavigateHome()
         {
             _nav.NavigateTo("/");
         }
     }
-
 
     public class EntryFormModel
     {
@@ -182,17 +170,6 @@ namespace BlazeLock.FRONT.ViewModels
 
         public string Username { get; set; } = "";
         public string Url { get; set; } = "";
-    }
-
-    public class EncryptionResult
-    {
-        [JsonPropertyName("cipherText")] 
-        public string CipherText { get; set; } = "";
-
-        [JsonPropertyName("iv")]
-        public string Iv { get; set; } = "";
-
-        [JsonPropertyName("tag")]
-        public string Tag { get; set; } = "";
+        public string Commentaire { get; set; } = "";
     }
 }

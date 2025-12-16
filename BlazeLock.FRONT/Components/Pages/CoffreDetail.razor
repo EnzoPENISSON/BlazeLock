@@ -105,7 +105,7 @@
                         <div class="grid grid-cols-1 gap-4">
                             @foreach (var entry in ViewModel.Entries)
                             {
-                                <EntreeCard Entry="entry" VaultId="ViewModel.VaultId" />
+                                <EntreeCard Entry="@entry" />
                             }
                         </div>
                     }

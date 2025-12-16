@@ -33,10 +33,12 @@ namespace BlazeLock.API.Repositories
             using var context = await _contextFactory.CreateDbContextAsync();
 
             var entrees = await context.Entrees
-                  .Where(e => e.Dossier.IdCoffre == idCoffre)
-                  .Include(e => e.Dossier)
-                  .AsNoTracking()
-                  .ToListAsync();
+                    .Where(e => e.Dossier.IdCoffre == idCoffre)
+                    .Include(e => e.Dossier)
+                    .Include(e => e.HistoriqueEntrees)
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    .ToListAsync();
 
             return entrees.ToHashSet();
         }

@@ -1,25 +1,62 @@
-﻿<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group flex items-center justify-between">
+﻿@using BlazeLock.DbLib
+@using BlazeLock.FRONT.ViewModels
+@inject EntreeDetailViewModel ViewModel
+
+<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group flex items-center justify-between"
+     @onclick="OnClick">
+
     <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-            <i class="bi bi-key-fill text-xl"></i>
-        </div>
+        @if (!string.IsNullOrEmpty(_domain))
+        {
+            <div class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
+                <img src="@($"https://www.google.com/s2/favicons?domain={_domain}&sz=128")"
+                     alt="@Entry.Libelle"
+                     class="w-full h-full object-contain p-1" />
+            </div>
+        }
+        else
+        {
+            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <i class="bi bi-key-fill text-xl"></i>
+            </div>
+        }
+
         <div>
-            <h4 class="font-bold text-gray-800">@Title</h4>
-            <p class="text-xs text-gray-400">Créé le @DateCreation.ToShortDateString()</p>
+            <h4 class="font-bold text-gray-800">@(string.IsNullOrEmpty(Entry.Libelle) ? "Sans titre" : Entry.Libelle)</h4>
+            <p class="text-xs text-gray-400">Créé le @Entry.DateCreation.ToShortDateString()</p>
+            @if (Entry.DateUpdate != DateTime.MinValue)
+            {
+                <p class="text-xs text-gray-400">Mis à jour le @Entry.DateUpdate.ToShortDateString()</p>
+            }
         </div>
     </div>
+
     <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-        <button class="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Copier le mot de passe">
+        <button class="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Copier le mot de passe" @onclick:stopPropagation="true">
             <i class="bi bi-clipboard"></i>
         </button>
-        <button class="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Voir les détails">
+        <button class="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Voir les détails" @onclick:stopPropagation="true">
             <i class="bi bi-eye"></i>
         </button>
     </div>
 </div>
 
 @code {
-    [Parameter] public string Title { get; set; } = "Sans titre";
-    [Parameter] public DateTime DateCreation { get; set; }
+    [Parameter] public EntreeDto Entry { get; set; }
     [Parameter] public EventCallback OnClick { get; set; }
+
+    // Local variable to store the decrypted domain
+    private string _domain;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Entry != null)
+        {
+            // Decrypt and store the result
+            _domain = await ViewModel.GetDecryptedDomainAsync(Entry);
+
+            // Refresh UI
+            StateHasChanged();
+        }
+    }
 }
