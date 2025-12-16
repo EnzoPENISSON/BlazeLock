@@ -83,11 +83,12 @@ public class EntreeController : ControllerBase
         try
         {
             await _service.AddAsync(dto);
-            // Retourne un 201 Created avec l'URL pour récupérer la nouvelle ressource
             return CreatedAtAction(nameof(GetById), new { id = dto.IdEntree }, dto);
         }
         catch (Exception ex)
         {
+            Console.WriteLine("Attention !!!!!!!!!!!!! : ");
+            Console.WriteLine(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création de l'entrée.");
         }
     }

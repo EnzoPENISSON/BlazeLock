@@ -111,7 +111,7 @@ namespace BlazeLock.API.Controllers
                 }
 
                 dto.IdUtilisateur = userId;
-                await _coffreService.AddAsync(dto);
+                await _encryptService.HashMasterKey(dto);
                 return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
             }
             catch (Exception ex)

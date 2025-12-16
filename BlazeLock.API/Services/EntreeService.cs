@@ -13,11 +13,13 @@ namespace BlazeLock.API.Services
 
         private readonly IEntreeRepository _entreeRepository;
         private readonly IHistoriqueEntreeRepository _historiqueEntreeRepository;
+        private readonly IDossierRepository _dossierRepository;
 
-        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository)
+        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository)
         {
             _entreeRepository = EntreeRepository;
             _historiqueEntreeRepository = HistoriqueEntreeRepository;
+            _dossierRepository = dossierRepository;
         }
 
         public async Task<HashSet<EntreeDto>> GetAllAsync()
@@ -119,21 +121,32 @@ namespace BlazeLock.API.Services
 
         public async Task AddAsync(EntreeDto dto)
         {
-            var entree = await _entreeRepository.GetByIdAsync(dto.IdEntree);
-            if (entree == null)
+            var existingEntree = await _entreeRepository.GetByIdAsync(dto.IdEntree);
+
+            Guid finalId;
+
+            if (existingEntree == null)
             {
+                var existingDefaultFolder = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", dto.idCoffre);
                 var newEntree = new Entree
                 {
-                    IdEntree = dto.IdEntree,
-                    DateCreation = dto.DateCreation,
-                    IdDossier = dto.IdDossier
-
+                    IdEntree = dto.IdEntree == Guid.Empty ? Guid.NewGuid() : dto.IdEntree,
+                    DateCreation = dto.DateCreation == default ? DateTime.UtcNow : dto.DateCreation,
+                    IdDossier = existingDefaultFolder.IdDossier
                 };
+
                 await _entreeRepository.AddAsync(newEntree);
+
+                finalId = newEntree.IdEntree;
             }
+            else
+            {
+                finalId = existingEntree.IdEntree;
+            }
+
             var newHistorique = new HistoriqueEntree
             {
-                IdEntree = dto.IdEntree,
+                IdEntree = finalId,
                 DateUpdate = DateTime.UtcNow,
                 Libelle = dto.Libelle,
                 Username = dto.Username,
@@ -149,9 +162,10 @@ namespace BlazeLock.API.Services
                 CommentaireTag = dto.CommentaireTag,
                 CommentaireVi = dto.CommentaireVi
             };
+
             await _historiqueEntreeRepository.AddAsync(newHistorique);
         }
-        
+
         public async Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre)
         {
             var entree = await _entreeRepository.GetAllByDossierAsync(idCoffre);

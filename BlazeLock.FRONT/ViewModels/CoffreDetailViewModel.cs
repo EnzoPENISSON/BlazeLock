@@ -106,12 +106,10 @@ namespace BlazeLock.FRONT.ViewModels
                     return;
                 }
 
-                Console.WriteLine("Master Key (Base64): " + masterKeyBase64);
-
-                // 2. Prepare the DTO
                 var dto = new EntreeDto
                 {
                     IdDossier = Guid.Empty,
+                    idCoffre = VaultId,
                     Libelle = NewEntryForm.Libelle,
                     DateCreation = DateTime.UtcNow,
                     DateUpdate = DateTime.UtcNow
@@ -124,22 +122,23 @@ namespace BlazeLock.FRONT.ViewModels
                 dto.PasswordTag = Convert.FromBase64String(passResult.Tag);
 
                 // 4. Encrypt Username
-                if (!string.IsNullOrWhiteSpace(NewEntryForm.Username))
-                {
-                    var userResult = await EncryptFieldJS(NewEntryForm.Username, masterKeyBase64);
-                    dto.Username = Convert.FromBase64String(userResult.CipherText);
-                    dto.UsernameVi = Convert.FromBase64String(userResult.Iv);
-                    dto.UsernameTag = Convert.FromBase64String(userResult.Tag);
-                }
+                var userResult = await EncryptFieldJS(NewEntryForm.Username, masterKeyBase64);
+                dto.Username = Convert.FromBase64String(userResult.CipherText);
+                dto.UsernameVi = Convert.FromBase64String(userResult.Iv);
+                dto.UsernameTag = Convert.FromBase64String(userResult.Tag);
 
                 // 5. Encrypt URL
-                if (!string.IsNullOrWhiteSpace(NewEntryForm.Url))
-                {
-                    var urlResult = await EncryptFieldJS(NewEntryForm.Url, masterKeyBase64);
-                    dto.Url = Convert.FromBase64String(urlResult.CipherText);
-                    dto.UrlVi = Convert.FromBase64String(urlResult.Iv);
-                    dto.UrlTag = Convert.FromBase64String(urlResult.Tag);
-                }
+                var urlResult = await EncryptFieldJS(NewEntryForm.Url, masterKeyBase64);
+                dto.Url = Convert.FromBase64String(urlResult.CipherText);
+                dto.UrlVi = Convert.FromBase64String(urlResult.Iv);
+                dto.UrlTag = Convert.FromBase64String(urlResult.Tag);
+
+                //6. Commentaire can be added similarly if needed - currently empty
+                var commentaireResult = await EncryptFieldJS("", masterKeyBase64);
+                dto.Commentaire = Convert.FromBase64String(urlResult.CipherText);
+                dto.CommentaireVi = Convert.FromBase64String(urlResult.Iv);
+                dto.CommentaireTag = Convert.FromBase64String(urlResult.Tag);
+
 
                 // 6. Send to API
                 await _entreeApi.CreateEntreeAsync(dto);

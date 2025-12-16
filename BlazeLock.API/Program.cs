@@ -1,4 +1,3 @@
-using BlazeLock.API.Middleware;
 using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.API.Services;
@@ -105,7 +104,7 @@ builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<IEntreeRepository, EntreeRepository>();
 builder.Services.AddScoped<IHistoriqueEntreeRepository, HistoriqueEntreeRepository>();
 builder.Services.AddScoped<IEntreeService, EntreeService>();
-
+builder.Services.AddScoped<IDossierRepository, DossierRepository>();
 
 
 
@@ -138,9 +137,6 @@ app.UseCors(policy => policy
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Middleware pour la gestion des utilisateurs
-app.UseUserRegistration();
 
 app.MapControllers();
 app.Run();
