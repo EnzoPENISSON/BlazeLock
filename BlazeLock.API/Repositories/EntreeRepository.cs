@@ -28,6 +28,19 @@ namespace BlazeLock.API.Repositories
             return await context.Entrees.FindAsync(idEntree);
         }
 
+        public async Task<HashSet<Entree>> GetAllByCoffreAsync(Guid idCoffre)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            var entrees = await context.Entrees
+                  .Where(e => e.Dossier.IdCoffre == idCoffre)
+                  .Include(e => e.Dossier)
+                  .AsNoTracking()
+                  .ToListAsync();
+
+            return entrees.ToHashSet();
+        }
+
         public async Task<HashSet<Entree>> GetAllByDossierAsync(Guid idDossier)
         {
             var context = await _contextFactory.CreateDbContextAsync();

@@ -1,0 +1,182 @@
+﻿@using BlazeLock.DbLib
+@using BlazeLock.FRONT.Services
+@inject VaultKeyStore KeyStore
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+@if (IsVisible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
+            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Nouvelle Entrée</h3>
+                <button @onclick="Close" class="text-gray-400 hover:text-gray-600"><i class="bi bi-x-lg"></i></button>
+            </div>
+
+            <EditForm Model="@formModel" OnValidSubmit="HandleSubmitAsync">
+                <DataAnnotationsValidator />
+
+                <div class="p-8 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Titre</label>
+                        <InputText @bind-Value="formModel.Libelle" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Ex: Banque Populaire" />
+                        <ValidationMessage For="@(() => formModel.Libelle)" />
+                    </div>
+
+                    <div class="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">Identifiant / Email</label>
+                            <InputText @bind-Value="formModel.Username" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">Mot de passe (Requis)</label>
+                            <div class="relative">
+                                <InputText type="password" @bind-Value="formModel.Password" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" />
+                                <i class="bi bi-lock-fill absolute right-3 top-2.5 text-blue-300"></i>
+                            </div>
+                            <ValidationMessage For="@(() => formModel.Password)" class="text-red-500 text-xs mt-1" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">URL (Optionnel)</label>
+                            <InputText @bind-Value="formModel.Url" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" placeholder="https://..." />
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="text-red-500 text-sm bg-red-50 p-3 rounded-lg">@ErrorMessage</div>
+                    }
+                </div>
+
+                <div class="px-8 py-6 bg-gray-50 flex justify-end gap-3">
+                    <button type="button" @onclick="Close" class="px-6 py-2.5 rounded-xl font-semibold text-gray-600 hover:bg-gray-200">Annuler</button>
+                    <button type="submit" disabled="@IsProcessing" class="px-6 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg disabled:opacity-50 flex items-center">
+                        @(IsProcessing ? "Chiffrement..." : "Enregistrer")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid VaultId { get; set; }
+    [Parameter] public EventCallback OnEntryCreated { get; set; }
+
+    private bool IsVisible = false;
+    private bool IsProcessing = false;
+    private string ErrorMessage = "";
+    private EntryFormModel formModel = new();
+
+    public void Show()
+    {
+        formModel = new();
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        IsProcessing = true;
+        ErrorMessage = "";
+
+        try
+        {
+            // 1. Récupérer la clé maître déchiffrée (Base64)
+            string? keyBase64 = KeyStore.GetKey(VaultId);
+            if (string.IsNullOrEmpty(keyBase64))
+            {
+                ErrorMessage = "Clé introuvable. Veuillez déverrouiller le coffre.";
+                return;
+            }
+
+            // 2. Préparer le DTO final
+            var dto = new EntreeDto
+            {
+                IdDossier = Guid.Empty, // TODO: Gérer les dossiers si besoin
+                Libelle = formModel.Libelle,
+                DateCreation = DateTime.UtcNow,
+                DateUpdate = DateTime.UtcNow
+            };
+
+            // 3. Chiffrer le Mot de Passe (OBLIGATOIRE)
+            var passResult = await EncryptField(formModel.Password, keyBase64);
+            dto.Password = Convert.FromBase64String(passResult.CipherText);
+            dto.PasswordVi = Convert.FromBase64String(passResult.Iv);
+            dto.PasswordTag = Convert.FromBase64String(passResult.Tag);
+
+            // 4. Chiffrer l'Username (OPTIONNEL)
+            if (!string.IsNullOrWhiteSpace(formModel.Username))
+            {
+                var userResult = await EncryptField(formModel.Username, keyBase64);
+                dto.Username = Convert.FromBase64String(userResult.CipherText);
+                dto.UsernameVi = Convert.FromBase64String(userResult.Iv);
+                dto.UsernameTag = Convert.FromBase64String(userResult.Tag);
+            }
+
+            // 5. Chiffrer l'URL (OPTIONNEL)
+            if (!string.IsNullOrWhiteSpace(formModel.Url))
+            {
+                var urlResult = await EncryptField(formModel.Url, keyBase64);
+                dto.Url = Convert.FromBase64String(urlResult.CipherText);
+                dto.UrlVi = Convert.FromBase64String(urlResult.Iv);
+                dto.UrlTag = Convert.FromBase64String(urlResult.Tag);
+            }
+
+            // 6. Envoi à l'API
+            var response = await Http.PostAsJsonAsync("api/entrees", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                await OnEntryCreated.InvokeAsync();
+                Close();
+            }
+            else
+            {
+                ErrorMessage = "Erreur serveur : " + await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erreur : " + ex.Message;
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
+    }
+
+    public class EncryptionResult
+    {
+        public string CipherText { get; set; } = ""; // Le contenu chiffré (Base64)
+        public string Iv { get; set; } = "";         // Le vecteur d'initialisation (Base64)
+        public string Tag { get; set; } = "";        // Le tag d'auth (Base64)
+    }
+
+    // Helper pour appeler le JS proprement
+    private async Task<EncryptionResult> EncryptField(string clearText, string key)
+    {
+        // On suppose que votre fonction JS s'appelle 'blazeCrypto.encryptField'
+        // et retourne un objet JSON { cipherText, iv, tag }
+        return await JS.InvokeAsync<EncryptionResult>("blazeCrypto.encryptField", clearText, key);
+    }
+
+    // Modèle local pour le formulaire
+    public class EntryFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Le titre est requis")]
+        public string Libelle { get; set; } = "";
+
+        public string Username { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Le mot de passe est requis")]
+        public string Password { get; set; } = "";
+
+        public string Url { get; set; } = "";
+    }
+}

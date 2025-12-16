@@ -7,11 +7,6 @@
     using System.Net.Http.Json;
     using System.Threading.Tasks;
 
-    public interface IUserAPIService
-    {
-        Task InsertUtilisateurAsync(Guid? userId);
-    }
-
     public class UserAPIService : IUserAPIService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;

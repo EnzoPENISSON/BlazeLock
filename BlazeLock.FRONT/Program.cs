@@ -25,6 +25,10 @@ builder.Services.AddHttpClient<UserAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
+builder.Services.AddHttpClient<EntreeAPIService>(client =>
+    client.BaseAddress = new Uri(apiEndpoint))
+    .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);

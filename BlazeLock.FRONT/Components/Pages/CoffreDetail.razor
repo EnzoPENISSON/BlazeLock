@@ -79,16 +79,33 @@
                 </div>
 
                 <div class="lg:col-span-3">
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 min-h-[400px] flex flex-col items-center justify-center text-center p-8">
-                        <div class="bg-gray-50 p-6 rounded-full mb-4">
-                            <i class="bi bi-layers text-4xl text-gray-300"></i>
+                    @if (Entries == null)
+                    {
+                        <p>Chargement...</p>
+                    }
+                    else if (Entries.Count == 0)
+                    {
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 min-h-[400px] flex flex-col items-center justify-center text-center p-8">
+                            <div class="bg-gray-50 p-6 rounded-full mb-4">
+                                <i class="bi bi-layers text-4xl text-gray-300"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">C'est vide ici !</h3>
+                            <p class="text-gray-500 max-w-sm mb-6">Ajoutez votre premier mot de passe, note sécurisée ou carte bancaire dans ce coffre.</p>
+                            <button @onclick="() => createModal.Show()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl transition-colors">
+                                Créer une entrée
+                            </button>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">C'est vide ici !</h3>
-                        <p class="text-gray-500 max-w-sm mb-6">Ajoutez votre premier mot de passe, note sécurisée ou carte bancaire dans ce coffre.</p>
-                        <button class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl transition-colors">
-                            Créer une entrée
-                        </button>
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="grid grid-cols-1 gap-4">
+                            @foreach (var entry in Entries)
+                            {
+                                <EntreeCard Title="@entry.Dossier?.Libelle"
+                                            DateCreation="@entry.DateCreation" />
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -97,20 +114,42 @@
 
 @code {
     [Parameter] public Guid Id { get; set; }
+    private CreateEntreeModal createModal;
+    private List<EntreeDto> Entries = new();
 
     private bool hasAccess = false;
     private string CoffreName = "";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (KeyStore.IsUnlocked(Id))
         {
             hasAccess = true;
             CoffreName = KeyStore.GetName(Id) ?? "Coffre Inconnu";
+            if (hasAccess)
+            {
+                await RefreshEntries();
+            }
         }
         else
         {
             hasAccess = false;
+        }
+    }
+
+    private async Task RefreshEntries()
+    {
+        try
+        {
+            
+            // Entries = await Http.GetFromJsonAsync<List<Entree>>("api/entree");
+
+            // OU si vous filtrez par dossier (si Id est un dossier)
+            // Entries = await Http.GetFromJsonAsync<List<Entree>>($"api/entree/dossier/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erreur chargement entrées : " + ex.Message);
         }
     }
 }

@@ -53,6 +53,13 @@ public class EntreeController : ControllerBase
         return Created();
     }
 
+    [HttpGet("coffre/{id}")]
+    public async Task<IActionResult> GetByCoffre(Guid id)
+    {
+        var entrees = await _service.GetAllByCoffreAsync(id);
+        return Ok(entrees);
+    }
+
     //[HttpDelete]
     //public async Task<IActionResult> Delete(EntreeDto dto)
     //{
