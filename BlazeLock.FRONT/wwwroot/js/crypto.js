@@ -45,35 +45,34 @@
         const enc = new TextEncoder();
         const keyBytes = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
 
-        // Importer la clé AES
+        // 1. Importer la clé
         const key = await window.crypto.subtle.importKey(
-            "raw",
-            keyBytes,
-            { name: "AES-GCM" },
-            false,
-            ["encrypt"]
+            "raw", keyBytes, { name: "AES-GCM" }, false, ["encrypt"]
         );
 
-        // Générer un IV (Vecteur d'initialisation) de 12 octets
+        // 2. Générer l'IV (12 octets)
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
-        // Chiffrer
-        const encryptedContent = await window.crypto.subtle.encrypt(
-            {
-                name: "AES-GCM",
-                iv: iv
-            },
+        // 3. Chiffrer
+        const encryptedBuffer = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv },
             key,
             enc.encode(plainText)
         );
 
-        // Combiner [IV] + [ContenuChiffré] dans un seul tableau
-        const combined = new Uint8Array(iv.length + encryptedContent.byteLength);
-        combined.set(iv);
-        combined.set(new Uint8Array(encryptedContent), iv.length);
+        // 4. SÉPARER LE TAG (Les 16 derniers octets sont toujours le Tag en AES-GCM WebCrypto)
+        const bufferBytes = new Uint8Array(encryptedBuffer);
+        const tagLength = 16;
+        const cipherLength = bufferBytes.length - tagLength;
 
-        // Retourner en Base64
-        return btoa(String.fromCharCode(...combined));
+        const cipherTextBytes = bufferBytes.slice(0, cipherLength);
+        const tagBytes = bufferBytes.slice(cipherLength);
+
+        return {
+            cipherText: btoa(String.fromCharCode(...cipherTextBytes)),
+            iv: btoa(String.fromCharCode(...iv)),
+            tag: btoa(String.fromCharCode(...tagBytes))
+        };
     },
 
     // 4. Déchiffrer (AES-GCM)

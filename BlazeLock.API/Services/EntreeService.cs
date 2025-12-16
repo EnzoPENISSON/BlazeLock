@@ -35,6 +35,7 @@ namespace BlazeLock.API.Services
 
             return result;
         }
+
         public async Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid IdDossier)
         {
             var entree = await _entreeRepository.GetAllByDossierAsync(IdDossier);
@@ -151,6 +152,21 @@ namespace BlazeLock.API.Services
             };
             await _historiqueEntreeRepository.AddAsync(newHistorique);
         }
+        
+        public async Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre)
+        {
+            var entree = await _entreeRepository.GetAllByDossierAsync(idCoffre);
+
+            var result = entree
+               .Select(c => new EntreeDto
+               {
+                   IdEntree = c.IdEntree,
+                   DateCreation = c.DateCreation,
+                   IdDossier = c.IdDossier
+               }).ToHashSet();
+
+            return result;
+        }
 
         public async Task<IActionResult?> VerifyUserAccess(EntreeDto entreDto, (Guid, IActionResult?) utilisateur)
         {
@@ -168,7 +184,6 @@ namespace BlazeLock.API.Services
 
             return null;
         }
-
 
         //public async Task Delete(EntreeDto dto)
         //{

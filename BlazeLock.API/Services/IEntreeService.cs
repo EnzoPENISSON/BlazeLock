@@ -11,6 +11,7 @@ namespace BlazeLock.API.Services
         Task<EntreeHistoriqueDto?> GetByIdWithHistoriaqueAsync(Guid idEntree);
         Task AddAsync(EntreeDto dto);
         Task<IActionResult?> VerifyUserAccess(EntreeDto entreeDto, (Guid, IActionResult?) utilisateur);
+        Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre);
         //Task Delete(EntreeDto dto);
 
     }
