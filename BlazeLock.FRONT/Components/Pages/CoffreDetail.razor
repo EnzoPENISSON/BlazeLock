@@ -1,14 +1,16 @@
 ﻿@page "/coffre/{Id:guid}"
 @attribute [Authorize]
+@using BlazeLock.DbLib;
 @using BlazeLock.FRONT.Services
-@inject VaultKeyStore KeyStore
+@using BlazeLock.FRONT.ViewModels
+@inject CoffreDetailViewModel ViewModel
 @inject NavigationManager Nav
 
-<PageTitle>Détail Coffre - BlazeLock</PageTitle>
+<PageTitle>@ViewModel.VaultName - BlazeLock</PageTitle>
 
 <div class="min-h-screen bg-gray-50 flex flex-col items-center p-6 font-sans">
 
-    @if (!hasAccess)
+    @if (!ViewModel.HasAccess)
     {
         <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden mt-10">
             <div class="bg-red-500 p-8 text-center">
@@ -18,7 +20,7 @@
             </div>
             <div class="p-8 text-center">
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Accès Refusé</h2>
-                <p class="text-gray-500 mb-8">Ce coffre est verrouillé ou votre session a expiré. Veuillez le déverrouiller depuis l'accueil.</p>
+                <p class="text-gray-500 mb-8">Ce coffre est verrouillé ou votre session a expiré.</p>
                 <button class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 px-6 rounded-xl transition-all duration-200"
                         @onclick='() => Nav.NavigateTo("/")'>
                     Retour à l'accueil
@@ -37,7 +39,7 @@
                     </button>
                     <div>
                         <div class="flex items-center gap-3">
-                            <h1 class="text-3xl font-extrabold text-gray-900">@CoffreName</h1>
+                            <h1 class="text-3xl font-extrabold text-gray-900">@ViewModel.VaultName</h1>
                             <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full border border-green-200 flex items-center">
                                 <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                                 Déchiffré
@@ -50,7 +52,8 @@
                     <button class="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-5 rounded-xl border border-gray-200 shadow-sm transition-all flex items-center">
                         <i class="bi bi-gear-fill mr-2 text-gray-400"></i> Paramètres
                     </button>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
+
+                    <button @onclick="ViewModel.OpenCreateModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
                         <i class="bi bi-plus-lg mr-2"></i> Nouvelle Entrée
                     </button>
                 </div>
@@ -79,19 +82,20 @@
                 </div>
 
                 <div class="lg:col-span-3">
-                    @if (Entries == null)
+                    @if (ViewModel.IsLoading)
                     {
                         <p>Chargement...</p>
                     }
-                    else if (Entries.Count == 0)
+                    else if (ViewModel.Entries.Count == 0)
                     {
                         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 min-h-[400px] flex flex-col items-center justify-center text-center p-8">
                             <div class="bg-gray-50 p-6 rounded-full mb-4">
                                 <i class="bi bi-layers text-4xl text-gray-300"></i>
                             </div>
                             <h3 class="text-xl font-bold text-gray-800 mb-2">C'est vide ici !</h3>
-                            <p class="text-gray-500 max-w-sm mb-6">Ajoutez votre premier mot de passe, note sécurisée ou carte bancaire dans ce coffre.</p>
-                            <button @onclick="() => createModal.Show()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl transition-colors">
+                            <p class="text-gray-500 max-w-sm mb-6">Ajoutez votre premier mot de passe.</p>
+
+                            <button @onclick="ViewModel.OpenCreateModal" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl transition-colors">
                                 Créer une entrée
                             </button>
                         </div>
@@ -99,10 +103,9 @@
                     else
                     {
                         <div class="grid grid-cols-1 gap-4">
-                            @foreach (var entry in Entries)
+                            @foreach (var entry in ViewModel.Entries)
                             {
-                                <EntreeCard Title="@entry.Dossier?.Libelle"
-                                            DateCreation="@entry.DateCreation" />
+                                <EntreeCard Entry="entry" VaultId="ViewModel.VaultId" />
                             }
                         </div>
                     }
@@ -112,44 +115,18 @@
     }
 </div>
 
+<CreateEntreeModal IsVisible="@ViewModel.IsCreating"
+                   FormModel="@ViewModel.NewEntryForm"
+                   IsProcessing="@ViewModel.IsProcessing"
+                   ErrorMessage="@ViewModel.ErrorMessage"
+                   OnClose="@ViewModel.CloseModal"
+                   OnSubmit="@ViewModel.CreateEntryAsync" />
+
 @code {
     [Parameter] public Guid Id { get; set; }
-    private CreateEntreeModal createModal;
-    private List<EntreeDto> Entries = new();
-
-    private bool hasAccess = false;
-    private string CoffreName = "";
 
     protected override async Task OnInitializedAsync()
     {
-        if (KeyStore.IsUnlocked(Id))
-        {
-            hasAccess = true;
-            CoffreName = KeyStore.GetName(Id) ?? "Coffre Inconnu";
-            if (hasAccess)
-            {
-                await RefreshEntries();
-            }
-        }
-        else
-        {
-            hasAccess = false;
-        }
-    }
-
-    private async Task RefreshEntries()
-    {
-        try
-        {
-            
-            // Entries = await Http.GetFromJsonAsync<List<Entree>>("api/entree");
-
-            // OU si vous filtrez par dossier (si Id est un dossier)
-            // Entries = await Http.GetFromJsonAsync<List<Entree>>($"api/entree/dossier/{Id}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Erreur chargement entrées : " + ex.Message);
-        }
+        await ViewModel.InitializeAsync(Id);
     }
 }

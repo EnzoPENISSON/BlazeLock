@@ -19,13 +19,15 @@ string apiScope = $"{apiClientId}/access_as_user";
 builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
 
 builder.Services.AddScoped<VaultKeyStore>();
+// View Models
 builder.Services.AddScoped<HomeViewModel>();
+builder.Services.AddScoped<CoffreDetailViewModel>();
 
 builder.Services.AddHttpClient<UserAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
-builder.Services.AddHttpClient<EntreeAPIService>(client =>
+builder.Services.AddHttpClient<IEntreeAPIService, EntreeAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 

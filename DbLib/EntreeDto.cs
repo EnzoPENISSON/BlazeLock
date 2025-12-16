@@ -19,6 +19,5 @@
         public byte[]? Commentaire { get; set; }
         public byte[]? CommentaireTag { get; set; }
         public byte[]? CommentaireVi { get; set; }
-
     }
 }
