@@ -1,4 +1,5 @@
 ﻿using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Services
 {
@@ -9,5 +10,6 @@ namespace BlazeLock.API.Services
         Task<HashSet<DossierDto>> GetByCoffreAsync(Guid id);
         Task AddAsync(DossierDto dto);
         Task Delete(DossierDto dto);
+        Task<IActionResult?> VerifyUserAccess(DossierDto dossierDto, (Guid, IActionResult?) utilisateur);
     }
 }
