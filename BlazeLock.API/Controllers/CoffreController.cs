@@ -118,11 +118,6 @@ namespace BlazeLock.API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création du coffre.");
             }
-
-            dto.IdUtilisateur = userId;
-            await _encryptService.HashMasterKey(dto);
-
-            return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
         }
 
         [HttpDelete]
@@ -137,8 +132,8 @@ namespace BlazeLock.API.Controllers
         {
             if (dto == null) return BadRequest("Invalid client request");
 
-            var (userId, errorResult) = GetCurrentUserId();
-            if (errorResult != null) return errorResult;
+            var (userId, errorResult) = User.GetCurrentUserId();
+            if (errorResult != null) return Forbid();
 
             var existingCoffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
 
@@ -162,21 +157,6 @@ namespace BlazeLock.API.Controllers
             return Unauthorized(isValid);
         }
 
-        private (Guid userId, IActionResult? error) GetCurrentUserId()
-        {
-            
-            var userIdClaim = User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier");
 
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                // Idéalement, vérifier ici que l'utilisateur a le droit de supprimer ce coffre.
-                await _coffreService.Delete(dto);
-                return Ok("Coffre supprimé");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du coffre.");
-            }
-        }
     }
 }
