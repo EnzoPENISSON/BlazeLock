@@ -48,12 +48,10 @@ namespace BlazeLock.API.Controllers
                 var dossiers = await _dossierService.GetByCoffreAsync(IdCoffre);
                 if (dossiers == null) return NotFound();
 
-                var coffre = await _coffreService.GetByIdAsync(IdCoffre);
+                CoffreDto coffre = await _coffreService.GetByIdAsync(IdCoffre);
                 if (coffre == null) return NotFound();
 
-                var (userId, _) = User.GetCurrentUserId();
-                if (coffre.IdUtilisateur != userId)
-                    return Forbid();
+                await _coffreService.VerifyUserAccess(coffre, User.GetCurrentUserId());
 
                 return Ok(dossiers);
             }
@@ -72,12 +70,7 @@ namespace BlazeLock.API.Controllers
 
                 if (dossier == null) return NotFound();
 
-                var coffre = await _coffreService.GetByIdAsync(dossier.IdCoffre);
-                if (coffre == null) return NotFound();
-
-                var (userId, _) = User.GetCurrentUserId();
-                if (coffre.IdUtilisateur != userId)
-                    return Forbid(); 
+                await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
 
                 return Ok(dossier);
             }
@@ -88,18 +81,11 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(DossierDto dto)
+        public async Task<IActionResult> Create(DossierDto dto) 
         {
             try
             {
-                var (userId, errorResult) = User.GetCurrentUserId();
-                if (errorResult != null) return errorResult;
-
-
-                var coffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
-                if (coffre == null) return NotFound();
-                if (coffre.IdUtilisateur != userId)
-                    return Forbid();
+                await _dossierService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
                 if (dto.IdDossier == Guid.Empty)
                 {
@@ -120,13 +106,7 @@ namespace BlazeLock.API.Controllers
         {
             try
             {
-                var (userId, errorResult) = User.GetCurrentUserId();
-                if (errorResult != null) return errorResult;
-
-                var coffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
-                if (coffre == null) return NotFound("Le coffre associé à ce dossier n'a pas été trouvé.");
-
-                if (coffre.IdUtilisateur != userId) return Forbid();
+                await _dossierService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
                 await _dossierService.Delete(dto);
                 return Ok("Partage supprimé");

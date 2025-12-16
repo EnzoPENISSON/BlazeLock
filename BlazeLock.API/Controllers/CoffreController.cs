@@ -67,6 +67,7 @@ namespace BlazeLock.API.Controllers
             {
                 var coffres = await _coffreService.GetByUtilisateurAsync(id);
                 if (coffres == null) return NotFound();
+
                 return Ok(coffres);
             }
             catch (Exception ex)
@@ -101,30 +102,29 @@ namespace BlazeLock.API.Controllers
         {
             try
             {
-                var (userId, errorResult) = User.GetCurrentUserId();
-                if (errorResult != null) return errorResult;
-
-                var userExists = await _utilisateurService.ExistsAsync(userId);
-                if (!userExists)
-                {
-                    return NotFound("Utilisateur non trouvé.");
-                }
-
-                dto.IdUtilisateur = userId;
-                await _coffreService.AddAsync(dto);
+                await _encryptService.HashMasterKey(dto);
                 return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création du coffre.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création du coffre." + ex);
             }
         }
 
         [HttpDelete]
         public async Task<IActionResult> Delete(CoffreDto dto)
         {
-            await _coffreService.Delete(dto);
-            return Ok("Coffre supprimé");
+            try
+            {
+                await _coffreService.VerifyUserAccess(dto, User.GetCurrentUserId());
+
+                await _coffreService.Delete(dto);
+                return Ok("Partage supprimé");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du dossier.");
+            }
         }
 
         [HttpPost("verify-password")]
@@ -156,7 +156,6 @@ namespace BlazeLock.API.Controllers
             }
             return Unauthorized(isValid);
         }
-
 
     }
 }

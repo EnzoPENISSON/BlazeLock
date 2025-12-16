@@ -1,10 +1,7 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
-using Humanizer;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.CodeAnalysis.Elfie.Model.Tree;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Services
 {
@@ -13,11 +10,15 @@ namespace BlazeLock.API.Services
 
         private readonly IEntreeRepository _entreeRepository;
         private readonly IHistoriqueEntreeRepository _historiqueEntreeRepository;
+        private readonly IDossierRepository _dossierRepository;
+        private readonly ICoffreRepository _coffreRepository;
 
-        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository)
+        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository, ICoffreRepository coffreRepository)
         {
             _entreeRepository = EntreeRepository;
             _historiqueEntreeRepository = HistoriqueEntreeRepository;
+            _dossierRepository = dossierRepository;
+            _coffreRepository = coffreRepository;
         }
 
         public async Task<HashSet<EntreeDto>> GetAllAsync()
@@ -162,13 +163,28 @@ namespace BlazeLock.API.Services
                    IdEntree = c.IdEntree,
                    DateCreation = c.DateCreation,
                    IdDossier = c.IdDossier
-               })
-
-               .ToHashSet();
+               }).ToHashSet();
 
             return result;
-
         }
+
+        public async Task<IActionResult?> VerifyUserAccess(EntreeDto entreDto, (Guid, IActionResult?) utilisateur)
+        {
+
+            var (userId, errorResult) = utilisateur;
+            if (errorResult != null) return errorResult;
+
+            var dossier = await _dossierRepository.GetByIdAsync(entreDto.IdDossier);
+            if (dossier == null) return new BadRequestObjectResult("Le dossier associé à cette entrée n'a pas été trouvé.");
+
+            var coffre = await _coffreRepository.GetByIdAsync(dossier.IdCoffre);
+            if (coffre == null) return new BadRequestObjectResult("Le coffre associé à cette entrée n'a pas été trouvé.");
+
+            if (coffre.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
+
+            return null;
+        }
+
         //public async Task Delete(EntreeDto dto)
         //{
         //    var entity = new Entree

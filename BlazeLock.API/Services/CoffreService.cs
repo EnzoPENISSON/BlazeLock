@@ -1,6 +1,7 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Services
 {
@@ -90,6 +91,17 @@ namespace BlazeLock.API.Services
                 Salt = dto.Salt
             };
             await _repository.DeleteCoffre(entity);
+        }
+
+        public async Task<IActionResult?> VerifyUserAccess(CoffreDto coffreDto, (Guid, IActionResult?) utilisateur)
+        {
+
+            var (userId, errorResult) = utilisateur;
+            if (errorResult != null) return errorResult;
+            
+            if (coffreDto.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
+
+            return null;
         }
 
     }
