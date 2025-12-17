@@ -102,6 +102,16 @@ namespace BlazeLock.API.Controllers
         {
             try
             {
+                var (userId, errorResult) = User.GetCurrentUserId();
+                if (errorResult != null) return errorResult;
+
+                var userExists = await _utilisateurService.ExistsAsync(userId);
+                if (!userExists)
+                {
+                    return NotFound("Utilisateur non trouvé.");
+                }
+
+                dto.IdUtilisateur = userId;
                 await _encryptService.HashMasterKey(dto);
                 return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
             }

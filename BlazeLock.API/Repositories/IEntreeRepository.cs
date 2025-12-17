@@ -8,7 +8,9 @@ namespace BlazeLock.API.Repositories
         Task<HashSet<Entree>> GetAllAsync();
         Task<Entree?> GetByIdAsync(Guid idEntree);
         Task<HashSet<Entree>> GetAllByDossierAsync(Guid idUtilisateur);
+        Task<HashSet<Entree>> GetAllByCoffreAsync(Guid idCoffre);
         Task AddAsync(Entree partage);
-        Task DeleteEntree(Entree partage);
+        Task updateAsync(Entree partage);
+        Task DeleteEntree(Entree entree);
     }
 }

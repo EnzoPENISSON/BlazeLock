@@ -10,5 +10,7 @@ namespace BlazeLock.API.Repositories
         Task<HashSet<Dossier>> GetByCoffreAsync(Guid idUtilisateur);
         Task AddAsync(Dossier partage);
         Task DeleteDossier(Dossier partage);
+        Task<bool> DossierExistsAsync(string nomDossier, Guid idCoffre);
+        Task<Dossier?> GetByLibelleAndCoffreIdAsync(string nomDossier, Guid idCoffre);
     }
 }

@@ -110,7 +110,6 @@ builder.Services.AddScoped<IEntreeService, EntreeService>();
 
 
 
-
 var app = builder.Build();
 
 if (!string.IsNullOrWhiteSpace(corsFrontEndpoint))

@@ -26,11 +26,11 @@ namespace BlazeLock.FRONT.Services
             }
         }
 
-        public async Task<List<EntreeDto>> GetAllByDossierAsync(Guid dossierId)
+        public async Task<List<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid dossierId)
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/dossier/{dossierId}");
+                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/dossier/{idCoffre}/{dossierId}");
                 return result ?? new List<EntreeDto>();
             }
             catch (Exception ex)
@@ -75,6 +75,20 @@ namespace BlazeLock.FRONT.Services
             {
                 Console.WriteLine($"[EntreeAPIService] Error creating entry: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<bool> UpdateDossierAsync(Guid targetFolderId, Guid entryId)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync($"api/entree/dossier/{entryId}/{targetFolderId}", entryId);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DossierAPIService] Error creating dossier: {ex.Message}");
+                return false;
             }
         }
 

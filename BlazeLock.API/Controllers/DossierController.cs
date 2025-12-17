@@ -17,13 +17,13 @@ namespace BlazeLock.API.Controllers
     {
         private readonly ICoffreService _coffreService;
         private readonly IDossierService _dossierService;
-        private readonly IEncryptService _encryptService;
         private readonly IUtilisateurService _utilisateurService;
 
-        public DossierController(ICoffreService coffreService, IUtilisateurService utilisateurService, IEncryptService encryptService)
+        public DossierController(ICoffreService coffreService, IUtilisateurService utilisateurService, IDossierService dossierService)
         {
             _coffreService = coffreService;
             _utilisateurService = utilisateurService;
+            _dossierService = dossierService;
         }
 
         [HttpGet]
@@ -40,7 +40,7 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpGet("coffre/{id}")]
+        [HttpGet("coffre/{IdCoffre}")]
         public async Task<IActionResult> GetByCoffre(Guid IdCoffre)
         {
             try
@@ -57,6 +57,7 @@ namespace BlazeLock.API.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des dossiers pour le coffre {IdCoffre}.");
             }
         }

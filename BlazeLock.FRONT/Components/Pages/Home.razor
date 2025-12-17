@@ -75,6 +75,7 @@
         if (user.Identity?.IsAuthenticated == true)
         {
             UserName = user.Identity.Name ?? "Utilisateur";
+            // Add email et nom en base
 
             var oid = user.FindFirst("oid")?.Value ?? user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
             if (Guid.TryParse(oid, out Guid userId))
