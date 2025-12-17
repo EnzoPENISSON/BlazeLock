@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazeLock.API.Migrations
 {
     [DbContext(typeof(BlazeLockContext))]
-    [Migration("20251216143936_LogUser")]
-    partial class LogUser
+    [Migration("20251217104003_bdd")]
+    partial class bdd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,14 +238,11 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("datetime")
                         .HasColumnName("timestamp_");
 
-                    b.Property<Guid>("UtilisateurIdUtilisateur")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("IdLog");
 
                     b.HasIndex("IdCoffre");
 
-                    b.HasIndex("UtilisateurIdUtilisateur");
+                    b.HasIndex("IdUtilisateur");
 
                     b.ToTable("Log", (string)null);
                 });
@@ -335,8 +332,7 @@ namespace BlazeLock.API.Migrations
 
                     b.HasOne("BlazeLock.API.Models.Utilisateur", "Utilisateur")
                         .WithMany("Logs")
-                        .HasForeignKey("UtilisateurIdUtilisateur")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("IdUtilisateur")
                         .IsRequired();
 
                     b.Navigation("Coffre");

@@ -4,6 +4,6 @@ namespace BlazeLock.FRONT.Services
 {
     public interface ILogAPIService
     {
-        Task<List<LogDto>?> GetLogsByVaultIdAsync(Guid vaultId);
+        Task<PagedResultDto<LogDto>?> GetLogsByVaultIdAsync(Guid vaultId, int pageNumber, int pageSize);
     }
 }

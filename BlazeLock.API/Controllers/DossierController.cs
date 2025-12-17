@@ -17,13 +17,11 @@ namespace BlazeLock.API.Controllers
     {
         private readonly ICoffreService _coffreService;
         private readonly IDossierService _dossierService;
-        private readonly ILogService _logService;
 
-        public DossierController(ICoffreService coffreService, IDossierService dossierService, ILogService logService)
+        public DossierController(ICoffreService coffreService, IDossierService dossierService)
         {
             _coffreService = coffreService;
             _dossierService = dossierService;
-            _logService = logService;
         }
 
         [HttpGet]

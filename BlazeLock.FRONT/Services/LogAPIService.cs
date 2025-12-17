@@ -12,12 +12,11 @@ namespace BlazeLock.FRONT.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<LogDto>?> GetLogsByVaultIdAsync(Guid vaultId)
+        public async Task<PagedResultDto<LogDto>?> GetLogsByVaultIdAsync(Guid vaultId, int pageNumber, int pageSize)
         {
             try
             {
-                // Assurez-vous que le contrôleur API a une route correspondante, par exemple : api/Log/coffre/{vaultId}
-                return await _httpClient.GetFromJsonAsync<List<LogDto>>($"api/Log/coffre/{vaultId}");
+                return await _httpClient.GetFromJsonAsync<PagedResultDto<LogDto>>($"api/Log/coffre/{vaultId}?pageNumber={pageNumber}&pageSize={pageSize}");
             }
             catch (HttpRequestException ex)
             {

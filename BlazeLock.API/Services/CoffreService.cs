@@ -8,17 +8,18 @@ namespace BlazeLock.API.Services
     public class CoffreService : ICoffreService
     {
 
-        private readonly ICoffreRepository _repository;
+        private readonly ICoffreRepository _coffreRepository;
         private readonly ILogRepository _logRepository;
 
-        public CoffreService(ICoffreRepository repository)
+        public CoffreService(ICoffreRepository coffreRepository, ILogRepository logRepository)
         {
-            _repository = repository;
+            _coffreRepository = coffreRepository;
+            _logRepository = logRepository;
         }
 
         public async Task<HashSet<CoffreDto>> GetAllAsync()
         {
-            var partages = await _repository.GetAllAsync();
+            var partages = await _coffreRepository.GetAllAsync();
 
             var result = partages
                 .Select(c => new CoffreDto
@@ -36,7 +37,7 @@ namespace BlazeLock.API.Services
 
         public async Task<HashSet<CoffreDto>> GetByUtilisateurAsync(Guid idUtilisateur)
         {
-            var partages = await _repository.GetByUtilisateurAsync(idUtilisateur);
+            var partages = await _coffreRepository.GetByUtilisateurAsync(idUtilisateur);
 
             var result = partages
                 .Select(c => new CoffreDto
@@ -54,7 +55,7 @@ namespace BlazeLock.API.Services
 
         public async Task<CoffreDto?> GetByIdAsync(Guid id)
         {
-            var result = await _repository.GetByIdAsync(id);
+            var result = await _coffreRepository.GetByIdAsync(id);
 
             if (result == null) return null;
 
@@ -77,7 +78,7 @@ namespace BlazeLock.API.Services
                 HashMasterkey = dto.HashMasterkey,
                 Salt = dto.Salt
             };
-            await _repository.AddAsync(entity);
+            await _coffreRepository.AddAsync(entity);
 
         }
 
@@ -91,7 +92,7 @@ namespace BlazeLock.API.Services
                 HashMasterkey = dto.HashMasterkey,
                 Salt = dto.Salt
             };
-            await _repository.DeleteCoffre(entity);
+            await _coffreRepository.DeleteCoffre(entity);
         }
 
         public async Task<IActionResult?> VerifyUserAccess(CoffreDto coffreDto, (Guid, IActionResult?) utilisateur)

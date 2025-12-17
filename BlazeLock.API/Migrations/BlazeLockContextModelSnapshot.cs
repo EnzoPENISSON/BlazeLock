@@ -235,14 +235,11 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("datetime")
                         .HasColumnName("timestamp_");
 
-                    b.Property<Guid>("UtilisateurIdUtilisateur")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("IdLog");
 
                     b.HasIndex("IdCoffre");
 
-                    b.HasIndex("UtilisateurIdUtilisateur");
+                    b.HasIndex("IdUtilisateur");
 
                     b.ToTable("Log", (string)null);
                 });
@@ -332,8 +329,7 @@ namespace BlazeLock.API.Migrations
 
                     b.HasOne("BlazeLock.API.Models.Utilisateur", "Utilisateur")
                         .WithMany("Logs")
-                        .HasForeignKey("UtilisateurIdUtilisateur")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("IdUtilisateur")
                         .IsRequired();
 
                     b.Navigation("Coffre");

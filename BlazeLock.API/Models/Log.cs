@@ -15,6 +15,5 @@ public partial class Log
 
     public virtual Coffre Coffre { get; set; } = null!;
     public Guid IdUtilisateur { get; set; }
-
     public virtual Utilisateur Utilisateur { get; set; } = null!;
 }

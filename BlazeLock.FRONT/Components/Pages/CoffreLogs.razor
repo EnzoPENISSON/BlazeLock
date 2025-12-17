@@ -25,7 +25,7 @@
                 <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
             </div>
         }
-        else if (!_logs.Any())
+        else if (_pagedResult == null || !_pagedResult.Items.Any())
         {
             <div class="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
                 <i class="bi bi-card-checklist text-5xl text-gray-300 mb-4"></i>
@@ -45,7 +45,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach (var log in _logs)
+                        @foreach (var log in _pagedResult.Items)
                         {
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@log.Timestamp.ToString("g")</td>
@@ -56,6 +56,24 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="flex items-center justify-between mt-4">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Page @(_pagedResult.PageNumber) sur @(_pagedResult.TotalPages)
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <button @onclick="() => ChangePage(_pagedResult.PageNumber - 1)" disabled="@(_pagedResult.PageNumber <= 1)"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Précédent
+                    </button>
+                    <button @onclick="() => ChangePage(_pagedResult.PageNumber + 1)" disabled="@(_pagedResult.PageNumber >= _pagedResult.TotalPages)"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Suivant
+                    </button>
+                </div>
+            </div>
         }
     </div>
 </div>
@@ -64,27 +82,40 @@
     [Parameter]
     public Guid Id { get; set; }
 
-    private List<LogDto> _logs = new();
+    private PagedResultDto<LogDto>? _pagedResult;
     private bool _isLoading = true;
+    private int _currentPage = 1;
+    private int _pageSize = 5;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        _isLoading = true;
         try
         {
-            var logs = await LogService.GetLogsByVaultIdAsync(Id);
-            if (logs != null)
-            {
-                _logs = logs.OrderByDescending(l => l.Timestamp).ToList();
-            }
+            _pagedResult = await LogService.GetLogsByVaultIdAsync(Id, _currentPage, _pageSize);
         }
         catch (Exception ex)
         {
-            // Gérer l'erreur, par exemple en affichant un message
             Console.WriteLine($"Error fetching logs: {ex.Message}");
         }
         finally
         {
             _isLoading = false;
         }
+    }
+
+    private async Task ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || (_pagedResult != null && pageNumber > _pagedResult.TotalPages))
+        {
+            return;
+        }
+        _currentPage = pageNumber;
+        await LoadLogs();
     }
 }

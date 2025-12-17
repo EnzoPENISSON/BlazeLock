@@ -1,6 +1,9 @@
 ﻿using BlazeLock.API.Models;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BlazeLock.API.Repositories
 {
@@ -38,6 +41,25 @@ namespace BlazeLock.API.Repositories
                 .ToListAsync();
 
             return logs.ToHashSet();
+        }
+
+        public async Task<(HashSet<Log>, int)> GetByCoffrePagedAsync(Guid idCoffre, int pageNumber, int pageSize)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var query = context.Logs
+                .Where(p => p.IdCoffre == idCoffre)
+                .AsNoTracking();
+
+            var totalCount = await query.CountAsync();
+
+            var logs = await query
+                .OrderByDescending(l => l.Timestamp)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (logs.ToHashSet(), totalCount);
         }
 
         public async Task AddAsync(Log log)

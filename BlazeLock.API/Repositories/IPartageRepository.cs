@@ -9,5 +9,6 @@ namespace BlazeLock.API.Repositories
         Task<HashSet<Partage>> GetByUtilisateurAsync(Guid idUtilisateur);
         Task AddAsync(Partage partage);
         Task DeletePartage(Partage partage);
+        Task<bool> IsCoffreAdmin(Guid idCoffre, Guid idUtilisateur);
     }
 }
