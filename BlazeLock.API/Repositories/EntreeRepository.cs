@@ -33,10 +33,12 @@ namespace BlazeLock.API.Repositories
             using var context = await _contextFactory.CreateDbContextAsync();
 
             var entrees = await context.Entrees
-                  .Where(e => e.Dossier.IdCoffre == idCoffre)
-                  .Include(e => e.Dossier)
-                  .AsNoTracking()
-                  .ToListAsync();
+                    .Where(e => e.Dossier.IdCoffre == idCoffre)
+                    .Include(e => e.Dossier)
+                    .Include(e => e.HistoriqueEntrees)
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    .ToListAsync();
 
             return entrees.ToHashSet();
         }
@@ -47,7 +49,10 @@ namespace BlazeLock.API.Repositories
 
             var coffres = await context.Entrees
                 .Where(e => e.IdDossier == idDossier)
+                .Include(e => e.Dossier)
+                .Include(e => e.HistoriqueEntrees)
                 .AsNoTracking()
+                .AsSplitQuery()
                 .ToListAsync();
 
             return coffres.ToHashSet();
@@ -58,6 +63,13 @@ namespace BlazeLock.API.Repositories
             var context = await _contextFactory.CreateDbContextAsync();
 
             await context.Entrees.AddAsync(coffre);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task updateAsync(Entree entree)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+            context.Update(entree);
             await context.SaveChangesAsync();
         }
 

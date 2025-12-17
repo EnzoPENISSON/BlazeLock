@@ -1,8 +1,10 @@
 ﻿@page "/coffre/{Id:guid}"
+@page "/coffre/{Id:guid}/{FolderId:guid}"
 @attribute [Authorize]
 @using BlazeLock.DbLib;
 @using BlazeLock.FRONT.Services
 @using BlazeLock.FRONT.ViewModels
+@using BlazeLock.FRONT.Components.Types
 @inject CoffreDetailViewModel ViewModel
 @inject NavigationManager Nav
 
@@ -53,7 +55,7 @@
                         <i class="bi bi-shield-shaded mr-2 text-gray-400"></i> Administration
                     </button>
 
-                    <button @onclick="ViewModel.OpenCreateModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
+                    <button @onclick="ViewModel.OpenEntryModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
                         <i class="bi bi-plus-lg mr-2"></i> Nouvelle Entrée
                     </button>
                 </div>
@@ -67,24 +69,43 @@
                             <input type="text" placeholder="Rechercher..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-medium">
                         </div>
                         <nav class="space-y-1">
-                            <a href="#" class="flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
-                                <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i> Tous les éléments</span>
-                                <span class="bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded-md">0</span>
-                            </a>
-                            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
-                                <i class="bi bi-star mr-3 text-lg text-yellow-500"></i> Favoris
-                            </a>
-                            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
-                                <i class="bi bi-trash mr-3 text-lg text-gray-400"></i> Corbeille
-                            </a>
+                            @if (ViewModel.IsFoldersLoading)
+                            {
+                                <div class="flex flex-col justify-center items-center py-20">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var fold in ViewModel.Folders)
+                                {
+                                    @if (fold.IdDossier == @FolderId)
+                                    {
+                                        <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
+                                            <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i>  @fold.Libelle</span>
+                                            @* <span class="bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded-md">0</span> *@
+                                        </a>
+                                    }  else
+                                    {
+                                        <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
+                                            <i class="bi bi-star mr-3 text-lg text-yellow-500"></i> @fold.Libelle
+                                        </a>
+                                    }
+                                }
+                            }
+                            <button @onclick="ViewModel.OpenFolderModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
+                                <i class="bi bi-plus-lg mr-2"></i> Nouveau dossier
+                            </button>
                         </nav>
                     </div>
                 </div>
 
                 <div class="lg:col-span-3">
-                    @if (ViewModel.IsLoading)
+                    @if (ViewModel.IsLoading && ViewModel.IsFoldersLoading)
                     {
-                        <p>Chargement...</p>
+                        <div class="flex flex-col justify-center items-center py-20">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+                        </div>
                     }
                     else if (ViewModel.Entries.Count == 0)
                     {
@@ -95,7 +116,7 @@
                             <h3 class="text-xl font-bold text-gray-800 mb-2">C'est vide ici !</h3>
                             <p class="text-gray-500 max-w-sm mb-6">Ajoutez votre premier mot de passe.</p>
 
-                            <button @onclick="ViewModel.OpenCreateModal" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl transition-colors">
+                            <button @onclick="ViewModel.OpenEntryModal" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl transition-colors">
                                 Créer une entrée
                             </button>
                         </div>
@@ -105,7 +126,9 @@
                         <div class="grid grid-cols-1 gap-4">
                             @foreach (var entry in ViewModel.Entries)
                             {
-                                <EntreeCard Entry="entry" VaultId="ViewModel.VaultId" />
+                                <EntreeCard Entry="@entry" Folders="@ViewModel.Folders"
+                                OnClick="@(() => ViewModel.OpenEditEntryModal(entry))"
+                                OnMoveClick="@(() => ViewModel.OpenMoveEntryModal(entry))" />
                             }
                         </div>
                     }
@@ -115,18 +138,45 @@
     }
 </div>
 
-<CreateEntreeModal IsVisible="@ViewModel.IsCreating"
+<UpdateEntreeModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.UpdateEntry)"
                    FormModel="@ViewModel.NewEntryForm"
                    IsProcessing="@ViewModel.IsProcessing"
                    ErrorMessage="@ViewModel.ErrorMessage"
                    OnClose="@ViewModel.CloseModal"
-                   OnSubmit="@ViewModel.CreateEntryAsync" />
+                   OnSubmit="@ViewModel.SaveEntryAsync" />
 
+<CreateEntreeModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.CreateEntry)"
+                   FormModel="@ViewModel.NewEntryForm"
+                   IsProcessing="@ViewModel.IsProcessing"
+                   ErrorMessage="@ViewModel.ErrorMessage"
+                   OnClose="@ViewModel.CloseModal"
+                   OnSubmit="@ViewModel.SaveEntryAsync" />
+
+<CreateFolderModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.CreateFolder)"
+                   FormModel="@ViewModel.NewFolderForm"
+                   IsProcessing="@ViewModel.IsProcessing"
+                   ErrorMessage="@ViewModel.ErrorMessage"
+                   OnClose="@ViewModel.CloseModal"
+                   OnSubmit="@ViewModel.CreateFolderAsync" />
+
+<MoveEntryModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.MoveEntry)"
+                Folders="@ViewModel.Folders"
+                IsProcessing="@ViewModel.IsProcessing"
+                EntreeId="@ViewModel._currentEntryId"
+                ErrorMessage="@ViewModel.ErrorMessage"
+                OnClose="@ViewModel.CloseModal"
+                OnSubmit="@(args => ViewModel.MoveEntryToFolderAsync(args.FolderId, args.EntreeId))" />
 @code {
     [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid? FolderId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await ViewModel.InitializeAsync(Id);
+        await ViewModel.InitializeAsync(Id,FolderId);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ViewModel.ReloadEntrieesAsync(FolderId);
     }
 }

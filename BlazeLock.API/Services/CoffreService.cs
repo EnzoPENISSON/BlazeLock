@@ -70,9 +70,11 @@ namespace BlazeLock.API.Services
 
         public async Task AddAsync(CoffreDto dto)
         {
+            Guid idCoffre = Guid.NewGuid();
+
             var entity = new Coffre
             {
-                IdCoffre = Guid.NewGuid(),
+                IdCoffre = idCoffre,
                 IdUtilisateur = dto.IdUtilisateur,
                 Libelle = dto.Libelle,
                 HashMasterkey = dto.HashMasterkey,
@@ -80,6 +82,14 @@ namespace BlazeLock.API.Services
             };
             await _coffreRepository.AddAsync(entity);
 
+            var newDefaultFolder = new Dossier
+            {
+                IdDossier = Guid.NewGuid(),
+                Libelle = "Default",
+                IdCoffre = idCoffre
+            };
+
+            await _dossierRepository.AddAsync(newDefaultFolder);
         }
 
         public async Task Delete(CoffreDto dto)

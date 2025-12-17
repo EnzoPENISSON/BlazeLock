@@ -2,8 +2,10 @@ using BlazeLock.API.Extensions;
 using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BlazeLock.API.Controllers;
 
@@ -35,19 +37,16 @@ public class EntreeController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Idéalement, loguer l'exception ex
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération des entrées.");
         }
     }
 
-    [HttpGet("dossier/{id}")]
-    public async Task<IActionResult> GetByDossier(Guid id)
+    [HttpGet("dossier/{idCoffre}/{idDossier}")]
+    public async Task<IActionResult> GetByDossier(Guid idCoffre,Guid idDossier)
     {
         try
         {
-            DossierDto? dossier = await _dossierService.GetByIdAsync(id);
-
-            var entrees = await _entreeService.GetAllByDossierAsync(id);
+            var entrees = await _entreeService.GetAllByDossierAsync(idCoffre, idDossier);
             if (entrees == null || !entrees.Any()) return NoContent();
 
             await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
@@ -56,7 +55,7 @@ public class EntreeController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des entrées pour le dossier {id}.");
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des entrées pour le dossier {idDossier}.");
         }
     }
 
@@ -111,6 +110,21 @@ public class EntreeController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création de l'entrée.");
+        }
+    }
+
+
+    [HttpPost("dossier/{idEntree}/{idDossier}")]
+    public async Task<IActionResult> Update(Guid idEntree, Guid idDossier)
+    {
+        try
+        {
+            await _entreeService.updateAsync(idEntree, idDossier);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue.");
         }
     }
 

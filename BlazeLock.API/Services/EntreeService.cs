@@ -38,18 +38,44 @@ namespace BlazeLock.API.Services
             return result;
         }
 
-        public async Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid IdDossier)
+        public async Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid IdDossier)
         {
             var entree = await _entreeRepository.GetAllByDossierAsync(IdDossier);
-            var result = entree
-                .Select(c => new EntreeDto
-                {
-                    IdEntree = c.IdEntree,
-                    DateCreation = c.DateCreation,
-                    IdDossier = c.IdDossier
-                })
+            var result = entree.Select(e =>
+            {
+                var latest = e.HistoriqueEntrees?
+                    .OrderByDescending(h => h.DateUpdate)
+                    .FirstOrDefault();
 
-                .ToHashSet();
+                return new EntreeDto
+                {
+                    IdEntree = e.IdEntree,
+                    IdDossier = IdDossier,
+                    DateCreation = e.DateCreation,
+
+                    Libelle = latest?.Libelle,
+                    DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
+
+                    idCoffre = idCoffre,
+
+                    Username = latest?.Username,
+                    UsernameTag = latest?.UsernameTag,
+                    UsernameVi = latest?.UsernameVi,
+
+                    Password = latest?.Password,
+                    PasswordTag = latest?.PasswordTag,
+                    PasswordVi = latest?.PasswordVi,
+
+                    Url = latest?.Url,
+                    UrlTag = latest?.UrlTag,
+                    UrlVi = latest?.UrlVi,
+
+                    Commentaire = latest?.Commentaire,
+                    CommentaireTag = latest?.CommentaireTag,
+                    CommentaireVi = latest?.CommentaireVi
+                };
+            })
+            .ToHashSet();
 
             return result;
         }
@@ -122,21 +148,32 @@ namespace BlazeLock.API.Services
 
         public async Task AddAsync(EntreeDto dto)
         {
-            var entree = await _entreeRepository.GetByIdAsync(dto.IdEntree);
-            if (entree == null)
+            var existingEntree = await _entreeRepository.GetByIdAsync(dto.IdEntree);
+
+            Guid finalId;
+
+            if (existingEntree == null)
             {
+                var existingDefaultFolder = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", dto.idCoffre);
                 var newEntree = new Entree
                 {
-                    IdEntree = dto.IdEntree,
-                    DateCreation = dto.DateCreation,
-                    IdDossier = dto.IdDossier
-
+                    IdEntree = dto.IdEntree == Guid.Empty ? Guid.NewGuid() : dto.IdEntree,
+                    DateCreation = dto.DateCreation == default ? DateTime.UtcNow : dto.DateCreation,
+                    IdDossier = existingDefaultFolder.IdDossier
                 };
+
                 await _entreeRepository.AddAsync(newEntree);
+
+                finalId = newEntree.IdEntree;
             }
+            else
+            {
+                finalId = existingEntree.IdEntree;
+            }
+
             var newHistorique = new HistoriqueEntree
             {
-                IdEntree = dto.IdEntree,
+                IdEntree = finalId,
                 DateUpdate = DateTime.UtcNow,
                 Libelle = dto.Libelle,
                 Username = dto.Username,
@@ -152,24 +189,78 @@ namespace BlazeLock.API.Services
                 CommentaireTag = dto.CommentaireTag,
                 CommentaireVi = dto.CommentaireVi
             };
+
             await _historiqueEntreeRepository.AddAsync(newHistorique);
         }
-        
+
         public async Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre)
         {
-            var entree = await _entreeRepository.GetAllByDossierAsync(idCoffre);
+            var entities = await _entreeRepository.GetAllByCoffreAsync(idCoffre);
 
-            var result = entree
-               .Select(c => new EntreeDto
-               {
-                   IdEntree = c.IdEntree,
-                   DateCreation = c.DateCreation,
-                   IdDossier = c.IdDossier
-               }).ToHashSet();
+            var result = entities.Select(e =>
+            {
+                var latest = e.HistoriqueEntrees?
+                    .OrderByDescending(h => h.DateUpdate)
+                    .FirstOrDefault();
+
+                return new EntreeDto
+                {
+                    IdEntree = e.IdEntree,
+                    IdDossier = e.IdDossier,
+                    DateCreation = e.DateCreation,
+
+                    Libelle = latest?.Libelle,
+                    DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
+
+                    idCoffre = idCoffre,
+
+                    Username = latest?.Username,
+                    UsernameTag = latest?.UsernameTag,
+                    UsernameVi = latest?.UsernameVi,
+
+                    Password = latest?.Password,
+                    PasswordTag = latest?.PasswordTag,
+                    PasswordVi = latest?.PasswordVi,
+
+                    Url = latest?.Url,
+                    UrlTag = latest?.UrlTag,
+                    UrlVi = latest?.UrlVi,
+
+                    Commentaire = latest?.Commentaire,
+                    CommentaireTag = latest?.CommentaireTag,
+                    CommentaireVi = latest?.CommentaireVi
+                };
+            })
+            .ToHashSet();
 
             return result;
         }
 
+        public async Task updateAsync(Guid idEntree, Guid IdDossier)
+        {
+            var existingEntree = await _entreeRepository.GetByIdAsync(idEntree);
+            Console.WriteLine(existingEntree);
+            if (existingEntree != null)
+            {
+                var newEntree = new Entree
+                {
+                    IdEntree = existingEntree.IdEntree,
+                    DateCreation = existingEntree.DateCreation,
+                    IdDossier = IdDossier
+                };
+                Console.WriteLine(newEntree);
+                await _entreeRepository.updateAsync(newEntree);
+            }
+        }
+
+        public async Task Delete(Guid idEntree)
+        {
+            var existingEntree = await _entreeRepository.GetByIdAsync(idEntree);
+            if (existingEntree != null)
+            {
+                await _entreeRepository.DeleteEntree(existingEntree);
+            }
+        }
         public async Task<IActionResult?> VerifyUserAccess(EntreeDto entreDto, (Guid, IActionResult?) utilisateur)
         {
 
