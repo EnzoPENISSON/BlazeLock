@@ -101,10 +101,12 @@ builder.Services.AddScoped<IEncryptService, EncryptService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
+builder.Services.AddScoped<IDossierRepository, DossierRepository>();
+builder.Services.AddScoped<IDossierService, DossierService>();
+
 builder.Services.AddScoped<IEntreeRepository, EntreeRepository>();
 builder.Services.AddScoped<IHistoriqueEntreeRepository, HistoriqueEntreeRepository>();
 builder.Services.AddScoped<IEntreeService, EntreeService>();
-builder.Services.AddScoped<IDossierRepository, DossierRepository>();
 
 
 

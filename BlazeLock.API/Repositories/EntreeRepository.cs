@@ -49,7 +49,10 @@ namespace BlazeLock.API.Repositories
 
             var coffres = await context.Entrees
                 .Where(e => e.IdDossier == idDossier)
+                .Include(e => e.Dossier)
+                .Include(e => e.HistoriqueEntrees)
                 .AsNoTracking()
+                .AsSplitQuery()
                 .ToListAsync();
 
             return coffres.ToHashSet();

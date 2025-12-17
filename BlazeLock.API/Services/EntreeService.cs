@@ -37,18 +37,44 @@ namespace BlazeLock.API.Services
             return result;
         }
 
-        public async Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid IdDossier)
+        public async Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid IdDossier)
         {
             var entree = await _entreeRepository.GetAllByDossierAsync(IdDossier);
-            var result = entree
-                .Select(c => new EntreeDto
-                {
-                    IdEntree = c.IdEntree,
-                    DateCreation = c.DateCreation,
-                    IdDossier = c.IdDossier
-                })
+            var result = entree.Select(e =>
+            {
+                var latest = e.HistoriqueEntrees?
+                    .OrderByDescending(h => h.DateUpdate)
+                    .FirstOrDefault();
 
-                .ToHashSet();
+                return new EntreeDto
+                {
+                    IdEntree = e.IdEntree,
+                    IdDossier = IdDossier,
+                    DateCreation = e.DateCreation,
+
+                    Libelle = latest?.Libelle,
+                    DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
+
+                    idCoffre = idCoffre,
+
+                    Username = latest?.Username,
+                    UsernameTag = latest?.UsernameTag,
+                    UsernameVi = latest?.UsernameVi,
+
+                    Password = latest?.Password,
+                    PasswordTag = latest?.PasswordTag,
+                    PasswordVi = latest?.PasswordVi,
+
+                    Url = latest?.Url,
+                    UrlTag = latest?.UrlTag,
+                    UrlVi = latest?.UrlVi,
+
+                    Commentaire = latest?.Commentaire,
+                    CommentaireTag = latest?.CommentaireTag,
+                    CommentaireVi = latest?.CommentaireVi
+                };
+            })
+            .ToHashSet();
 
             return result;
         }

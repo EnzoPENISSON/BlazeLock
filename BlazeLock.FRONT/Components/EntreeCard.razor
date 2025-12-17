@@ -9,8 +9,8 @@
         @if (!string.IsNullOrEmpty(_domain))
         {
             <div class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
-                <img src="@($"https://www.google.com/s2/favicons?domain={_domain}&sz=128")"
-                     alt="@Entry.Libelle"
+                <img src="@($"https://www.google.com/s2/favicons?domain={_domain}&sz=128")" 
+                     alt="@Entry.Libelle" 
                      class="w-full h-full object-contain p-1" />
             </div>
         }
@@ -45,17 +45,13 @@
     [Parameter] public EntreeDto Entry { get; set; }
     [Parameter] public EventCallback OnClick { get; set; }
 
-    // Local variable to store the decrypted domain
     private string _domain;
 
     protected override async Task OnParametersSetAsync()
     {
         if (Entry != null)
         {
-            // Decrypt and store the result
             _domain = await ViewModel.GetDecryptedDomainAsync(Entry);
-
-            // Refresh UI
             StateHasChanged();
         }
     }

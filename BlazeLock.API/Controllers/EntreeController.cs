@@ -27,23 +27,22 @@ public class EntreeController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Idéalement, loguer l'exception ex
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération des entrées.");
         }
     }
 
-    [HttpGet("dossier/{id}")]
-    public async Task<IActionResult> GetByDossier(Guid id)
+    [HttpGet("dossier/{idCoffre}/{idDossier}")]
+    public async Task<IActionResult> GetByDossier(Guid idCoffre,Guid idDossier)
     {
         try
         {
-            var entrees = await _service.GetAllByDossierAsync(id);
+            var entrees = await _service.GetAllByDossierAsync(idCoffre, idDossier);
             if (entrees == null || !entrees.Any()) return NoContent();
             return Ok(entrees);
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des entrées pour le dossier {id}.");
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des entrées pour le dossier {idDossier}.");
         }
     }
 

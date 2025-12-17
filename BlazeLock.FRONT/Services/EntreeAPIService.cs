@@ -26,11 +26,11 @@ namespace BlazeLock.FRONT.Services
             }
         }
 
-        public async Task<List<EntreeDto>> GetAllByDossierAsync(Guid dossierId)
+        public async Task<List<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid dossierId)
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/dossier/{dossierId}");
+                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/dossier/{idCoffre}/{dossierId}");
                 return result ?? new List<EntreeDto>();
             }
             catch (Exception ex)

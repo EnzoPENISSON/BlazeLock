@@ -1,4 +1,6 @@
 ﻿using BlazeLock.DbLib;
+using BlazeLock.FRONT.Components.Forms;
+using BlazeLock.FRONT.Components.Types;
 using BlazeLock.FRONT.Services;
 using Microsoft.AspNetCore.Components;
 using System.ComponentModel.DataAnnotations;
@@ -8,84 +10,126 @@ namespace BlazeLock.FRONT.ViewModels
     public class CoffreDetailViewModel
     {
         private readonly IEntreeAPIService _entreeApi;
+        private readonly IDossierAPIService _dossierApi;
         private readonly VaultKeyStore _keyStore;
         private readonly CryptoJs _crypto;
         private readonly NavigationManager _nav;
 
         public CoffreDetailViewModel(
             IEntreeAPIService entreeApi,
+            IDossierAPIService dossierApi,
             VaultKeyStore keyStore,
             CryptoJs crypto, 
             NavigationManager nav)
         {
             _entreeApi = entreeApi;
+            _dossierApi = dossierApi;
             _keyStore = keyStore;
             _crypto = crypto;
             _nav = nav;
         }
 
         public Guid VaultId { get; private set; }
+        public Guid? CurrentFolderId { get; private set; }
         public string VaultName { get; private set; } = "";
         public bool HasAccess { get; private set; } = false;
         public bool IsLoading { get; private set; } = true;
+        public bool IsFoldersLoading { get; private set; } = true;
 
         public List<EntreeDto> Entries { get; private set; } = new();
+        public List<DossierDto> Folders { get; private set; } = new();
 
-        // --- Creation Modal State ---
-        public bool IsCreating { get; private set; }
+        public CoffreModalType CurrentModal { get; private set; } = CoffreModalType.None;
+
+        public bool IsEntryModalOpen => CurrentModal == CoffreModalType.CreateEntry;
+        public bool IsFolderModalOpen => CurrentModal == CoffreModalType.CreateFolder;
+
         public bool IsProcessing { get; private set; }
         public string ErrorMessage { get; private set; } = "";
-
         public EntryFormModel NewEntryForm { get; set; } = new();
+        public FolderFormModel NewFolderForm { get; set; } = new();
 
-        public async Task InitializeAsync(Guid id)
+        public async Task InitializeAsync(Guid id, Guid? folderId)
         {
             VaultId = id;
+            CurrentFolderId = folderId;
             IsLoading = true;
+            IsFoldersLoading = true;
 
             if (_keyStore.IsUnlocked(VaultId))
             {
                 HasAccess = true;
                 VaultName = _keyStore.GetName(VaultId) ?? "Coffre";
-                await RefreshEntriesAsync();
+
+                await RefreshFoldersAsync();
+                await RefreshEntriesAsync(CurrentFolderId);
+                //await Task.WhenAll(taskFolders, taskEntries);
             }
             else
             {
                 HasAccess = false;
-                IsLoading = false;
             }
+            IsLoading = false;
+            IsFoldersLoading = false;
         }
 
-        public async Task RefreshEntriesAsync()
+        public async Task RefreshFoldersAsync()
         {
             if (!HasAccess) return;
-
-            IsLoading = true;
             try
             {
-                Entries = await _entreeApi.GetAllByCoffreAsync(VaultId);
+                Folders = await _dossierApi.GetFoldersByCoffreAsync(VaultId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading entries: {ex.Message}");
             }
-            finally
+        }
+
+        public async Task RefreshEntriesAsync(Guid? folderId)
+        {
+            if (!HasAccess) return;
+
+            try
             {
-                IsLoading = false;
+                if (folderId == null)
+                {
+                    Entries = await _entreeApi.GetAllByCoffreAsync(VaultId);
+                }else 
+                {
+                    Entries = await _entreeApi.GetAllByDossierAsync(VaultId, folderId.Value); 
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading entries: {ex.Message}");
             }
         }
 
-        public void OpenCreateModal()
+        private void ResetModalState()
         {
-            NewEntryForm = new EntryFormModel();
             ErrorMessage = "";
-            IsCreating = true;
+            IsProcessing = false;
+        }
+
+        public void OpenEntryModal()
+        {
+            ResetModalState();
+            NewEntryForm = new EntryFormModel();
+            CurrentModal = CoffreModalType.CreateEntry;
+        }
+
+        public void OpenFolderModal()
+        {
+            ResetModalState();
+            NewFolderForm = new FolderFormModel();
+            CurrentModal = CoffreModalType.CreateFolder;
         }
 
         public void CloseModal()
         {
-            IsCreating = false;
-            ErrorMessage = "";
+            ResetModalState();
+            CurrentModal = CoffreModalType.None;
         }
 
         public async Task CreateEntryAsync()
@@ -111,37 +155,56 @@ namespace BlazeLock.FRONT.ViewModels
                     DateUpdate = DateTime.UtcNow
                 };
 
-                // --- ENCRYPTION LOGIC USING NEW SERVICE ---
-
-                // 1. Password
                 var passResult = await _crypto.EncryptDataAsync(NewEntryForm.Password, masterKeyBase64);
                 dto.Password = Convert.FromBase64String(passResult.CipherText);
                 dto.PasswordVi = Convert.FromBase64String(passResult.Iv);
                 dto.PasswordTag = Convert.FromBase64String(passResult.Tag);
 
-                // 2. Username
                 var userResult = await _crypto.EncryptDataAsync(NewEntryForm.Username, masterKeyBase64);
                 dto.Username = Convert.FromBase64String(userResult.CipherText);
                 dto.UsernameVi = Convert.FromBase64String(userResult.Iv);
                 dto.UsernameTag = Convert.FromBase64String(userResult.Tag);
 
-                // 3. URL
                 var urlResult = await _crypto.EncryptDataAsync(NewEntryForm.Url, masterKeyBase64);
                 dto.Url = Convert.FromBase64String(urlResult.CipherText);
                 dto.UrlVi = Convert.FromBase64String(urlResult.Iv);
                 dto.UrlTag = Convert.FromBase64String(urlResult.Tag);
 
-                // 4. Commentaire (Fixed Variable Name Bug)
                 var commResult = await _crypto.EncryptDataAsync(NewEntryForm.Commentaire, masterKeyBase64);
                 dto.Commentaire = Convert.FromBase64String(commResult.CipherText);
                 dto.CommentaireVi = Convert.FromBase64String(commResult.Iv);
                 dto.CommentaireTag = Convert.FromBase64String(commResult.Tag);
 
-                // --- SAVE TO API ---
                 await _entreeApi.CreateEntreeAsync(dto);
 
                 CloseModal();
-                await RefreshEntriesAsync();
+                await RefreshEntriesAsync(null);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erreur : " + ex.Message;
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
+        }
+
+        public async Task CreateFolderAsync()
+        {
+            IsProcessing = true;
+            ErrorMessage = "";
+            try
+            {
+                var dto = new DossierDto
+                {
+                    IdCoffre = VaultId,
+                    Libelle = NewFolderForm.Libelle,
+                };
+                await _dossierApi.CreateDossierAsync(dto);
+                CloseModal();
+                await RefreshFoldersAsync();
             }
             catch (Exception ex)
             {
@@ -158,18 +221,5 @@ namespace BlazeLock.FRONT.ViewModels
         {
             _nav.NavigateTo("/");
         }
-    }
-
-    public class EntryFormModel
-    {
-        [Required(ErrorMessage = "Le titre est requis")]
-        public string Libelle { get; set; } = "";
-
-        [Required(ErrorMessage = "Le mot de passe est requis")]
-        public string Password { get; set; } = "";
-
-        public string Username { get; set; } = "";
-        public string Url { get; set; } = "";
-        public string Commentaire { get; set; } = "";
     }
 }

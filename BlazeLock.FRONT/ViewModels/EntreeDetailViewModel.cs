@@ -1,7 +1,5 @@
 ﻿using BlazeLock.DbLib;
 using BlazeLock.FRONT.Services;
-using Microsoft.JSInterop;
-using System.Net.Http.Json;
 
 namespace BlazeLock.FRONT.ViewModels
 {
