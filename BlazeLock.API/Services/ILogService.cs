@@ -6,6 +6,6 @@ namespace BlazeLock.API.Services
     {
         Task<HashSet<LogDto>> GetAllAsync();
         Task<HashSet<LogDto>> GetByCoffreAsync(Guid id);
-        Task AddAsync(LogDto dto);
+        Task Add(Guid idCoffre, Guid idUtilisateur, string message);
     }
 }

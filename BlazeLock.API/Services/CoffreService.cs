@@ -9,6 +9,7 @@ namespace BlazeLock.API.Services
     {
 
         private readonly ICoffreRepository _repository;
+        private readonly ILogRepository _logRepository;
 
         public CoffreService(ICoffreRepository repository)
         {
@@ -102,6 +103,18 @@ namespace BlazeLock.API.Services
             if (coffreDto.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
 
             return null;
+        }
+
+        public async Task AddLog(Guid idCoffre, Guid idUtilisateur, string message)
+        {
+            var entity = new Log
+            {
+                IdCoffre = idCoffre,
+                IdUtilisateur = idUtilisateur,
+                Texte = message,
+                Timestamp = DateTime.UtcNow
+            };
+            await _logRepository.AddAsync(entity);
         }
 
     }

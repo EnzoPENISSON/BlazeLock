@@ -20,10 +20,12 @@ namespace BlazeLock.API.Services
             var logs = await _repository.GetAllAsync();
 
             var result = logs
-                .Select(p => new LogDto
+                .Select(l => new LogDto
                 {
-                    IdCoffre = p.IdCoffre,
-                    Texte = p.Texte
+                    IdCoffre = l.IdCoffre,
+                    Timestamp = l.Timestamp,
+                    IdUtilisateur = l.IdUtilisateur,
+                    Texte = l.Texte
                 })
                 .ToHashSet();
 
@@ -34,22 +36,25 @@ namespace BlazeLock.API.Services
         {
             var logs = await _repository.GetByCoffreAsync(id);
             var result = logs
-                .Select(p => new LogDto
+                .Select(l => new LogDto
                 {
-                    IdCoffre = p.IdCoffre,
-                    Timestamp = p.Timestamp,
-                    Texte = p.Texte
+                    IdCoffre = l.IdCoffre,
+                    Timestamp = l.Timestamp,
+                    IdUtilisateur = l.IdUtilisateur,
+                    Texte = l.Texte
                 })
                 .ToHashSet();
 
             return result;
         }
 
-        public async Task AddAsync(LogDto dto)
+        public async Task Add(Guid idCoffre, Guid idUtilisateur, string message)
         {
-            var entity = new Log { 
-                IdCoffre = dto.IdCoffre,
-                Texte = dto.Texte
+            var entity = new Log {
+                IdCoffre = idCoffre,
+                IdUtilisateur = idUtilisateur,
+                Texte = message,
+                Timestamp = DateTime.UtcNow
             };
             await _repository.AddAsync(entity);
         }

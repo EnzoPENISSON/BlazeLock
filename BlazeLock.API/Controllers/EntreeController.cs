@@ -1,4 +1,5 @@
 using BlazeLock.API.Extensions;
+using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Authorization;
@@ -14,12 +15,14 @@ public class EntreeController : ControllerBase
     private readonly IEntreeService _entreeService;
     private readonly IDossierService _dossierService;
     private readonly ICoffreService _coffreService;
+    private readonly ILogService _logService;
 
-    public EntreeController(IEntreeService entreeService, IDossierService dossierService, ICoffreService coffreService)
+    public EntreeController(IEntreeService entreeService, IDossierService dossierService, ICoffreService coffreService, ILogService logService)
     {
         _entreeService = entreeService;
         _dossierService = dossierService;
         _coffreService = coffreService;
+        _logService = logService;
     }
 
     [HttpGet]
@@ -48,6 +51,7 @@ public class EntreeController : ControllerBase
             if (entrees == null || !entrees.Any()) return NoContent();
 
             await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
+            await _dossierService.AddLog(dossier, User.GetCurrentUserId().userId, "Affichage des entrée du dossier " + dossier.Libelle);
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -65,6 +69,8 @@ public class EntreeController : ControllerBase
             if (entree == null) return NotFound();
 
             await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
+            await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
+
             return Ok(entree);
         }
         catch (Exception ex)
@@ -97,6 +103,8 @@ public class EntreeController : ControllerBase
             await _entreeService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
             await _entreeService.AddAsync(dto);
+            await _entreeService.AddLog(dto, User.GetCurrentUserId().userId, "création de l'entrée " + dto.Libelle);
+
             // Retourne un 201 Created avec l'URL pour récupérer la nouvelle ressource
             return CreatedAtAction(nameof(GetById), new { id = dto.IdEntree }, dto);
         }
@@ -107,17 +115,11 @@ public class EntreeController : ControllerBase
     }
 
     [HttpGet("coffre/{id}")]
-    public async Task<IActionResult> GetByCoffre(Guid id)
+    public async Task<IActionResult> GetByCoffre(Guid idCoffre)
     {
-        var entrees = await _service.GetAllByCoffreAsync(id);
+        var entrees = await _entreeService.GetAllByCoffreAsync(idCoffre);
+        await _entreeService.AddLog(entrees.First(), User.GetCurrentUserId().userId, "Affichage des entrées du coffre " + idCoffre);
+
         return Ok(entrees);
     }
-
-    //[HttpDelete]
-    //public async Task<IActionResult> Delete(EntreeDto dto)
-    //{
-    //    await _service.Delete(dto);
-    //    return Ok("Entree supprimé");
-    //}
-
 }

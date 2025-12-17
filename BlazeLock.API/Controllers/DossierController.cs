@@ -17,13 +17,13 @@ namespace BlazeLock.API.Controllers
     {
         private readonly ICoffreService _coffreService;
         private readonly IDossierService _dossierService;
-        private readonly IEncryptService _encryptService;
-        private readonly IUtilisateurService _utilisateurService;
+        private readonly ILogService _logService;
 
-        public DossierController(ICoffreService coffreService, IUtilisateurService utilisateurService, IEncryptService encryptService)
+        public DossierController(ICoffreService coffreService, IDossierService dossierService, ILogService logService)
         {
             _coffreService = coffreService;
-            _utilisateurService = utilisateurService;
+            _dossierService = dossierService;
+            _logService = logService;
         }
 
         [HttpGet]
@@ -40,7 +40,7 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpGet("coffre/{id}")]
+        [HttpGet("coffre/{IdCoffre}")]
         public async Task<IActionResult> GetByCoffre(Guid IdCoffre)
         {
             try
@@ -48,10 +48,12 @@ namespace BlazeLock.API.Controllers
                 var dossiers = await _dossierService.GetByCoffreAsync(IdCoffre);
                 if (dossiers == null) return NotFound();
 
-                CoffreDto coffre = await _coffreService.GetByIdAsync(IdCoffre);
+                CoffreDto? coffre = await _coffreService.GetByIdAsync(IdCoffre);
                 if (coffre == null) return NotFound();
 
                 await _coffreService.VerifyUserAccess(coffre, User.GetCurrentUserId());
+
+                await _dossierService.AddLog(dossiers.First(), User.GetCurrentUserId().userId, "Affichage des dossier du coffre");
 
                 return Ok(dossiers);
             }
@@ -72,11 +74,13 @@ namespace BlazeLock.API.Controllers
 
                 await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
 
+                await _dossierService.AddLog(dossier, User.GetCurrentUserId().userId, "Affichage du dossier" + dossier.Libelle);
+
                 return Ok(dossier);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du coffre {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du dossier {id}.");
             }
         }
 
@@ -93,6 +97,7 @@ namespace BlazeLock.API.Controllers
                 }
 
                 await _dossierService.AddAsync(dto);
+                await _dossierService.AddLog(dto, User.GetCurrentUserId().userId, "Création du dossier" + dto.Libelle);
                 return CreatedAtAction(nameof(GetById), new { id = dto.IdDossier }, dto);
             }
             catch (Exception ex)
@@ -109,6 +114,7 @@ namespace BlazeLock.API.Controllers
                 await _dossierService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
                 await _dossierService.Delete(dto);
+                await _dossierService.AddLog(dto, User.GetCurrentUserId().userId, "Suppression du dossier" + dto.Libelle);
                 return Ok("Partage supprimé");
             }
             catch (Exception ex)

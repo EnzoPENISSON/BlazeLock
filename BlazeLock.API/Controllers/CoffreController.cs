@@ -15,13 +15,14 @@ namespace BlazeLock.API.Controllers
     {
         private readonly ICoffreService _coffreService;
         private readonly IEncryptService _encryptService;
-        private readonly IUtilisateurService _utilisateurService;
+        private readonly ILogService _logService;
 
-        public CoffreController(ICoffreService coffreService, IUtilisateurService utilisateurService, IEncryptService encryptService)
+        public CoffreController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService)
         {
             _coffreService = coffreService;
-            _utilisateurService = utilisateurService;
+            _logService = logService;
             _encryptService = encryptService;
+
         }
 
         [HttpGet("mine")]
