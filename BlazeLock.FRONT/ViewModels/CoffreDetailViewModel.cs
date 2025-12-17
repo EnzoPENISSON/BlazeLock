@@ -31,6 +31,8 @@ namespace BlazeLock.FRONT.ViewModels
 
         public Guid VaultId { get; private set; }
         public Guid? CurrentFolderId { get; private set; }
+        public Guid _currentEntryId;
+
         public string VaultName { get; private set; } = "";
         public bool HasAccess { get; private set; } = false;
         public bool IsLoading { get; private set; } = true;
@@ -41,8 +43,9 @@ namespace BlazeLock.FRONT.ViewModels
 
         public CoffreModalType CurrentModal { get; private set; } = CoffreModalType.None;
 
-        public bool IsEntryModalOpen => CurrentModal == CoffreModalType.CreateEntry;
+        public bool IsEntryModalOpen => CurrentModal == CoffreModalType.CreateEntry || CurrentModal == CoffreModalType.UpdateEntry;
         public bool IsFolderModalOpen => CurrentModal == CoffreModalType.CreateFolder;
+        public bool IsMoveModalOpen => CurrentModal == CoffreModalType.MoveEntry;
 
         public bool IsProcessing { get; private set; }
         public string ErrorMessage { get; private set; } = "";
@@ -63,7 +66,6 @@ namespace BlazeLock.FRONT.ViewModels
 
                 await RefreshFoldersAsync();
                 await RefreshEntriesAsync(CurrentFolderId);
-                //await Task.WhenAll(taskFolders, taskEntries);
             }
             else
             {
@@ -71,6 +73,26 @@ namespace BlazeLock.FRONT.ViewModels
             }
             IsLoading = false;
             IsFoldersLoading = false;
+        }
+
+        public async Task ReloadEntrieesAsync(Guid? folderId)
+        {
+            CurrentFolderId = folderId;
+            IsLoading = true;
+
+            if (_keyStore.IsUnlocked(VaultId))
+            {
+                HasAccess = true;
+                VaultName = _keyStore.GetName(VaultId) ?? "Coffre";
+
+                await RefreshEntriesAsync(CurrentFolderId);
+            }
+            else
+            {
+                HasAccess = false;
+            }
+
+            IsLoading = false;
         }
 
         public async Task RefreshFoldersAsync()
@@ -217,9 +239,124 @@ namespace BlazeLock.FRONT.ViewModels
             }
         }
 
-        public void NavigateHome()
+        public async Task OpenEditEntryModal(EntreeDto entry)
         {
-            _nav.NavigateTo("/");
+            if (IsProcessing) return;
+            IsProcessing = true; // Show spinner while decrypting
+
+            try
+            {
+                string? masterKeyBase64 = _keyStore.GetKey(VaultId);
+                if (masterKeyBase64 == null) return;
+
+                _currentEntryId = entry.IdEntree;
+
+                // Decrypt data to fill the form
+                var password = await _crypto.DecryptDataAsync(entry.Password, entry.PasswordVi, entry.PasswordTag, masterKeyBase64);
+                var username = await _crypto.DecryptDataAsync(entry.Username, entry.UsernameVi, entry.UsernameTag, masterKeyBase64);
+                var url = await _crypto.DecryptDataAsync(entry.Url, entry.UrlVi, entry.UrlTag, masterKeyBase64);
+                var comment = await _crypto.DecryptDataAsync(entry.Commentaire, entry.CommentaireVi, entry.CommentaireTag, masterKeyBase64);
+
+                NewEntryForm = new EntryFormModel
+                {
+                    Libelle = entry.Libelle,
+                    Password = password,
+                    Username = username,
+                    Url = url,
+                    Commentaire = comment
+                };
+
+                ErrorMessage = "";
+                CurrentModal = CoffreModalType.UpdateEntry;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                ErrorMessage = "Erreur lors du déchiffrement.";
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
+        }
+
+        public async Task SaveEntryAsync()
+        {
+            // Route to Create or Update based on state
+            if (CurrentModal == CoffreModalType.CreateEntry)
+                await CreateEntryAsync();
+            else if (CurrentModal == CoffreModalType.UpdateEntry)
+                await UpdateEntryAsync();
+        }
+
+        private async Task UpdateEntryAsync()
+        {
+            IsProcessing = true;
+            ErrorMessage = "";
+            try
+            {
+                string? masterKeyBase64 = _keyStore.GetKey(VaultId);
+                if (string.IsNullOrEmpty(masterKeyBase64)) return;
+
+                var dto = await _entreeApi.GetByIdAsync(_currentEntryId);
+
+                var passResult = await _crypto.EncryptDataAsync(NewEntryForm.Password, masterKeyBase64);
+                dto.Password = Convert.FromBase64String(passResult.CipherText);
+                dto.PasswordVi = Convert.FromBase64String(passResult.Iv);
+                dto.PasswordTag = Convert.FromBase64String(passResult.Tag);
+
+                var userResult = await _crypto.EncryptDataAsync(NewEntryForm.Username, masterKeyBase64);
+                dto.Username = Convert.FromBase64String(userResult.CipherText);
+                dto.UsernameVi = Convert.FromBase64String(userResult.Iv);
+                dto.UsernameTag = Convert.FromBase64String(userResult.Tag);
+
+                var urlResult = await _crypto.EncryptDataAsync(NewEntryForm.Url, masterKeyBase64);
+                dto.Url = Convert.FromBase64String(urlResult.CipherText);
+                dto.UrlVi = Convert.FromBase64String(urlResult.Iv);
+                dto.UrlTag = Convert.FromBase64String(urlResult.Tag);
+
+                var commResult = await _crypto.EncryptDataAsync(NewEntryForm.Commentaire, masterKeyBase64);
+                dto.Commentaire = Convert.FromBase64String(commResult.CipherText);
+                dto.CommentaireVi = Convert.FromBase64String(commResult.Iv);
+                dto.CommentaireTag = Convert.FromBase64String(commResult.Tag);
+
+                dto.idCoffre = VaultId;
+                dto.IdDossier = CurrentFolderId ?? Guid.Empty;
+
+                await _entreeApi.CreateEntreeAsync(dto);
+
+                CloseModal();
+                await RefreshEntriesAsync(CurrentFolderId);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erreur : " + ex.Message;
+            }
+            finally { IsProcessing = false; }
+        }
+
+        public void OpenMoveEntryModal(EntreeDto entry)
+        {
+            _currentEntryId = entry.IdEntree;
+            ErrorMessage = "";
+            CurrentModal = CoffreModalType.MoveEntry;
+        }
+
+        public async Task MoveEntryToFolderAsync(Guid targetFolderId)
+        {
+            IsProcessing = true;
+            try
+            {
+                // Add move request to API
+                //await _entreeApi.MoveEntreeAsync(_currentEntryId, targetFolderId); // Implement in API Service
+                CloseModal();
+                await RefreshEntriesAsync(CurrentFolderId);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erreur: " + ex.Message;
+            }
+            finally { IsProcessing = false; }
         }
     }
 }

@@ -4,6 +4,8 @@
     {
         None,
         CreateEntry,
-        CreateFolder
+        UpdateEntry,
+        CreateFolder,
+        MoveEntry
     }
 }

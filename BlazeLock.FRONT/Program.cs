@@ -18,9 +18,7 @@ string apiScope = $"{apiClientId}/access_as_user";
 
 builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
 
-builder.Services.AddScoped<VaultKeyStore>();
 builder.Services.AddScoped<CryptoJs>();
-// View Models
 builder.Services.AddScoped<HomeViewModel>();
 builder.Services.AddScoped<CoffreDetailViewModel>();
 builder.Services.AddScoped<EntreeDetailViewModel>();
@@ -37,6 +35,7 @@ builder.Services.AddHttpClient<IDossierAPIService, DossierAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
+builder.Services.AddSingleton<VaultKeyStore>();
 
 builder.Services.AddMsalAuthentication(options =>
 {

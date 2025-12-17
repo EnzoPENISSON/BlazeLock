@@ -31,7 +31,7 @@
         </div>
     </div>
 
-    <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+    <div class="flex gap-2">
         <button class="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Copier le mot de passe" @onclick:stopPropagation="true">
             <i class="bi bi-clipboard"></i>
         </button>
@@ -43,6 +43,7 @@
 
 @code {
     [Parameter] public EntreeDto Entry { get; set; }
+    [Parameter] public List<DossierDto> Folders { get; set; }
     [Parameter] public EventCallback OnClick { get; set; }
 
     private string _domain;
