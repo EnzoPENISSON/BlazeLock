@@ -7,8 +7,8 @@ namespace BlazeLock.API.Services
     {
         Task<HashSet<LogDto>> GetAllAsync();
         Task<HashSet<LogDto>> GetByCoffreAsync(Guid id);
-        Task<PagedResultDto<LogDto>> GetByCoffrePagedAsync(Guid id, int pageNumber, int pageSize);
         Task Add(Guid idCoffre, Guid idUtilisateur, string message);
         Task<IActionResult?> VerifyUserAccess(Guid idCoffre, (Guid, IActionResult?) utilisateur);
+        Task<PagedResultDto<LogDto>> GetByCoffrePagedAsync(Guid id, int pageNumber, int pageSize);
     }
 }

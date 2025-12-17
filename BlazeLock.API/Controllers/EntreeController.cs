@@ -49,8 +49,8 @@ public class EntreeController : ControllerBase
             var entrees = await _entreeService.GetAllByDossierAsync(idCoffre, idDossier);
             if (entrees == null || !entrees.Any()) return NoContent();
 
-            await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
-            await _dossierService.AddLog(dossier, User.GetCurrentUserId().userId, "Affichage des entrée du dossier " + dossier.Libelle);
+            await _entreeService.VerifyUserAccess(entrees.First(), User.GetCurrentUserId());
+            await _coffreService.AddLog(idCoffre, User.GetCurrentUserId().userId, "Affichage des entrées du dossier " + idDossier);
             return Ok(entrees);
         }
         catch (Exception ex)

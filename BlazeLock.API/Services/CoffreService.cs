@@ -10,11 +10,13 @@ namespace BlazeLock.API.Services
 
         private readonly ICoffreRepository _coffreRepository;
         private readonly ILogRepository _logRepository;
+        private readonly IDossierRepository _dossierRepository;
 
-        public CoffreService(ICoffreRepository coffreRepository, ILogRepository logRepository)
+        public CoffreService(ICoffreRepository coffreRepository, ILogRepository logRepository, IDossierRepository dossierRepository)
         {
             _coffreRepository = coffreRepository;
             _logRepository = logRepository;
+            _dossierRepository = dossierRepository;
         }
 
         public async Task<HashSet<CoffreDto>> GetAllAsync()
