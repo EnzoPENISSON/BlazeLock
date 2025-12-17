@@ -342,13 +342,12 @@ namespace BlazeLock.FRONT.ViewModels
             CurrentModal = CoffreModalType.MoveEntry;
         }
 
-        public async Task MoveEntryToFolderAsync(Guid targetFolderId)
+        public async Task MoveEntryToFolderAsync(Guid targetFolderId, Guid entryId)
         {
             IsProcessing = true;
             try
             {
-                // Add move request to API
-                //await _entreeApi.MoveEntreeAsync(_currentEntryId, targetFolderId); // Implement in API Service
+                await _entreeApi.UpdateDossierAsync(targetFolderId,entryId);
                 CloseModal();
                 await RefreshEntriesAsync(CurrentFolderId);
             }

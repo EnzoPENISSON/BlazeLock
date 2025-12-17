@@ -234,17 +234,31 @@ namespace BlazeLock.API.Services
 
             return result;
         }
-        //public async Task Delete(EntreeDto dto)
-        //{
-        //    var entity = new Entree
-        //    {
-        //        IdEntree = dto.IdEntree,
-        //        IdUtilisateur = dto.IdUtilisateur,
-        //        Libelle = dto.Libelle,
-        //        HashMasterkey = dto.HashMasterkey,
-        //        Salt = dto.Salt
-        //    };
-        //    await _repository.DeleteEntree(entity);
-        //}
+
+        public async Task updateAsync(Guid idEntree, Guid IdDossier)
+        {
+            var existingEntree = await _entreeRepository.GetByIdAsync(idEntree);
+            Console.WriteLine(existingEntree);
+            if (existingEntree != null)
+            {
+                var newEntree = new Entree
+                {
+                    IdEntree = existingEntree.IdEntree,
+                    DateCreation = existingEntree.DateCreation,
+                    IdDossier = IdDossier
+                };
+                Console.WriteLine(newEntree);
+                await _entreeRepository.updateAsync(newEntree);
+            }
+        }
+
+        public async Task Delete(Guid idEntree)
+        {
+            var existingEntree = await _entreeRepository.GetByIdAsync(idEntree);
+            if (existingEntree != null)
+            {
+                await _entreeRepository.DeleteEntree(existingEntree);
+            }
+        }
     }
 }

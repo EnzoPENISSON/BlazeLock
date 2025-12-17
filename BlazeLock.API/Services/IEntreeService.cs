@@ -9,9 +9,9 @@ namespace BlazeLock.API.Services
         Task<EntreeDto?> GetByIdAsync(Guid idEntree);
         Task<EntreeHistoriqueDto?> GetByIdWithHistoriaqueAsync(Guid idEntree);
         Task AddAsync(EntreeDto dto);
-
+        Task updateAsync(Guid idEntree, Guid IdDossier);
         Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre);
-        //Task Delete(EntreeDto dto);
+        Task Delete(Guid idEntree);
 
     }
 }

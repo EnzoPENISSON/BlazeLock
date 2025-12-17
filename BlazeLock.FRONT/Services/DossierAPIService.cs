@@ -39,6 +39,5 @@ namespace BlazeLock.FRONT.Services
                 return false;
             }
         }
-
     }
 }

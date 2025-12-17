@@ -127,7 +127,8 @@
                             @foreach (var entry in ViewModel.Entries)
                             {
                                 <EntreeCard Entry="@entry" Folders="@ViewModel.Folders"
-                                OnClick="@(() => ViewModel.OpenEditEntryModal(entry))"/>
+                                OnClick="@(() => ViewModel.OpenEditEntryModal(entry))"
+                                OnMoveClick="@(() => ViewModel.OpenMoveEntryModal(entry))" />
                             }
                         </div>
                     }
@@ -157,6 +158,14 @@
                    ErrorMessage="@ViewModel.ErrorMessage"
                    OnClose="@ViewModel.CloseModal"
                    OnSubmit="@ViewModel.CreateFolderAsync" />
+
+<MoveEntryModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.MoveEntry)"
+                Folders="@ViewModel.Folders"
+                IsProcessing="@ViewModel.IsProcessing"
+                EntreeId="@ViewModel._currentEntryId"
+                ErrorMessage="@ViewModel.ErrorMessage"
+                OnClose="@ViewModel.CloseModal"
+                OnSubmit="@(args => ViewModel.MoveEntryToFolderAsync(args.FolderId, args.EntreeId))" />
 @code {
     [Parameter] public Guid Id { get; set; }
     [Parameter] public Guid? FolderId { get; set; }

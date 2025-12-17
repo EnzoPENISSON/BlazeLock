@@ -1,7 +1,9 @@
+using BlazeLock.API.Models;
 using BlazeLock.API.Services;
-using Microsoft.AspNetCore.Mvc;
 using BlazeLock.DbLib;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Controllers;
 
@@ -87,6 +89,21 @@ public class EntreeController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création de l'entrée.");
+        }
+    }
+
+
+    [HttpPost("dossier/{idEntree}/{idDossier}")]
+    public async Task<IActionResult> Update(Guid idEntree, Guid idDossier)
+    {
+        try
+        {
+            await _service.updateAsync(idEntree, idDossier);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue.");
         }
     }
 

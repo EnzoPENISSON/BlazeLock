@@ -78,6 +78,20 @@ namespace BlazeLock.FRONT.Services
             }
         }
 
+        public async Task<bool> UpdateDossierAsync(Guid targetFolderId, Guid entryId)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync($"api/entree/dossier/{entryId}/{targetFolderId}", entryId);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DossierAPIService] Error creating dossier: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<bool> DeleteEntreeAsync(Guid id)
         {
             try
