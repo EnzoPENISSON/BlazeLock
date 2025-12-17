@@ -49,8 +49,8 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <button class="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-5 rounded-xl border border-gray-200 shadow-sm transition-all flex items-center">
-                        <i class="bi bi-gear-fill mr-2 text-gray-400"></i> Paramètres
+                    <button @onclick='() => Nav.NavigateTo($"/coffre/{Id}/logs")' class="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-5 rounded-xl border border-gray-200 shadow-sm transition-all flex items-center">
+                        <i class="bi bi-shield-shaded mr-2 text-gray-400"></i> Administration
                     </button>
 
                     <button @onclick="ViewModel.OpenCreateModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
