@@ -11,12 +11,14 @@ namespace BlazeLock.API.Services
         private readonly IEntreeRepository _entreeRepository;
         private readonly IHistoriqueEntreeRepository _historiqueEntreeRepository;
         private readonly IDossierRepository _dossierRepository;
+        private readonly ICoffreRepository _coffreRepository;
 
-        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository)
+        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository, ICoffreRepository coffreRepository)
         {
             _entreeRepository = EntreeRepository;
             _historiqueEntreeRepository = HistoriqueEntreeRepository;
             _dossierRepository = dossierRepository;
+            _coffreRepository = coffreRepository;
         }
 
         public async Task<HashSet<EntreeDto>> GetAllAsync()

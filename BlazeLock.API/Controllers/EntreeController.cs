@@ -1,10 +1,11 @@
-using BlazeLock.API.Models;
 using BlazeLock.API.Extensions;
+using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BlazeLock.API.Controllers;
 
@@ -43,10 +44,10 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entrees = await _entreeService.GetAllByDossierAsync(id);
+            var entrees = await _entreeService.GetAllByDossierAsync(idCoffre, idDossier);
             if (entrees == null || !entrees.Any()) return NoContent();
 
-            await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
+            await _entreeService.VerifyUserAccess(entrees.First(), User.GetCurrentUserId());
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -111,7 +112,7 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            await _service.updateAsync(idEntree, idDossier);
+            await _entreeService.updateAsync(idEntree, idDossier);
             return Ok();
         }
         catch (Exception ex)
@@ -123,7 +124,7 @@ public class EntreeController : ControllerBase
     [HttpGet("coffre/{id}")]
     public async Task<IActionResult> GetByCoffre(Guid id)
     {
-        var entrees = await _service.GetAllByCoffreAsync(id);
+        var entrees = await _entreeService.GetAllByCoffreAsync(id);
         return Ok(entrees);
     }
 
