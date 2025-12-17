@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazeLock.API.Migrations
 {
     [DbContext(typeof(BlazeLockContext))]
-    [Migration("20251215104109_libstring")]
-    partial class libstring
+    [Migration("20251217104003_bdd")]
+    partial class bdd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -226,6 +226,9 @@ namespace BlazeLock.API.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("id_coffre");
 
+                    b.Property<Guid>("IdUtilisateur")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Texte")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -238,6 +241,8 @@ namespace BlazeLock.API.Migrations
                     b.HasKey("IdLog");
 
                     b.HasIndex("IdCoffre");
+
+                    b.HasIndex("IdUtilisateur");
 
                     b.ToTable("Log", (string)null);
                 });
@@ -325,7 +330,14 @@ namespace BlazeLock.API.Migrations
                         .HasForeignKey("IdCoffre")
                         .IsRequired();
 
+                    b.HasOne("BlazeLock.API.Models.Utilisateur", "Utilisateur")
+                        .WithMany("Logs")
+                        .HasForeignKey("IdUtilisateur")
+                        .IsRequired();
+
                     b.Navigation("Coffre");
+
+                    b.Navigation("Utilisateur");
                 });
 
             modelBuilder.Entity("BlazeLock.API.Models.Partage", b =>
@@ -367,6 +379,8 @@ namespace BlazeLock.API.Migrations
             modelBuilder.Entity("BlazeLock.API.Models.Utilisateur", b =>
                 {
                     b.Navigation("Coffres");
+
+                    b.Navigation("Logs");
 
                     b.Navigation("Partages");
                 });

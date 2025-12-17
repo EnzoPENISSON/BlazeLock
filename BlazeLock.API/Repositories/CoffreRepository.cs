@@ -22,7 +22,7 @@ namespace BlazeLock.API.Repositories
             return coffres.ToHashSet();
         }
 
-        public async Task<Coffre?> GetByIdAsync(Guid idCoffre)
+        public async Task<Coffre?> GetByIdAsync(Guid? idCoffre)
         {
             var context = await _contextFactory.CreateDbContextAsync();
             return await context.Coffres.FindAsync(idCoffre);

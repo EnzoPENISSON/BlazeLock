@@ -11,5 +11,6 @@ namespace BlazeLock.API.Services
         Task AddAsync(CoffreDto dto);
         Task Delete(CoffreDto dto);
         Task<IActionResult?> VerifyUserAccess(CoffreDto coffreDto, (Guid, IActionResult?) utilisateur);
+        Task AddLog(Guid idCoffre, Guid idUtilisateur, string message);
     }
 }

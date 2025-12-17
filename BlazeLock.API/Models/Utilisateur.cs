@@ -10,4 +10,6 @@ public partial class Utilisateur
     public virtual HashSet<Coffre>? Coffres { get; set; }
 
     public virtual HashSet<Partage>? Partages { get; set; }
+
+    public virtual HashSet<Log>? Logs { get; set; }
 }

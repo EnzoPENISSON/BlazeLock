@@ -8,18 +8,18 @@ namespace BlazeLock.API.Services
     public class CoffreService : ICoffreService
     {
 
-        private readonly ICoffreRepository _repository;
-        private readonly IDossierRepository _dossierRepository;
+        private readonly ICoffreRepository _coffreRepository;
+        private readonly ILogRepository _logRepository;
 
-        public CoffreService(ICoffreRepository repository, IDossierRepository dossierRepository)
+        public CoffreService(ICoffreRepository coffreRepository, ILogRepository logRepository)
         {
-            _repository = repository;
-            _dossierRepository = dossierRepository;
+            _coffreRepository = coffreRepository;
+            _logRepository = logRepository;
         }
 
         public async Task<HashSet<CoffreDto>> GetAllAsync()
         {
-            var partages = await _repository.GetAllAsync();
+            var partages = await _coffreRepository.GetAllAsync();
 
             var result = partages
                 .Select(c => new CoffreDto
@@ -37,7 +37,7 @@ namespace BlazeLock.API.Services
 
         public async Task<HashSet<CoffreDto>> GetByUtilisateurAsync(Guid idUtilisateur)
         {
-            var partages = await _repository.GetByUtilisateurAsync(idUtilisateur);
+            var partages = await _coffreRepository.GetByUtilisateurAsync(idUtilisateur);
 
             var result = partages
                 .Select(c => new CoffreDto
@@ -55,7 +55,7 @@ namespace BlazeLock.API.Services
 
         public async Task<CoffreDto?> GetByIdAsync(Guid id)
         {
-            var result = await _repository.GetByIdAsync(id);
+            var result = await _coffreRepository.GetByIdAsync(id);
 
             if (result == null) return null;
 
@@ -80,8 +80,7 @@ namespace BlazeLock.API.Services
                 HashMasterkey = dto.HashMasterkey,
                 Salt = dto.Salt
             };
-
-            await _repository.AddAsync(entity);
+            await _coffreRepository.AddAsync(entity);
 
             var newDefaultFolder = new Dossier
             {
@@ -103,7 +102,7 @@ namespace BlazeLock.API.Services
                 HashMasterkey = dto.HashMasterkey,
                 Salt = dto.Salt
             };
-            await _repository.DeleteCoffre(entity);
+            await _coffreRepository.DeleteCoffre(entity);
         }
 
         public async Task<IActionResult?> VerifyUserAccess(CoffreDto coffreDto, (Guid, IActionResult?) utilisateur)
@@ -115,6 +114,18 @@ namespace BlazeLock.API.Services
             if (coffreDto.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
 
             return null;
+        }
+
+        public async Task AddLog(Guid idCoffre, Guid idUtilisateur, string message)
+        {
+            var entity = new Log
+            {
+                IdCoffre = idCoffre,
+                IdUtilisateur = idUtilisateur,
+                Texte = message,
+                Timestamp = DateTime.UtcNow
+            };
+            await _logRepository.AddAsync(entity);
         }
 
     }

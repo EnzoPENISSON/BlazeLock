@@ -191,6 +191,10 @@ public partial class BlazeLockContext : DbContext
             entity.HasOne(d => d.Coffre).WithMany(p => p.Logs)
                 .HasForeignKey(d => d.IdCoffre)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.Logs)
+                .HasForeignKey(d => d.IdUtilisateur)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Partage>(entity =>

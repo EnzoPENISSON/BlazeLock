@@ -10,11 +10,13 @@ namespace BlazeLock.API.Services
 
         private readonly IDossierRepository _dossierRepository;
         private readonly ICoffreRepository _coffreRepository;
+        private readonly ILogRepository _logRepository;
 
-        public DossierService(IDossierRepository dossierRepository, ICoffreRepository coffreRepository)
+        public DossierService(IDossierRepository dossierRepository, ICoffreRepository coffreRepository, ILogRepository logRepository)
         {
             _dossierRepository = dossierRepository;
             _coffreRepository = coffreRepository;
+            _logRepository = logRepository;
         }
 
         public async Task<HashSet<DossierDto>> GetAllAsync()
@@ -97,6 +99,18 @@ namespace BlazeLock.API.Services
             if (coffre.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
 
             return null;
+        }
+
+        public async Task AddLog(DossierDto dossier, Guid idUtilisateur, string message)
+        {
+            var entity = new Log
+            {
+                IdCoffre = dossier.IdCoffre,
+                IdUtilisateur = idUtilisateur,
+                Texte = message,
+                Timestamp = DateTime.UtcNow
+            };
+            await _logRepository.AddAsync(entity);
         }
     }
 }

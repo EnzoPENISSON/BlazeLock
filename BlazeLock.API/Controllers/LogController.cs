@@ -1,24 +1,26 @@
-﻿using BlazeLock.API.Services;
+﻿using BlazeLock.API.Extensions;
+using BlazeLock.API.Models;
+using BlazeLock.API.Services;
+using BlazeLock.DbLib;
+using Humanizer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using BlazeLock.DbLib;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Authorization;
-using BlazeLock.API.Extensions;
 
 namespace BlazeLock.API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/coffre")]
-    public class CoffreController : ControllerBase
+    [Route("api/log")]
+    public class LogController : ControllerBase
     {
         private readonly ICoffreService _coffreService;
         private readonly IEncryptService _encryptService;
         private readonly ILogService _logService;
         private readonly IUtilisateurService _utilisateurService;
 
-        public CoffreController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService, IUtilisateurService utilisateurService)
+        public LogController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService, IUtilisateurService utilisateurService)
         {
             _coffreService = coffreService;
             _logService = logService;
@@ -28,66 +30,50 @@ namespace BlazeLock.API.Controllers
 
         }
 
-        [HttpGet("mine")]
-        public async Task<IActionResult> GetMine()
-        {
-            try
-            {
-                var (userId, errorResult) = User.GetCurrentUserId();
-                if (errorResult != null) return errorResult;
-
-                var coffres = await _coffreService.GetByUtilisateurAsync(userId);
-
-                if (coffres == null || !coffres.Any())
-                    return NoContent();
-
-                return Ok(coffres);
-            }
-            catch (Exception ex)
-            {
-                // Log l'exception ici si un logger est configuré
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de vos coffres.");
-            }
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             try
             {
-                var coffres = await _coffreService.GetAllAsync();
+                var coffres = await _logService.GetAllAsync();
                 return Ok(coffres);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de tous les coffres.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de tous les logs.");
             }
         }
 
-        [HttpGet("utilisateur/{id}")]
-        public async Task<IActionResult> GetByUtilisateur(Guid id)
+
+        [HttpGet("coffre/{idCoffre}")]
+        public async Task<ActionResult<PagedResultDto<LogDto>>> GetLogsByCoffre(Guid idCoffre, int pageNumber = 1, int pageSize = 10)
         {
             try
             {
-                var coffres = await _coffreService.GetByUtilisateurAsync(id);
-                if (coffres == null) return NotFound();
+                await _logService.VerifyUserAccess(idCoffre, User.GetCurrentUserId());
+                var logs = await _logService.GetByCoffrePagedAsync(idCoffre, pageNumber, pageSize);
+                if (logs == null) return NotFound();
 
-                return Ok(coffres);
+                return Ok(logs);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des coffres pour l'utilisateur {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des logs pour le coffre {idCoffre}.");
             }
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
-                var coffre = await _coffreService.GetByIdAsync(id);
-
+                CoffreDto? coffre = await _coffreService.GetByIdAsync(id);
                 if (coffre == null) return NotFound();
+
+                await _logService.VerifyUserAccess(coffre.IdCoffre, User.GetCurrentUserId());
+
 
                 var (userId, _) = User.GetCurrentUserId();
                 if (coffre.IdUtilisateur != userId)
@@ -114,9 +100,9 @@ namespace BlazeLock.API.Controllers
                 {
                     return NotFound("Utilisateur non trouvé.");
                 }
+
                 dto.IdUtilisateur = userId;
                 await _encryptService.HashMasterKey(dto);
-                await _coffreService.AddLog(dto.IdCoffre, userId, "Création du coffre");
                 return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
             }
             catch (Exception ex)
@@ -132,11 +118,8 @@ namespace BlazeLock.API.Controllers
             {
                 await _coffreService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
-                var (userId, errorResult) = User.GetCurrentUserId();
-                await _coffreService.AddLog(dto.IdCoffre, userId, "Suppression du coffre");
-
                 await _coffreService.Delete(dto);
-                return Ok("Coffre supprimé");
+                return Ok("Partage supprimé");
             }
             catch (Exception ex)
             {
@@ -169,11 +152,10 @@ namespace BlazeLock.API.Controllers
 
             if (isValid)
             {
-                await _coffreService.AddLog(dto.IdCoffre, userId, "Ouverture du coffre");
                 return Ok(isValid);
             }
-            await _coffreService.AddLog(dto.IdCoffre, userId, "Erreur lors de l'ouverture du coffre du coffre");
             return Unauthorized(isValid);
         }
+
     }
 }

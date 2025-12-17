@@ -23,6 +23,10 @@ builder.Services.AddScoped<HomeViewModel>();
 builder.Services.AddScoped<CoffreDetailViewModel>();
 builder.Services.AddScoped<EntreeDetailViewModel>();
 
+builder.Services.AddHttpClient<ILogAPIService, LogAPIService>(client =>
+    client.BaseAddress = new Uri(apiEndpoint))
+    .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+
 builder.Services.AddHttpClient<UserAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();

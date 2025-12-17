@@ -36,7 +36,7 @@ namespace BlazeLock.API.Services
 
             try
             {
-                _serviceCoffre.AddAsync(newCoffre);
+                await _serviceCoffre.AddAsync(newCoffre);
             }
             catch (Exception ex)
             {

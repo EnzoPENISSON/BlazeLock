@@ -1,0 +1,28 @@
+﻿using BlazeLock.DbLib;
+using System.Net.Http.Json;
+
+namespace BlazeLock.FRONT.Services
+{
+    public class LogAPIService : ILogAPIService
+    {
+        private readonly HttpClient _httpClient;
+
+        public LogAPIService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
+        public async Task<PagedResultDto<LogDto>?> GetLogsByVaultIdAsync(Guid vaultId, int pageNumber, int pageSize)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<PagedResultDto<LogDto>>($"api/Log/coffre/{vaultId}?pageNumber={pageNumber}&pageSize={pageSize}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Erreur lors de la récupération des logs : {ex.Message}");
+                return null;
+            }
+        }
+    }
+}

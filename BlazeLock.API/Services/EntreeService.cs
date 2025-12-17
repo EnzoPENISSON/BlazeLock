@@ -12,13 +12,15 @@ namespace BlazeLock.API.Services
         private readonly IHistoriqueEntreeRepository _historiqueEntreeRepository;
         private readonly IDossierRepository _dossierRepository;
         private readonly ICoffreRepository _coffreRepository;
+        private readonly ILogRepository _logRepository;
 
-        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository, ICoffreRepository coffreRepository)
+        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository, ICoffreRepository coffreRepository, ILogRepository logRepository)
         {
             _entreeRepository = EntreeRepository;
             _historiqueEntreeRepository = HistoriqueEntreeRepository;
             _dossierRepository = dossierRepository;
             _coffreRepository = coffreRepository;
+            _logRepository = logRepository;
         }
 
         public async Task<HashSet<EntreeDto>> GetAllAsync()
@@ -274,6 +276,20 @@ namespace BlazeLock.API.Services
             if (coffre.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
 
             return null;
+        }
+
+
+        public  async Task AddLog(EntreeDto entree, Guid idUtilisateur, string message)
+        {
+            var dossier = await _dossierRepository.GetByIdAsync(entree.IdDossier);
+            var entity = new Log
+            {
+                IdCoffre = dossier.IdCoffre,
+                IdUtilisateur = idUtilisateur,
+                Texte = message,
+                Timestamp = DateTime.UtcNow
+            };
+            await _logRepository.AddAsync(entity);
         }
 
         //public async Task Delete(EntreeDto dto)

@@ -60,5 +60,12 @@ namespace BlazeLock.API.Repositories
             context.Partages.Remove(partage);
             await context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsCoffreAdmin(Guid idCoffre, Guid idUtilisateur)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Partages
+                .AnyAsync(p => p.IdCoffre == idCoffre && p.IdUtilisateur == idUtilisateur && p.IsAdmin);
+        }
     }
 }
