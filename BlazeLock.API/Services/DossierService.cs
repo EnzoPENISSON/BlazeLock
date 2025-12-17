@@ -1,22 +1,25 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Services
 {
     public class DossierService : IDossierService
     {
 
-        private readonly IDossierRepository _repository;
+        private readonly IDossierRepository _dossierRepository;
+        private readonly ICoffreRepository _coffreRepository;
 
-        public DossierService(IDossierRepository repository)
+        public DossierService(IDossierRepository dossierRepository, ICoffreRepository coffreRepository)
         {
-            _repository = repository;
+            _dossierRepository = dossierRepository;
+            _coffreRepository = coffreRepository;
         }
 
         public async Task<HashSet<DossierDto>> GetAllAsync()
         {
-            var partages = await _repository.GetAllAsync();
+            var partages = await _dossierRepository.GetAllAsync();
 
             var result = partages
                 .Select(d => new DossierDto
@@ -32,7 +35,7 @@ namespace BlazeLock.API.Services
 
         public async Task<HashSet<DossierDto>> GetByCoffreAsync(Guid idCoffre)
         {
-            var partages = await _repository.GetByCoffreAsync(idCoffre);
+            var partages = await _dossierRepository.GetByCoffreAsync(idCoffre);
 
             var result = partages
                 .Select(d => new DossierDto
@@ -48,7 +51,7 @@ namespace BlazeLock.API.Services
 
         public async Task<DossierDto?> GetByIdAsync(Guid id)
         {
-            var result = await _repository.GetByIdAsync(id);
+            var result = await _dossierRepository.GetByIdAsync(id);
 
             if (result == null) return null;
 
@@ -67,7 +70,7 @@ namespace BlazeLock.API.Services
                 Libelle = dto.Libelle,
                 IdCoffre = dto.IdCoffre,
             };
-            await _repository.AddAsync(entity);
+            await _dossierRepository.AddAsync(entity);
 
         }
 
@@ -79,8 +82,21 @@ namespace BlazeLock.API.Services
                 Libelle = dto.Libelle,
                 IdCoffre = dto.IdCoffre,
             };
-            await _repository.DeleteDossier(entity);
+            await _dossierRepository.DeleteDossier(entity);
         }
 
+        public async Task<IActionResult?> VerifyUserAccess(DossierDto dossierDto, (Guid, IActionResult?) utilisateur)
+        {
+
+            var (userId, errorResult) = utilisateur;
+            if (errorResult != null) return errorResult;
+
+            var coffre = await _coffreRepository.GetByIdAsync(dossierDto.IdCoffre);
+            if (coffre == null) return new BadRequestObjectResult("Le coffre associé à ce dossier n'a pas été trouvé.");
+
+            if (coffre.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
+
+            return null;
+        }
     }
 }

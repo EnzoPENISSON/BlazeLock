@@ -1,4 +1,5 @@
 using BlazeLock.API.Models;
+using BlazeLock.API.Extensions;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Humanizer;
@@ -12,11 +13,15 @@ namespace BlazeLock.API.Controllers;
 [Route("api/entree")]
 public class EntreeController : ControllerBase
 {
-    private readonly IEntreeService _service;
+    private readonly IEntreeService _entreeService;
+    private readonly IDossierService _dossierService;
+    private readonly ICoffreService _coffreService;
 
-    public EntreeController(IEntreeService service)
+    public EntreeController(IEntreeService entreeService, IDossierService dossierService, ICoffreService coffreService)
     {
-        _service = service;
+        _entreeService = entreeService;
+        _dossierService = dossierService;
+        _coffreService = coffreService;
     }
 
     [HttpGet]
@@ -24,7 +29,7 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entrees = await _service.GetAllAsync();
+            var entrees = await _entreeService.GetAllAsync();
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -38,8 +43,10 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entrees = await _service.GetAllByDossierAsync(idCoffre, idDossier);
+            var entrees = await _entreeService.GetAllByDossierAsync(id);
             if (entrees == null || !entrees.Any()) return NoContent();
+
+            await _dossierService.VerifyUserAccess(dossier, User.GetCurrentUserId());
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -53,8 +60,10 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entree = await _service.GetByIdAsync(id);
+            var entree = await _entreeService.GetByIdAsync(id);
             if (entree == null) return NotFound();
+
+            await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
             return Ok(entree);
         }
         catch (Exception ex)
@@ -68,8 +77,9 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entrees = await _service.GetByIdWithHistoriaqueAsync(id);
+            var entrees = await _entreeService.GetByIdWithHistoriaqueAsync(id);
             if (entrees == null) return NotFound();
+
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -83,7 +93,10 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            await _service.AddAsync(dto);
+            await _entreeService.VerifyUserAccess(dto, User.GetCurrentUserId());
+
+            await _entreeService.AddAsync(dto);
+            // Retourne un 201 Created avec l'URL pour récupérer la nouvelle ressource
             return CreatedAtAction(nameof(GetById), new { id = dto.IdEntree }, dto);
         }
         catch (Exception ex)

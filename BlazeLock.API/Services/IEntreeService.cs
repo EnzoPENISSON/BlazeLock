@@ -1,4 +1,5 @@
 using BlazeLock.DbLib;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Services
 {
@@ -10,6 +11,7 @@ namespace BlazeLock.API.Services
         Task<EntreeHistoriqueDto?> GetByIdWithHistoriaqueAsync(Guid idEntree);
         Task AddAsync(EntreeDto dto);
         Task updateAsync(Guid idEntree, Guid IdDossier);
+        Task<IActionResult?> VerifyUserAccess(EntreeDto entreeDto, (Guid, IActionResult?) utilisateur);
         Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre);
         Task Delete(Guid idEntree);
 

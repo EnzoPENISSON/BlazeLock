@@ -1,10 +1,7 @@
 ﻿using BlazeLock.API.Models;
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
-using Humanizer;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.CodeAnalysis.Elfie.Model.Tree;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazeLock.API.Services
 {
@@ -260,5 +257,34 @@ namespace BlazeLock.API.Services
                 await _entreeRepository.DeleteEntree(existingEntree);
             }
         }
+        public async Task<IActionResult?> VerifyUserAccess(EntreeDto entreDto, (Guid, IActionResult?) utilisateur)
+        {
+
+            var (userId, errorResult) = utilisateur;
+            if (errorResult != null) return errorResult;
+
+            var dossier = await _dossierRepository.GetByIdAsync(entreDto.IdDossier);
+            if (dossier == null) return new BadRequestObjectResult("Le dossier associé à cette entrée n'a pas été trouvé.");
+
+            var coffre = await _coffreRepository.GetByIdAsync(dossier.IdCoffre);
+            if (coffre == null) return new BadRequestObjectResult("Le coffre associé à cette entrée n'a pas été trouvé.");
+
+            if (coffre.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
+
+            return null;
+        }
+
+        //public async Task Delete(EntreeDto dto)
+        //{
+        //    var entity = new Entree
+        //    {
+        //        IdEntree = dto.IdEntree,
+        //        IdUtilisateur = dto.IdUtilisateur,
+        //        Libelle = dto.Libelle,
+        //        HashMasterkey = dto.HashMasterkey,
+        //        Salt = dto.Salt
+        //    };
+        //    await _repository.DeleteEntree(entity);
+        //}
     }
 }
