@@ -22,6 +22,7 @@ namespace BlazeLock.API.Services
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 
+          
             byte[] key = Rfc2898DeriveBytes.Pbkdf2(
                 newCoffre.ClearPassword!,
                 salt,
