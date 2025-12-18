@@ -166,7 +166,7 @@ public partial class BlazeLockContext : DbContext
 
             entity.HasOne(d => d.Entree).WithMany(p => p.HistoriqueEntrees)
                 .HasForeignKey(d => d.IdEntree)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Log>(entity =>

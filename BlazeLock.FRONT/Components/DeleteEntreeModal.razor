@@ -1,0 +1,64 @@
+﻿@if (IsVisible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm" style="z-index: 100;">
+
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+
+            <div class="px-8 pt-8 pb-4 text-center">
+                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
+                    <i class="bi bi-trash3-fill text-3xl text-red-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Supprimer l'entrée ?</h3>
+                <p class="text-sm text-gray-500 mt-2">
+                    Êtes-vous sûr de vouloir supprimer
+                    <span class="font-bold text-gray-800">"@EntryTitle"</span> ?
+                    <br />Cette action est irréversible.
+                </p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="mx-8 mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-100 flex items-center justify-center">
+                    <i class="bi bi-exclamation-circle-fill mr-2"></i> @ErrorMessage
+                </div>
+            }
+            <div class="px-8 pb-8 pt-2 flex justify-center gap-3">
+                <button type="button"
+                        @onclick="OnClose"
+                        disabled="@IsProcessing"
+                        class="w-full rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                    Annuler
+                </button>
+
+                <button type="button"
+                        @onclick="OnConfirm"
+                        disabled="@IsProcessing"
+                        class="w-full inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors">
+
+                    @if (IsProcessing)
+                    {
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <i class="bi bi-trash mr-2"></i>
+                    }
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string EntryTitle { get; set; } = "cette entrée";
+    [Parameter] public bool IsProcessing { get; set; }
+    [Parameter] public string ErrorMessage { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+}

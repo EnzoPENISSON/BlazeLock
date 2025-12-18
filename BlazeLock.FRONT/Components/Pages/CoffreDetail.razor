@@ -128,7 +128,8 @@
                             {
                                 <EntreeCard Entry="@entry" Folders="@ViewModel.Folders"
                                 OnClick="@(() => ViewModel.OpenEditEntryModal(entry))"
-                                OnMoveClick="@(() => ViewModel.OpenMoveEntryModal(entry))" />
+                                OnMoveClick="@(() => ViewModel.OpenMoveEntryModal(entry))" 
+                                DeleteOnclick="@(() => ViewModel.OpenDeleteEntryModal(entry))" />
                             }
                         </div>
                     }
@@ -166,6 +167,14 @@
                 ErrorMessage="@ViewModel.ErrorMessage"
                 OnClose="@ViewModel.CloseModal"
                 OnSubmit="@(args => ViewModel.MoveEntryToFolderAsync(args.FolderId, args.EntreeId))" />
+
+<DeleteEntreeModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.DeleteEntry)"
+                   EntryTitle="@ViewModel.CurrentEntryTitle"
+                   IsProcessing="@ViewModel.IsProcessing"
+                   ErrorMessage="@ViewModel.ErrorMessage"
+                   OnClose="@ViewModel.CloseModal"
+                   OnConfirm="@ViewModel.DeleteEntryAsync" />
+
 @code {
     [Parameter] public Guid Id { get; set; }
     [Parameter] public Guid? FolderId { get; set; }
