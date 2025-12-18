@@ -64,12 +64,11 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entree = await _entreeService.GetByIdAsync(id); // Id coffre Empty
+            var entree = await _entreeService.GetByIdAsync(id);
             if (entree == null) return NotFound();
-            Console.WriteLine("Entree trouvée : " + entree.IdEntree);   
 
             await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
-            //await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
+            await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
 
             return Ok(entree);
         }

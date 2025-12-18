@@ -3,8 +3,6 @@ using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Elfie.Model.Tree;
-using NuGet.Protocol.Core.Types;
 
 namespace BlazeLock.API.Services
 {
@@ -275,18 +273,18 @@ namespace BlazeLock.API.Services
 
         public  async Task AddLog(EntreeDto entree, Guid idUtilisateur, string message)
         {
-            Dossier? dossier = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", entree.idCoffre);
-            Guid idDossier = dossier.IdDossier;
+            Dossier? dossier = await _dossierRepository.GetByIdAsync(entree.IdDossier);
+            Guid idCoffre = dossier.IdCoffre;
 
-            if (entree.IdDossier != Guid.Empty)
+            if (idCoffre == Guid.Empty)
             {
-                Dossier? existingDefaultFolder = await _dossierRepository.GetByIdAsync(entree.IdDossier);
-                idDossier = dossier.IdDossier;
+                Dossier? existingDefaultFolder = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", entree.idCoffre);
+                idCoffre = existingDefaultFolder.IdCoffre;
             }
 
             var entity = new Log
             {
-                IdCoffre = idDossier,
+                IdCoffre = idCoffre,
                 IdUtilisateur = idUtilisateur,
                 Texte = message,
                 Timestamp = DateTime.UtcNow
