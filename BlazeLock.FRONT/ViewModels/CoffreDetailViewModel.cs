@@ -359,15 +359,14 @@ namespace BlazeLock.FRONT.ViewModels
             {
                 await _entreeApi.UpdateDossierAsync(VaultId,targetFolderId,entryId);
                 CloseModal();
-                await RefreshEntriesAsync(CurrentFolderId);
-                
+
                 if (targetFolderId == DefaultFolderId)
                 {
-                    Nav.NavigateTo($"/coffre/{VaultId}");
+                    Nav.NavigateTo($"/coffre/{VaultId}", forceLoad: true);
                 }
                 else
                 {
-                    Nav.NavigateTo($"/coffre/{VaultId}/{targetFolderId}");
+                    Nav.NavigateTo($"/coffre/{VaultId}/{targetFolderId}", forceLoad: true);
                 }
 
             }
