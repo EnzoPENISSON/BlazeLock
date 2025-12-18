@@ -239,7 +239,6 @@ namespace BlazeLock.API.Services
         public async Task updateAsync(Guid idEntree, Guid IdDossier)
         {
             var existingEntree = await _entreeRepository.GetByIdAsync(idEntree);
-            Console.WriteLine(existingEntree);
             if (existingEntree != null)
             {
                 var newEntree = new Entree
