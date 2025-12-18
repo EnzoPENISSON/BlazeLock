@@ -1,7 +1,7 @@
-﻿using BlazeLock.API.Models;
-using BlazeLock.DbLib;
+﻿using BlazeLock.DbLib;
+using Konscious.Security.Cryptography;
 using System.Security.Cryptography;
-
+using System.Text;
 namespace BlazeLock.API.Services
 {
     public class EncryptService : IEncryptService
@@ -10,8 +10,10 @@ namespace BlazeLock.API.Services
 
         private const int SaltSize = 16;
         private const int KeySize = 32;
-        private const int Iterations = 310_000;
 
+        private const int DegreeOfParallelism = 4;
+        private const int Iterations = 4;
+        private const int MemorySize = 65536;
 
         public EncryptService(ICoffreService service)
         {
@@ -22,14 +24,19 @@ namespace BlazeLock.API.Services
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 
-          
-            byte[] key = Rfc2898DeriveBytes.Pbkdf2(
-                newCoffre.ClearPassword!,
-                salt,
-                Iterations,
-                HashAlgorithmName.SHA256,
-                KeySize
-            );
+            byte[] key;
+
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(newCoffre.ClearPassword!);
+
+            using (var argon2 = new Argon2id(passwordBytes))
+            {
+                argon2.Salt = salt;
+                argon2.DegreeOfParallelism = DegreeOfParallelism;
+                argon2.Iterations = Iterations;
+                argon2.MemorySize = MemorySize;
+
+                key = await argon2.GetBytesAsync(KeySize);
+            }
 
             newCoffre.Salt = salt;
             newCoffre.IdCoffre = Guid.NewGuid();
@@ -47,13 +54,20 @@ namespace BlazeLock.API.Services
 
         public async Task<bool> VerifyMasterKey(string masterKey, byte[] storedSalt, byte[] storedHash)
         {
-            byte[] keyToCheck = Rfc2898DeriveBytes.Pbkdf2(
-                masterKey,
-                storedSalt,
-                Iterations,
-                HashAlgorithmName.SHA256,
-                KeySize
-            );
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(masterKey);
+
+            byte[] keyToCheck;
+
+            using (var argon2 = new Argon2id(passwordBytes))
+            {
+                argon2.Salt = storedSalt;
+                argon2.DegreeOfParallelism = DegreeOfParallelism;
+                argon2.Iterations = Iterations;
+                argon2.MemorySize = MemorySize;
+
+                keyToCheck = await argon2.GetBytesAsync(KeySize);
+            }
+
             return CryptographicOperations.FixedTimeEquals(keyToCheck, storedHash);
         }
 
