@@ -3,7 +3,6 @@ using BlazeLock.FRONT.Components.Forms;
 using BlazeLock.FRONT.Components.Types;
 using BlazeLock.FRONT.Services;
 using Microsoft.AspNetCore.Components;
-using System.ComponentModel.DataAnnotations;
 
 namespace BlazeLock.FRONT.ViewModels
 {
@@ -40,6 +39,8 @@ namespace BlazeLock.FRONT.ViewModels
 
         public List<EntreeDto> Entries { get; private set; } = new();
         public List<DossierDto> Folders { get; private set; } = new();
+
+        public string CurrentEntryTitle { get; private set; } = "";
 
         public CoffreModalType CurrentModal { get; private set; } = CoffreModalType.None;
 
@@ -356,6 +357,34 @@ namespace BlazeLock.FRONT.ViewModels
                 ErrorMessage = "Erreur: " + ex.Message;
             }
             finally { IsProcessing = false; }
+        }
+    
+        public void OpenDeleteEntryModal(EntreeDto entry)
+        {
+            _currentEntryId = entry.IdEntree;
+            CurrentEntryTitle = entry.Libelle;
+            ErrorMessage = "";
+            CurrentModal = CoffreModalType.DeleteEntry;
+        }
+
+        public async Task DeleteEntryAsync()
+        {
+            IsProcessing = true;
+            try
+            {
+                await _entreeApi.DeleteEntreeAsync(_currentEntryId);
+
+                CloseModal();
+                await RefreshEntriesAsync(CurrentFolderId);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erreur lors de la suppression : " + ex.Message;
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
         }
     }
 }

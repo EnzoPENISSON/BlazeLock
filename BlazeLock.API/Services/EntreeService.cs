@@ -2,6 +2,8 @@
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Elfie.Model.Tree;
+using NuGet.Protocol.Core.Types;
 
 namespace BlazeLock.API.Services
 {
@@ -252,14 +254,6 @@ namespace BlazeLock.API.Services
             }
         }
 
-        public async Task Delete(Guid idEntree)
-        {
-            var existingEntree = await _entreeRepository.GetByIdAsync(idEntree);
-            if (existingEntree != null)
-            {
-                await _entreeRepository.DeleteEntree(existingEntree);
-            }
-        }
         public async Task<IActionResult?> VerifyUserAccess(EntreeDto entreDto, (Guid, IActionResult?) utilisateur)
         {
 
@@ -291,17 +285,14 @@ namespace BlazeLock.API.Services
             await _logRepository.AddAsync(entity);
         }
 
-        //public async Task Delete(EntreeDto dto)
-        //{
-        //    var entity = new Entree
-        //    {
-        //        IdEntree = dto.IdEntree,
-        //        IdUtilisateur = dto.IdUtilisateur,
-        //        Libelle = dto.Libelle,
-        //        HashMasterkey = dto.HashMasterkey,
-        //        Salt = dto.Salt
-        //    };
-        //    await _repository.DeleteEntree(entity);
-        //}
+        public async Task DeleteEntree(Guid id)
+        {
+            var existingEntree = await _entreeRepository.GetByIdAsync(id);
+            if (existingEntree != null) {
+            
+                await _entreeRepository.DeleteEntree(id);
+            }
+            
+        }
     }
 }

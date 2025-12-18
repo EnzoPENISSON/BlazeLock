@@ -51,7 +51,7 @@
                     Changer de dossier
                 </button>
 
-                <button class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50">
+                <button @onclick="DeleteOnclick"  class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50">
                     <i class="bi bi-trash"></i>
                     Supprimer
                 </button>
@@ -72,6 +72,7 @@
     [Parameter] public EventCallback OnClick { get; set; }
 
     [Parameter] public EventCallback OnMoveClick { get; set; }
+    [Parameter] public EventCallback DeleteOnclick { get; set; }
 
     private string _domain;
     private bool _isMenuOpen = false;

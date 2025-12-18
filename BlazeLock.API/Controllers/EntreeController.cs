@@ -141,4 +141,23 @@ public class EntreeController : ControllerBase
 
         return Ok(entrees);
     }
+
+    // Delete route
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            var entree = await _entreeService.GetByIdAsync(id);
+            if (entree == null) return NotFound();
+            await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
+            await _entreeService.DeleteEntree(id);
+            //await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Suppression de l'entrée " + entree.Libelle);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression de l'entrée.");
+        }
+    }
 }
