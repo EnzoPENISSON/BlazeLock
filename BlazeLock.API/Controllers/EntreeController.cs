@@ -50,7 +50,7 @@ public class EntreeController : ControllerBase
             if (entrees == null || !entrees.Any()) return NoContent();
 
             await _entreeService.VerifyUserAccess(entrees.First(), User.GetCurrentUserId());
-            await _coffreService.AddLog(idCoffre, User.GetCurrentUserId().userId, "Affichage des entrées du dossier " + idDossier);
+            await _coffreService.AddLog(idCoffre, User.GetCurrentUserId().userId, "Affichage des entrées du dossier ");
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -64,16 +64,18 @@ public class EntreeController : ControllerBase
     {
         try
         {
-            var entree = await _entreeService.GetByIdAsync(id);
+            var entree = await _entreeService.GetByIdAsync(id); // Id coffre EMpty ?
             if (entree == null) return NotFound();
+            Console.WriteLine("Entree trouvée : " + entree.IdEntree);   
 
             await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
-            await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
+            await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Affichage de l'entrée "); // + entree.Libelle
 
             return Ok(entree);
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération de l'entrée {id}.");
         }
     }
@@ -104,11 +106,11 @@ public class EntreeController : ControllerBase
             await _entreeService.AddAsync(dto);
             await _entreeService.AddLog(dto, User.GetCurrentUserId().userId, "création de l'entrée " + dto.Libelle);
 
-            // Retourne un 201 Created avec l'URL pour récupérer la nouvelle ressource
             return CreatedAtAction(nameof(GetById), new { id = dto.IdEntree }, dto);
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la création de l'entrée.");
         }
     }
@@ -124,15 +126,19 @@ public class EntreeController : ControllerBase
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue.");
         }
     }
 
-    [HttpGet("coffre/{id}")]
+    [HttpGet("coffre/{idCoffre}")]
     public async Task<IActionResult> GetByCoffre(Guid idCoffre)
     {
         var entrees = await _entreeService.GetAllByCoffreAsync(idCoffre);
-        await _entreeService.AddLog(entrees.First(), User.GetCurrentUserId().userId, "Affichage des entrées du coffre " + idCoffre);
+        if (entrees.Any())
+        {
+            await _entreeService.AddLog(entrees.First(), User.GetCurrentUserId().userId, "Affichage des entrées");
+        }
 
         return Ok(entrees);
     }

@@ -115,7 +115,7 @@ namespace BlazeLock.API.Controllers
                     return NotFound("Utilisateur non trouvé.");
                 }
                 dto.IdUtilisateur = userId;
-                await _encryptService.HashMasterKey(dto);
+                await _encryptService.HashMasterKey(dto); // Hash the master key before and creating the coffre
                 await _coffreService.AddLog(dto.IdCoffre, userId, "Création du coffre");
                 return CreatedAtAction(nameof(GetById), new { id = dto.IdCoffre }, dto);
             }

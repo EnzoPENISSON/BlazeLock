@@ -35,6 +35,7 @@ namespace BlazeLock.FRONT.Services
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 Console.WriteLine($"[EntreeAPIService] Error fetching entries for dossier {dossierId}: {ex.Message}");
                 return new List<EntreeDto>();
             }

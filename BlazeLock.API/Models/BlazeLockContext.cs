@@ -182,7 +182,7 @@ public partial class BlazeLockContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("id_coffre");
             entity.Property(e => e.Texte)
-                .HasMaxLength(50)
+                .HasMaxLength(500)
                 .HasColumnName("texte");
             entity.Property(e => e.Timestamp)
                 .HasColumnType("datetime")

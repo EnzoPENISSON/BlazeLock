@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BlazeLock.API.Models;
 
@@ -7,6 +8,7 @@ public partial class Log
 {
     public Guid IdLog { get; set; } = default!;
 
+    [MaxLength(500)]
     public string? Texte { get; set; }
 
     public DateTime Timestamp { get; set; } = DateTime.Now;
