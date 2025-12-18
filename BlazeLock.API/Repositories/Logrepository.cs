@@ -48,16 +48,15 @@ namespace BlazeLock.API.Repositories
             var context = await _contextFactory.CreateDbContextAsync();
 
             var query = context.Logs
-                .Where(p => p.IdCoffre == idCoffre)
-                .AsNoTracking();
+                                .Include(l => l.Utilisateur) // Inclure l'entité Utilisateur
+                                .Where(l => l.IdCoffre == idCoffre);
 
             var totalCount = await query.CountAsync();
 
-            var logs = await query
-                .OrderByDescending(l => l.Timestamp)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var logs = await query.OrderByDescending(l => l.Timestamp)
+                                  .Skip((pageNumber - 1) * pageSize)
+                                  .Take(pageSize)
+                                  .ToListAsync();
 
             return (logs.ToHashSet(), totalCount);
         }

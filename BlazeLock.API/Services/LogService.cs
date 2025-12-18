@@ -30,7 +30,8 @@ namespace BlazeLock.API.Services
                     IdCoffre = l.IdCoffre,
                     Timestamp = l.Timestamp,
                     IdUtilisateur = l.IdUtilisateur,
-                    Texte = l.Texte
+                    Texte = l.Texte,
+                    Email = l.Utilisateur.email
                 })
                 .ToHashSet();
 
@@ -46,7 +47,8 @@ namespace BlazeLock.API.Services
                     IdCoffre = l.IdCoffre,
                     Timestamp = l.Timestamp,
                     IdUtilisateur = l.IdUtilisateur,
-                    Texte = l.Texte
+                    Texte = l.Texte,
+                    Email = l.Utilisateur.email
                 })
                 .ToHashSet();
 
@@ -62,8 +64,10 @@ namespace BlazeLock.API.Services
                 IdCoffre = l.IdCoffre,
                 Timestamp = l.Timestamp,
                 IdUtilisateur = l.IdUtilisateur,
-                Texte = l.Texte
+                Texte = l.Texte,
+                Email = l.Utilisateur.email
             }).ToList();
+
 
             return new PagedResultDto<LogDto>
             {

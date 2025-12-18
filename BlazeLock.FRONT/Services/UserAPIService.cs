@@ -51,26 +51,21 @@
             return isValid;
         }
 
-        public async Task InsertUtilisateurAsync(Guid? userId)
+        public async Task InsertUtilisateurAsync(UtilisateurDto? utilisateur)
         {
-            if (userId == null)
+            if (utilisateur == null)
             {
                 Console.WriteLine("[UserAPIService] userId is null. Aborting.");
                 return;
             }
 
-            var newUser = new UtilisateurDto
-            {
-                IdUtilisateur = userId.Value,
-            };
-
             try
             {
-                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(newUser);
-                
-                var response = await _http.PostAsJsonAsync("/api/utilisateur", newUser);
+                Console.WriteLine("Envoie");
+                var response = await _http.PostAsJsonAsync("/api/utilisateur", utilisateur);
 
-                
+                Console.WriteLine(response);
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
@@ -79,10 +74,6 @@
             catch (AccessTokenNotAvailableException exception)
             {
                 exception.Redirect();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[FRONT.UserAPIService] EXCEPTION: {ex.Message}");
             }
         }
     }
