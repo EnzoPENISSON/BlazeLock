@@ -1,4 +1,5 @@
 ﻿using BlazeLock.API.Extensions;
+using BlazeLock.API.Helpers;
 using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
@@ -13,6 +14,7 @@ namespace BlazeLock.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/log")]
+    [RequireVaultSession]
     public class LogController : ControllerBase
     {
         private readonly ICoffreService _coffreService;

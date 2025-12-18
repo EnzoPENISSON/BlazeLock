@@ -1,4 +1,5 @@
 ﻿using BlazeLock.API.Extensions;
+using BlazeLock.API.Helpers;
 using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
@@ -13,6 +14,7 @@ namespace BlazeLock.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/dossier")]
+    [RequireVaultSession]
     public class DossierController : ControllerBase
     {
         private readonly ICoffreService _coffreService;
@@ -40,15 +42,15 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpGet("coffre/{IdCoffre}")]
-        public async Task<IActionResult> GetByCoffre(Guid IdCoffre)
+        [HttpGet("coffre/{idCoffre}")]
+        public async Task<IActionResult> GetByCoffre(Guid idCoffre)
         {
             try
             {
-                var dossiers = await _dossierService.GetByCoffreAsync(IdCoffre);
+                var dossiers = await _dossierService.GetByCoffreAsync(idCoffre);
                 if (dossiers == null) return NotFound();
 
-                CoffreDto? coffre = await _coffreService.GetByIdAsync(IdCoffre);
+                CoffreDto? coffre = await _coffreService.GetByIdAsync(idCoffre);
                 if (coffre == null) return NotFound();
 
                 await _coffreService.VerifyUserAccess(coffre, User.GetCurrentUserId());
@@ -60,7 +62,7 @@ namespace BlazeLock.API.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des dossiers pour le coffre {IdCoffre}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des dossiers pour le coffre {idCoffre}.");
             }
         }
 
@@ -85,7 +87,7 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("{idCoffre}")]
         public async Task<IActionResult> Create(DossierDto dto) 
         {
             try

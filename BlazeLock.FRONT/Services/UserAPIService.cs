@@ -46,7 +46,9 @@
                 var error = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Erreur API ({response.StatusCode}): {error}");
             }
-            bool isValid = await response.Content.ReadFromJsonAsync<bool>();
+            var result = await response.Content.ReadFromJsonAsync<VerifyResponse>();
+
+            bool isValid = result?.IsValid ?? false;
 
             return isValid;
         }
@@ -85,5 +87,11 @@
                 Console.WriteLine($"[FRONT.UserAPIService] EXCEPTION: {ex.Message}");
             }
         }
+    }
+
+    public class VerifyResponse
+    {
+        public bool IsValid { get; set; }
+        public string Message { get; set; }
     }
 }

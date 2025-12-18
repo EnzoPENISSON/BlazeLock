@@ -1,10 +1,11 @@
-﻿using BlazeLock.API.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using BlazeLock.API.Extensions;
+using BlazeLock.API.Services;
 using BlazeLock.DbLib;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Authorization;
-using BlazeLock.API.Extensions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using System.Security.Claims;
 
 namespace BlazeLock.API.Controllers
 {
@@ -18,14 +19,15 @@ namespace BlazeLock.API.Controllers
         private readonly ILogService _logService;
         private readonly IUtilisateurService _utilisateurService;
 
-        public CoffreController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService, IUtilisateurService utilisateurService)
+        private readonly IMemoryCache _cache;
+
+        public CoffreController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService, IUtilisateurService utilisateurService, IMemoryCache cache)
         {
             _coffreService = coffreService;
             _logService = logService;
             _encryptService = encryptService;
             _utilisateurService = utilisateurService;
-
-
+            _cache = cache;
         }
 
         [HttpGet("mine")]
@@ -45,7 +47,6 @@ namespace BlazeLock.API.Controllers
             }
             catch (Exception ex)
             {
-                // Log l'exception ici si un logger est configuré
                 return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de vos coffres.");
             }
         }
@@ -154,11 +155,7 @@ namespace BlazeLock.API.Controllers
 
             var existingCoffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
 
-            if (existingCoffre == null)
-            {
-                return NotFound("Coffre not found");
-            }
-
+            if (existingCoffre == null) return NotFound("Coffre not found");
             if (existingCoffre.IdUtilisateur != userId) return Forbid();
 
             bool isValid = await _encryptService.VerifyMasterKey(
@@ -169,11 +166,27 @@ namespace BlazeLock.API.Controllers
 
             if (isValid)
             {
+                byte[] derivedKey = await _encryptService.GetDerivedKey(
+                    dto.ClearPassword,
+                    existingCoffre.Salt
+                );
+
+                string sessionKey = $"Session_{userId}_{dto.IdCoffre}";
+
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(5))
+                    .SetAbsoluteExpiration(TimeSpan.FromHours(1))
+                    .SetPriority(CacheItemPriority.High);
+
+                _cache.Set(sessionKey, derivedKey, cacheOptions);
+
                 await _coffreService.AddLog(dto.IdCoffre, userId, "Ouverture du coffre");
-                return Ok(isValid);
+
+                return Ok(new { IsValid = true, Message = "Session active for 5 minutes" });
             }
-            await _coffreService.AddLog(dto.IdCoffre, userId, "Erreur lors de l'ouverture du coffre du coffre");
-            return Unauthorized(isValid);
+
+            await _coffreService.AddLog(dto.IdCoffre, userId, "Erreur lors de l'ouverture du coffre");
+            return Unauthorized(new { IsValid = false });
         }
     }
 }

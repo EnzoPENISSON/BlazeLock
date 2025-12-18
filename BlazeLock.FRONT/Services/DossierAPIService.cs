@@ -30,7 +30,7 @@ namespace BlazeLock.FRONT.Services
         {
             try
             {
-                var response = await _http.PostAsJsonAsync("api/dossier", dossier);
+                var response = await _http.PostAsJsonAsync($"api/dossier/{dossier.IdCoffre}", dossier);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)

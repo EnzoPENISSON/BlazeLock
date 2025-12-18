@@ -1,4 +1,5 @@
 using BlazeLock.API.Extensions;
+using BlazeLock.API.Helpers;
 using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
@@ -11,7 +12,8 @@ namespace BlazeLock.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/entree")]
+[Route("api/entree/{idCoffre}")]
+[RequireVaultSession]
 public class EntreeController : ControllerBase
 {
     private readonly IEntreeService _entreeService;
@@ -41,7 +43,7 @@ public class EntreeController : ControllerBase
         }
     }
 
-    [HttpGet("dossier/{idCoffre}/{idDossier}")]
+    [HttpGet("dossier/{idDossier}")]
     public async Task<IActionResult> GetByDossier(Guid idCoffre,Guid idDossier)
     {
         try
@@ -97,16 +99,18 @@ public class EntreeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(EntreeDto dto)
+    public async Task<IActionResult> Create(Guid idCoffre, EntreeDto dto)
     {
         try
         {
             await _entreeService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
             await _entreeService.AddAsync(dto);
-            await _entreeService.AddLog(dto, User.GetCurrentUserId().userId, "création de l'entrée " + dto.Libelle);
+            // await _entreeService.AddLog(dto, User.GetCurrentUserId().userId, "création de l'entrée " + dto.Libelle);
 
-            return CreatedAtAction(nameof(GetById), new { id = dto.IdEntree }, dto);
+            return CreatedAtAction(nameof(GetById),
+                new { idCoffre = idCoffre, id = dto.IdEntree },
+                dto);
         }
         catch (Exception ex)
         {
@@ -117,7 +121,7 @@ public class EntreeController : ControllerBase
 
 
     [HttpPost("dossier/{idEntree}/{idDossier}")]
-    public async Task<IActionResult> Update(Guid idEntree, Guid idDossier)
+    public async Task<IActionResult> Update(Guid idCoffre, Guid idEntree, Guid idDossier)
     {
         try
         {
@@ -130,13 +134,13 @@ public class EntreeController : ControllerBase
         }
     }
 
-    [HttpGet("coffre/{idCoffre}")]
+    [HttpGet("coffre")]
     public async Task<IActionResult> GetByCoffre(Guid idCoffre)
     {
         var entrees = await _entreeService.GetAllByCoffreAsync(idCoffre);
         if (entrees.Any())
         {
-            await _entreeService.AddLog(entrees.First(), User.GetCurrentUserId().userId, "Affichage des entrées");
+            //await _entreeService.AddLog(entrees.First(), User.GetCurrentUserId().userId, "Affichage des entrées");
         }
 
         return Ok(entrees);

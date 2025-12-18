@@ -87,6 +87,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContextFactory<BlazeLockContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
 builder.Services.AddScoped<IUtilisateurService, UtilisateurService>();
 

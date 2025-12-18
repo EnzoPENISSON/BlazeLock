@@ -37,6 +37,8 @@ namespace BlazeLock.FRONT.ViewModels
         public bool IsLoading { get; private set; } = true;
         public bool IsFoldersLoading { get; private set; } = true;
 
+        public Guid DefaultFolderId { get; set; }
+
         public List<EntreeDto> Entries { get; private set; } = new();
         public List<DossierDto> Folders { get; private set; } = new();
 
@@ -53,6 +55,9 @@ namespace BlazeLock.FRONT.ViewModels
         public EntryFormModel NewEntryForm { get; set; } = new();
         public FolderFormModel NewFolderForm { get; set; } = new();
 
+        [Inject]
+        public NavigationManager Nav { get; set; }
+
         public async Task InitializeAsync(Guid id, Guid? folderId)
         {
             VaultId = id;
@@ -66,6 +71,10 @@ namespace BlazeLock.FRONT.ViewModels
                 VaultName = _keyStore.GetName(VaultId) ?? "Coffre";
 
                 await RefreshFoldersAsync();
+
+                DefaultFolderId = Folders.FirstOrDefault(f => f.Libelle == "Default")?.IdDossier ?? Guid.Empty;
+                Console.WriteLine(DefaultFolderId);
+
                 await RefreshEntriesAsync(CurrentFolderId);
             }
             else
@@ -299,7 +308,7 @@ namespace BlazeLock.FRONT.ViewModels
                 string? masterKeyBase64 = _keyStore.GetKey(VaultId);
                 if (string.IsNullOrEmpty(masterKeyBase64)) return;
 
-                var dto = await _entreeApi.GetByIdAsync(_currentEntryId);
+                var dto = await _entreeApi.GetByIdAsync(VaultId,_currentEntryId);
 
                 var passResult = await _crypto.EncryptDataAsync(NewEntryForm.Password, masterKeyBase64);
                 dto.Password = Convert.FromBase64String(passResult.CipherText);
@@ -348,9 +357,19 @@ namespace BlazeLock.FRONT.ViewModels
             IsProcessing = true;
             try
             {
-                await _entreeApi.UpdateDossierAsync(targetFolderId,entryId);
+                await _entreeApi.UpdateDossierAsync(VaultId,targetFolderId,entryId);
                 CloseModal();
                 await RefreshEntriesAsync(CurrentFolderId);
+                
+                if (targetFolderId == DefaultFolderId)
+                {
+                    Nav.NavigateTo($"/coffre/{VaultId}");
+                }
+                else
+                {
+                    Nav.NavigateTo($"/coffre/{VaultId}/{targetFolderId}");
+                }
+
             }
             catch (Exception ex)
             {
@@ -372,7 +391,7 @@ namespace BlazeLock.FRONT.ViewModels
             IsProcessing = true;
             try
             {
-                await _entreeApi.DeleteEntreeAsync(_currentEntryId);
+                await _entreeApi.DeleteEntreeAsync(VaultId,_currentEntryId);
 
                 CloseModal();
                 await RefreshEntriesAsync(CurrentFolderId);

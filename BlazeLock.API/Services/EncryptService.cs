@@ -24,53 +24,37 @@ namespace BlazeLock.API.Services
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 
-            byte[] key;
+            byte[] key = await ComputeArgon2id(newCoffre.ClearPassword!, salt);
 
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(newCoffre.ClearPassword!);
+            newCoffre.Salt = salt;
+            newCoffre.IdCoffre = Guid.NewGuid();
+            newCoffre.HashMasterkey = key;
 
-            using (var argon2 = new Argon2id(passwordBytes))
+            await _serviceCoffre.AddAsync(newCoffre);
+        }
+
+        public async Task<bool> VerifyMasterKey(string masterKey, byte[] storedSalt, byte[] storedHash)
+        {
+            byte[] keyToCheck = await ComputeArgon2id(masterKey, storedSalt);
+            return CryptographicOperations.FixedTimeEquals(keyToCheck, storedHash);
+        }
+
+        public async Task<byte[]> GetDerivedKey(string masterKey, byte[] storedSalt)
+        {
+            return await ComputeArgon2id(masterKey, storedSalt);
+        }
+        private async Task<byte[]> ComputeArgon2id(string password, byte[] salt)
+        {
+            using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))
             {
                 argon2.Salt = salt;
                 argon2.DegreeOfParallelism = DegreeOfParallelism;
                 argon2.Iterations = Iterations;
                 argon2.MemorySize = MemorySize;
 
-                key = await argon2.GetBytesAsync(KeySize);
-            }
-
-            newCoffre.Salt = salt;
-            newCoffre.IdCoffre = Guid.NewGuid();
-            newCoffre.HashMasterkey = key;
-
-            try
-            {
-                await _serviceCoffre.AddAsync(newCoffre);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erreur lors de l'ajout du coffre : " + ex.Message);
+                return await argon2.GetBytesAsync(KeySize);
             }
         }
-
-        public async Task<bool> VerifyMasterKey(string masterKey, byte[] storedSalt, byte[] storedHash)
-        {
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(masterKey);
-
-            byte[] keyToCheck;
-
-            using (var argon2 = new Argon2id(passwordBytes))
-            {
-                argon2.Salt = storedSalt;
-                argon2.DegreeOfParallelism = DegreeOfParallelism;
-                argon2.Iterations = Iterations;
-                argon2.MemorySize = MemorySize;
-
-                keyToCheck = await argon2.GetBytesAsync(KeySize);
-            }
-
-            return CryptographicOperations.FixedTimeEquals(keyToCheck, storedHash);
-        }
-
     }
 }
 
