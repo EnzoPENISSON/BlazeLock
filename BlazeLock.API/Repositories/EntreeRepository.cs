@@ -17,7 +17,12 @@ namespace BlazeLock.API.Repositories
         {
             var context = await _contextFactory.CreateDbContextAsync();
 
-            var coffres = await context.Entrees.AsNoTracking().ToListAsync();
+            var coffres = await context.Entrees
+                    .Include(e => e.Dossier)
+                    .Include(e => e.HistoriqueEntrees)
+                    .AsNoTracking()
+                    .ToListAsync();
+
             return coffres.ToHashSet();
         }
 

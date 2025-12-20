@@ -31,11 +31,11 @@ public class EntreeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(Guid idCoffre)
     {
         try
         {
-            var entrees = await _entreeService.GetAllAsync();
+            var entrees = await _entreeService.GetAllAsync(idCoffre);
             return Ok(entrees);
         }
         catch (Exception ex)
@@ -62,6 +62,24 @@ public class EntreeController : ControllerBase
         {
             Console.WriteLine(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération de l'entrée {id}.");
+        }
+    }
+
+    [HttpGet("dossier/{id}")]
+    public async Task<IActionResult> GetByDossier(Guid idCoffre, Guid id)
+    {
+        try
+        {
+            var entrees = await _entreeService.GetAllByDossierAsync(idCoffre, id);
+            if (entrees == null || !entrees.Any()) return NoContent();
+
+            await _entreeService.VerifyUserAccess(entrees.First(), User.GetCurrentUserId());
+            await _coffreService.AddLog(idCoffre, User.GetCurrentUserId().userId, "Affichage des entrées du dossier ");
+            return Ok(entrees);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des entrées pour le dossier {id}.");
         }
     }
 

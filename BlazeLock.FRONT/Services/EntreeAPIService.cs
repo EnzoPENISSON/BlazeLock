@@ -11,12 +11,11 @@ namespace BlazeLock.FRONT.Services
         {
             _http = http;
         }
-
         public async Task<List<EntreeDto>> GetAllByCoffreAsync(Guid coffreId)
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/{coffreId}/coffre");
+                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/{coffreId}");
                 return result ?? new List<EntreeDto>();
             }
             catch (Exception ex)
@@ -25,7 +24,6 @@ namespace BlazeLock.FRONT.Services
                 return new List<EntreeDto>();
             }
         }
-
         public async Task<List<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid dossierId)
         {
             try
@@ -35,12 +33,10 @@ namespace BlazeLock.FRONT.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 Console.WriteLine($"[EntreeAPIService] Error fetching entries for dossier {dossierId}: {ex.Message}");
                 return new List<EntreeDto>();
             }
         }
-
         public async Task<EntreeDto?> GetByIdAsync(Guid idCoffre, Guid id)
         {
             try
@@ -62,6 +58,7 @@ namespace BlazeLock.FRONT.Services
         {
             try
             {
+                // Note: Ensure entree.idCoffre is set before calling this
                 var response = await _http.PostAsJsonAsync($"api/entree/{entree.idCoffre}", entree);
 
                 if (!response.IsSuccessStatusCode)
@@ -83,12 +80,15 @@ namespace BlazeLock.FRONT.Services
         {
             try
             {
-                var response = await _http.PostAsJsonAsync($"api/entree/{idCoffre}/dossier/{entryId}/{targetFolderId}", entryId);
+                var response = await _http.PostAsync(
+                    $"api/entree/{idCoffre}/dossier/{entryId}/{targetFolderId}",
+                    null);
+
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[DossierAPIService] Error creating dossier: {ex.Message}");
+                Console.WriteLine($"[EntreeAPIService] Error moving entry to dossier: {ex.Message}");
                 return false;
             }
         }
