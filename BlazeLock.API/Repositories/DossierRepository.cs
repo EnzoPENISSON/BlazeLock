@@ -46,6 +46,13 @@ namespace BlazeLock.API.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task UpdateDossierAsync(Dossier dossier)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+            context.Dossiers.Update(dossier);
+            await context.SaveChangesAsync();
+        }
+
         public async Task DeleteDossier(Dossier dossier)
         {
             var context = await _contextFactory.CreateDbContextAsync();
