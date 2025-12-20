@@ -4,7 +4,7 @@
 @using BlazeLock.FRONT.Services
 @using BlazeLock.FRONT.ViewModels
 @using BlazeLock.FRONT.Components.Modals
-
+@using System.Security.Claims
 @inject HomeViewModel ViewModel
 @inject AuthenticationStateProvider AuthStateProvider
 @inject UserAPIService UserAPIService
@@ -79,9 +79,14 @@
             // Add email et nom en base
 
             var oid = user.FindFirst("oid")?.Value ?? user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-            if (Guid.TryParse(oid, out Guid userId))
+            if (Guid.TryParse(oid, out Guid userId) && !string.IsNullOrEmpty(UserName))
             {
-                _ = UserAPIService.InsertUtilisateurAsync(userId);
+                UtilisateurDto newUser = new UtilisateurDto
+                {
+                    IdUtilisateur = userId,
+                    email = user.Identity.Name
+                };
+                _ = UserAPIService.InsertUtilisateurAsync(newUser);
             }
 
             await ViewModel.LoadDataAsync();

@@ -22,7 +22,8 @@ namespace BlazeLock.API.Services
             var result = utilisateurs
                 .Select(u => new UtilisateurDto
                 {
-                    IdUtilisateur = u.IdUtilisateur
+                    IdUtilisateur = u.IdUtilisateur,
+                    email = u.email
                 })
                 .ToHashSet();
 
@@ -34,12 +35,18 @@ namespace BlazeLock.API.Services
             var user = await _repository.GetByIdAsync(id);
             if (user == null) return null;
 
-            return new UtilisateurDto { IdUtilisateur = user.IdUtilisateur };
+            return new UtilisateurDto { 
+                IdUtilisateur = user.IdUtilisateur,
+                email = user.email
+            };
         }
 
         public async Task AddAsync(UtilisateurDto dto)
         {
-            var entity = new Utilisateur { IdUtilisateur = dto.IdUtilisateur };
+            var entity = new Utilisateur { 
+                IdUtilisateur = dto.IdUtilisateur,
+                email = dto.email
+            };
             await _repository.AddAsync(entity);
         }
 
