@@ -283,7 +283,7 @@ namespace BlazeLock.FRONT.ViewModels
         public async Task OpenEditEntryModal(EntreeDto entry)
         {
             if (IsProcessing) return;
-            IsProcessing = true; // Show spinner while decrypting
+            IsProcessing = true;
 
             try
             {
@@ -292,7 +292,6 @@ namespace BlazeLock.FRONT.ViewModels
 
                 _currentEntryId = entry.IdEntree;
 
-                // Decrypt data to fill the form
                 var password = await _crypto.DecryptDataAsync(entry.Password, entry.PasswordVi, entry.PasswordTag, masterKeyBase64);
                 var username = await _crypto.DecryptDataAsync(entry.Username, entry.UsernameVi, entry.UsernameTag, masterKeyBase64);
                 var url = await _crypto.DecryptDataAsync(entry.Url, entry.UrlVi, entry.UrlTag, masterKeyBase64);
@@ -393,15 +392,21 @@ namespace BlazeLock.FRONT.ViewModels
                 await _entreeApi.UpdateDossierAsync(VaultId,targetFolderId,entryId);
                 CloseModal();
 
+                Console.WriteLine(targetFolderId);
+                Console.WriteLine(entryId);
+
+                string targetUrl;
+
                 if (targetFolderId == DefaultFolderId)
                 {
-                    Nav.NavigateTo($"/coffre/{VaultId}", forceLoad: true);
+                    targetUrl = $"/coffre/{VaultId}";
                 }
                 else
                 {
-                    Nav.NavigateTo($"/coffre/{VaultId}/{targetFolderId}", forceLoad: true);
+                    targetUrl = $"/coffre/{VaultId}/{targetFolderId}";
                 }
 
+                _nav.NavigateTo(targetUrl);
             }
             catch (Exception ex)
             {
