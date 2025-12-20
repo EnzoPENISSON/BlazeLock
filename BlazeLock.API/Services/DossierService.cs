@@ -2,6 +2,7 @@
 using BlazeLock.API.Repositories;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 
 namespace BlazeLock.API.Services
 {
@@ -74,6 +75,17 @@ namespace BlazeLock.API.Services
             };
             await _dossierRepository.AddAsync(entity);
 
+        }
+
+        public async Task UpdateAsync(DossierDto dossierDto)
+        {
+            var entity = await _dossierRepository.GetByIdAsync(dossierDto.IdDossier);
+            if (entity != null)
+            {
+                entity.Libelle = dossierDto.Libelle;
+
+                await _dossierRepository.UpdateDossierAsync(entity);
+            }
         }
 
         public async Task Delete(DossierDto dto)

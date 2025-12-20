@@ -6,11 +6,11 @@
      @onclick="OnClick">
 
     <div class="flex items-center gap-4">
-        @if (!string.IsNullOrEmpty(_domain))
+        @if (!string.IsNullOrEmpty(Entry.LogoUrl))
         {
             <div class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center overflow-hidden">
-                <img src="@($"https://www.google.com/s2/favicons?domain={_domain}&sz=128")" 
-                     alt="@Entry.Libelle" 
+                <img src="@Entry.LogoUrl"
+                     alt="@Entry.Libelle"
                      class="w-full h-full object-contain p-1" />
             </div>
         }
@@ -74,17 +74,7 @@
     [Parameter] public EventCallback OnMoveClick { get; set; }
     [Parameter] public EventCallback DeleteOnclick { get; set; }
 
-    private string _domain;
     private bool _isMenuOpen = false;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (Entry != null && string.IsNullOrEmpty(_domain))
-        {
-            _domain = await ViewModel.GetDecryptedDomainAsync(Entry);
-            StateHasChanged();
-        }
-    }
 
     private void ToggleMenu()
     {

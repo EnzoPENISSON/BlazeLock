@@ -11,12 +11,11 @@ namespace BlazeLock.FRONT.Services
         {
             _http = http;
         }
-
         public async Task<List<EntreeDto>> GetAllByCoffreAsync(Guid coffreId)
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/coffre/{coffreId}");
+                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/{coffreId}");
                 return result ?? new List<EntreeDto>();
             }
             catch (Exception ex)
@@ -25,27 +24,24 @@ namespace BlazeLock.FRONT.Services
                 return new List<EntreeDto>();
             }
         }
-
         public async Task<List<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid dossierId)
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/dossier/{idCoffre}/{dossierId}");
+                var result = await _http.GetFromJsonAsync<List<EntreeDto>>($"api/entree/{idCoffre}/dossier/{dossierId}");
                 return result ?? new List<EntreeDto>();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 Console.WriteLine($"[EntreeAPIService] Error fetching entries for dossier {dossierId}: {ex.Message}");
                 return new List<EntreeDto>();
             }
         }
-
-        public async Task<EntreeDto?> GetByIdAsync(Guid id)
+        public async Task<EntreeDto?> GetByIdAsync(Guid idCoffre, Guid id)
         {
             try
             {
-                return await _http.GetFromJsonAsync<EntreeDto>($"api/entree/{id}");
+                return await _http.GetFromJsonAsync<EntreeDto>($"api/entree/{idCoffre}/{id}");
             }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -62,7 +58,8 @@ namespace BlazeLock.FRONT.Services
         {
             try
             {
-                var response = await _http.PostAsJsonAsync("api/entree", entree);
+                // Note: Ensure entree.idCoffre is set before calling this
+                var response = await _http.PostAsJsonAsync($"api/entree/{entree.idCoffre}", entree);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -79,25 +76,28 @@ namespace BlazeLock.FRONT.Services
             }
         }
 
-        public async Task<bool> UpdateDossierAsync(Guid targetFolderId, Guid entryId)
+        public async Task<bool> UpdateDossierAsync(Guid idCoffre, Guid targetFolderId, Guid entryId)
         {
             try
             {
-                var response = await _http.PostAsJsonAsync($"api/entree/dossier/{entryId}/{targetFolderId}", entryId);
+                var response = await _http.PostAsync(
+                    $"api/entree/{idCoffre}/dossier/{entryId}/{targetFolderId}",
+                    null);
+
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[DossierAPIService] Error creating dossier: {ex.Message}");
+                Console.WriteLine($"[EntreeAPIService] Error moving entry to dossier: {ex.Message}");
                 return false;
             }
         }
 
-        public async Task<bool> DeleteEntreeAsync(Guid id)
+        public async Task<bool> DeleteEntreeAsync(Guid idCoffre, Guid id)
         {
             try
             {
-                var response = await _http.DeleteAsync($"api/entree/{id}");
+                var response = await _http.DeleteAsync($"api/entree/{idCoffre}/{id}");
 
                 if (!response.IsSuccessStatusCode)
                 {

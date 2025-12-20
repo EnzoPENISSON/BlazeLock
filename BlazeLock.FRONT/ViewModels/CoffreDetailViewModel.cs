@@ -37,6 +37,8 @@ namespace BlazeLock.FRONT.ViewModels
         public bool IsLoading { get; private set; } = true;
         public bool IsFoldersLoading { get; private set; } = true;
 
+        public Guid DefaultFolderId { get; set; }
+
         public List<EntreeDto> Entries { get; private set; } = new();
         public List<DossierDto> Folders { get; private set; } = new();
 
@@ -53,6 +55,9 @@ namespace BlazeLock.FRONT.ViewModels
         public EntryFormModel NewEntryForm { get; set; } = new();
         public FolderFormModel NewFolderForm { get; set; } = new();
 
+        [Inject]
+        public NavigationManager Nav { get; set; }
+
         public async Task InitializeAsync(Guid id, Guid? folderId)
         {
             VaultId = id;
@@ -66,6 +71,9 @@ namespace BlazeLock.FRONT.ViewModels
                 VaultName = _keyStore.GetName(VaultId) ?? "Coffre";
 
                 await RefreshFoldersAsync();
+
+                DefaultFolderId = Folders.FirstOrDefault(f => f.Libelle == "Default")?.IdDossier ?? Guid.Empty;
+
                 await RefreshEntriesAsync(CurrentFolderId);
             }
             else
@@ -122,10 +130,42 @@ namespace BlazeLock.FRONT.ViewModels
                 {
                     Entries = await _entreeApi.GetAllByDossierAsync(VaultId, folderId.Value); 
                 }
+
+                for (int i = 0; i < Entries.Count; i++)
+                {
+                    var entry = Entries[i];
+                    var domain = await GetDecryptedDomainAsync(entry);
+                    if (!string.IsNullOrEmpty(domain))
+                    {
+                        Entries[i].LogoUrl = $"https://www.google.com/s2/favicons?domain={domain}&sz=64";
+                    }
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading entries: {ex.Message}");
+            }
+        }
+
+        public async Task<string> GetDecryptedDomainAsync(EntreeDto entry)
+        {
+            if (entry == null) return "";
+
+            try
+            {
+                var key = _keyStore.GetKey(entry.idCoffre);
+                if (string.IsNullOrEmpty(key)) return "";
+
+                var url = await _crypto.DecryptDataAsync(entry.Url, entry.UrlVi, entry.UrlTag, key);
+
+                if (string.IsNullOrEmpty(url)) return "";
+
+                if (!url.StartsWith("http")) url = "https://" + url;
+                return new Uri(url).Host;
+            }
+            catch
+            {
+                return "";
             }
         }
 
@@ -243,7 +283,7 @@ namespace BlazeLock.FRONT.ViewModels
         public async Task OpenEditEntryModal(EntreeDto entry)
         {
             if (IsProcessing) return;
-            IsProcessing = true; // Show spinner while decrypting
+            IsProcessing = true;
 
             try
             {
@@ -252,7 +292,6 @@ namespace BlazeLock.FRONT.ViewModels
 
                 _currentEntryId = entry.IdEntree;
 
-                // Decrypt data to fill the form
                 var password = await _crypto.DecryptDataAsync(entry.Password, entry.PasswordVi, entry.PasswordTag, masterKeyBase64);
                 var username = await _crypto.DecryptDataAsync(entry.Username, entry.UsernameVi, entry.UsernameTag, masterKeyBase64);
                 var url = await _crypto.DecryptDataAsync(entry.Url, entry.UrlVi, entry.UrlTag, masterKeyBase64);
@@ -283,7 +322,7 @@ namespace BlazeLock.FRONT.ViewModels
 
         public async Task SaveEntryAsync()
         {
-            // Route to Create or Update based on state
+            Console.WriteLine(CurrentModal);
             if (CurrentModal == CoffreModalType.CreateEntry)
                 await CreateEntryAsync();
             else if (CurrentModal == CoffreModalType.UpdateEntry)
@@ -299,7 +338,9 @@ namespace BlazeLock.FRONT.ViewModels
                 string? masterKeyBase64 = _keyStore.GetKey(VaultId);
                 if (string.IsNullOrEmpty(masterKeyBase64)) return;
 
-                var dto = await _entreeApi.GetByIdAsync(_currentEntryId);
+                var dto = await _entreeApi.GetByIdAsync(VaultId,_currentEntryId);
+
+                dto.Libelle = NewEntryForm.Libelle;
 
                 var passResult = await _crypto.EncryptDataAsync(NewEntryForm.Password, masterKeyBase64);
                 dto.Password = Convert.FromBase64String(passResult.CipherText);
@@ -348,9 +389,24 @@ namespace BlazeLock.FRONT.ViewModels
             IsProcessing = true;
             try
             {
-                await _entreeApi.UpdateDossierAsync(targetFolderId,entryId);
+                await _entreeApi.UpdateDossierAsync(VaultId,targetFolderId,entryId);
                 CloseModal();
-                await RefreshEntriesAsync(CurrentFolderId);
+
+                Console.WriteLine(targetFolderId);
+                Console.WriteLine(entryId);
+
+                string targetUrl;
+
+                if (targetFolderId == DefaultFolderId)
+                {
+                    targetUrl = $"/coffre/{VaultId}";
+                }
+                else
+                {
+                    targetUrl = $"/coffre/{VaultId}/{targetFolderId}";
+                }
+
+                _nav.NavigateTo(targetUrl);
             }
             catch (Exception ex)
             {
@@ -372,7 +428,7 @@ namespace BlazeLock.FRONT.ViewModels
             IsProcessing = true;
             try
             {
-                await _entreeApi.DeleteEntreeAsync(_currentEntryId);
+                await _entreeApi.DeleteEntreeAsync(VaultId,_currentEntryId);
 
                 CloseModal();
                 await RefreshEntriesAsync(CurrentFolderId);

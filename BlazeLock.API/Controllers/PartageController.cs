@@ -1,4 +1,5 @@
 ﻿using BlazeLock.API.Extensions;
+using BlazeLock.API.Helpers;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ namespace BlazeLock.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/partage")]
+    [RequireVaultSession]
     public class PartageController : ControllerBase
     {
         private readonly IPartageService _service;

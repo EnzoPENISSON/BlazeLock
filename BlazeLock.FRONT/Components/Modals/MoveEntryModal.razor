@@ -35,11 +35,19 @@
                         <select @bind="_selectedFolderId"
                                 class="w-full appearance-none rounded-xl border border-gray-300 bg-white py-3 pl-4 pr-10 text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all">
 
+                            <option value="@DefaultFolderId" disabled selected style="display:none">
+                                Select a destination...
+                            </option>
+
                             @if (Folders != null)
                             {
                                 @foreach (var folder in Folders)
                                 {
-                                    <option value="@folder.IdDossier">📁 @folder.Libelle</option>
+                                    @* 2. Remove the default folder from the selectable list *@
+                                    @if (folder.IdDossier != DefaultFolderId)
+                                    {
+                                        <option value="@folder.IdDossier">📁 @folder.Libelle</option>
+                                    }
                                 }
                             }
                         </select>
@@ -90,11 +98,20 @@
     [Parameter] public bool IsProcessing { get; set; }
     [Parameter] public string ErrorMessage { get; set; }
     [Parameter] public Guid EntreeId { get; set; }
+    [Parameter] public Guid DefaultFolderId { get; set; }
 
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<(Guid FolderId, Guid EntreeId)> OnSubmit { get; set; }
 
     private Guid _selectedFolderId = Guid.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (_selectedFolderId == Guid.Empty)
+        {
+            _selectedFolderId = DefaultFolderId;
+        }
+    }
 
     protected override void OnParametersSet()
     {

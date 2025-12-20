@@ -5,6 +5,7 @@
 @using BlazeLock.FRONT.Services
 @using BlazeLock.FRONT.ViewModels
 @using BlazeLock.FRONT.Components.Types
+@using BlazeLock.FRONT.Components.Modals
 @inject CoffreDetailViewModel ViewModel
 @inject NavigationManager Nav
 
@@ -77,19 +78,35 @@
                             }
                             else
                             {
+                                @if (FolderId == Guid.Empty || FolderId == null)
+                                {
+                                    <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId)' class="cursor-pointer flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
+                                        <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i>Tous les éléments</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId)' class="cursor-pointer flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
+                                        <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i>Tous les éléments</span>
+                                    </a>
+                                }
+
                                 @foreach (var fold in ViewModel.Folders)
                                 {
-                                    @if (fold.IdDossier == @FolderId)
+                                    @if (fold.IdDossier != ViewModel.DefaultFolderId)
                                     {
-                                        <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
-                                            <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i>  @fold.Libelle</span>
-                                            @* <span class="bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded-md">0</span> *@
-                                        </a>
-                                    }  else
-                                    {
-                                        <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
-                                            <i class="bi bi-star mr-3 text-lg text-yellow-500"></i> @fold.Libelle
-                                        </a>
+                                        @if (fold.IdDossier == FolderId)
+                                        {
+                                            <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="cursor-pointer flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
+                                                <span class="flex items-center"><i class="bi bi-folder-fill mr-3 text-lg"></i> @fold.Libelle</span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="cursor-pointer flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
+                                                <span class="flex items-center"><i class="bi bi-folder mr-3 text-lg text-yellow-500"></i> @fold.Libelle</span>
+                                            </a>
+                                        }
                                     }
                                 }
                             }
@@ -166,6 +183,7 @@
                 EntreeId="@ViewModel._currentEntryId"
                 ErrorMessage="@ViewModel.ErrorMessage"
                 OnClose="@ViewModel.CloseModal"
+                DefaultFolderId="@ViewModel.DefaultFolderId"
                 OnSubmit="@(args => ViewModel.MoveEntryToFolderAsync(args.FolderId, args.EntreeId))" />
 
 <DeleteEntreeModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.DeleteEntry)"
@@ -182,10 +200,12 @@
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync(Id,FolderId);
+        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await ViewModel.ReloadEntrieesAsync(FolderId);
+        StateHasChanged();
     }
 }

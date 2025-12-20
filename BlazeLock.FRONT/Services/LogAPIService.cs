@@ -16,7 +16,7 @@ namespace BlazeLock.FRONT.Services
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<PagedResultDto<LogDto>>($"api/Log/coffre/{vaultId}?pageNumber={pageNumber}&pageSize={pageSize}");
+                return await _httpClient.GetFromJsonAsync<PagedResultDto<LogDto>>($"api/Log/{vaultId}?pageNumber={pageNumber}&pageSize={pageSize}");
             }
             catch (HttpRequestException ex)
             {

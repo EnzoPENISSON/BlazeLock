@@ -1,4 +1,5 @@
 ﻿using BlazeLock.API.Extensions;
+using BlazeLock.API.Helpers;
 using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
@@ -12,7 +13,8 @@ namespace BlazeLock.API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/dossier")]
+    [Route("api/dossier/{idCoffre}")]
+    [RequireVaultSession]
     public class DossierController : ControllerBase
     {
         private readonly ICoffreService _coffreService;
@@ -27,28 +29,14 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetByCoffre(Guid idCoffre)
         {
             try
             {
-                var dossiers = await _dossierService.GetAllAsync();
-                return Ok(dossiers);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de tous les dossiers.");
-            }
-        }
-
-        [HttpGet("coffre/{IdCoffre}")]
-        public async Task<IActionResult> GetByCoffre(Guid IdCoffre)
-        {
-            try
-            {
-                var dossiers = await _dossierService.GetByCoffreAsync(IdCoffre);
+                var dossiers = await _dossierService.GetByCoffreAsync(idCoffre);
                 if (dossiers == null) return NotFound();
 
-                CoffreDto? coffre = await _coffreService.GetByIdAsync(IdCoffre);
+                CoffreDto? coffre = await _coffreService.GetByIdAsync(idCoffre);
                 if (coffre == null) return NotFound();
 
                 await _coffreService.VerifyUserAccess(coffre, User.GetCurrentUserId());
@@ -60,16 +48,16 @@ namespace BlazeLock.API.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des dossiers pour le coffre {IdCoffre}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des dossiers pour le coffre {idCoffre}.");
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
+        [HttpGet("{idDossier}")]
+        public async Task<IActionResult> GetById(Guid idCoffre, Guid idDossier)
+        { 
             try
             {
-                var dossier = await _dossierService.GetByIdAsync(id);
+                var dossier = await _dossierService.GetByIdAsync(idDossier);
 
                 if (dossier == null) return NotFound();
 
@@ -81,7 +69,7 @@ namespace BlazeLock.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du dossier {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du dossier {idDossier}.");
             }
         }
 
@@ -107,20 +95,56 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(DossierDto dto)
+        [HttpPut("{idDossier}")]
+        public async Task<IActionResult> Update(Guid idCoffre, Guid idDossier, [FromBody] DossierDto dto)
         {
             try
             {
-                await _dossierService.VerifyUserAccess(dto, User.GetCurrentUserId());
+                if (idDossier != dto.IdDossier)
+                {
+                    return BadRequest("L'ID dans l'URL ne correspond pas à l'ID dans le corps de la requête.");
+                }
 
-                await _dossierService.Delete(dto);
-                await _dossierService.AddLog(dto, User.GetCurrentUserId().userId, "Suppression du dossier" + dto.Libelle);
-                return Ok("Partage supprimé");
+                var existingDossier = await _dossierService.GetByIdAsync(idDossier);
+                if (existingDossier == null) return NotFound();
+
+                if (existingDossier.IdCoffre != idCoffre)
+                {
+                    return BadRequest("Ce dossier n'appartient pas au coffre spécifié.");
+                }
+
+                await _dossierService.VerifyUserAccess(existingDossier, User.GetCurrentUserId());
+
+                existingDossier.Libelle = dto.Libelle;
+                await _dossierService.UpdateAsync(existingDossier);
+
+                await _dossierService.AddLog(existingDossier, User.GetCurrentUserId().userId, "Renommage du dossier en " + dto.Libelle);
+
+                return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du dossier.");
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "Une erreur est survenue lors de la mise à jour du dossier.");
+            }
+        }
+
+        [HttpDelete("{idDossier}")]
+        public async Task<IActionResult> Delete(Guid idCoffre, Guid idDossier)
+        {
+            try
+            {
+                var dto = await _dossierService.GetByIdAsync(idDossier);
+                if (dto == null) return NotFound();
+
+                await _dossierService.VerifyUserAccess(dto, User.GetCurrentUserId());
+                await _dossierService.Delete(dto);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Erreur suppression.");
             }
         }
     }
