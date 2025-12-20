@@ -115,7 +115,7 @@ namespace BlazeLock.API.Services
             return result;
         }
 
-        public async Task<EntreeHistoriqueDto?> GetByIdWithHistoriaqueAsync(Guid idEntree)
+        public async Task<EntreeHistoriqueDto?> GetByIdWithHistoriqueAsync(Guid idCoffre, Guid idEntree)
         {
             var entree = await _entreeRepository.GetByIdAsync(idEntree);
             if (entree == null)

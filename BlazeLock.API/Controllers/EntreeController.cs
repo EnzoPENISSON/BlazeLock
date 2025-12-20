@@ -6,6 +6,7 @@ using BlazeLock.DbLib;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Elfie.Model.Tree;
 using System.Linq;
 
 namespace BlazeLock.API.Controllers;
@@ -43,33 +44,15 @@ public class EntreeController : ControllerBase
         }
     }
 
-    [HttpGet("dossier/{idDossier}")]
-    public async Task<IActionResult> GetByDossier(Guid idCoffre,Guid idDossier)
-    {
-        try
-        {
-            var entrees = await _entreeService.GetAllByDossierAsync(idCoffre, idDossier);
-            if (entrees == null || !entrees.Any()) return NoContent();
-
-            await _entreeService.VerifyUserAccess(entrees.First(), User.GetCurrentUserId());
-            await _coffreService.AddLog(idCoffre, User.GetCurrentUserId().userId, "Affichage des entrées du dossier ");
-            return Ok(entrees);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des entrées pour le dossier {idDossier}.");
-        }
-    }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid idCoffre, Guid id)
     {
         try
         {
-            var entree = await _entreeService.GetByIdAsync(id); // Id coffre Empty
+            var entree = await _entreeService.GetByIdAsync(id);
             if (entree == null) return NotFound();
-            Console.WriteLine("Entree trouvée : " + entree.IdEntree);   
-
+            
             await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
             //await _entreeService.AddLog(entree, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
 
@@ -83,11 +66,11 @@ public class EntreeController : ControllerBase
     }
 
     [HttpGet("historique/{id}")]
-    public async Task<IActionResult> GetByIdWithHistorique(Guid id)
+    public async Task<IActionResult> GetByIdWithHistorique(Guid idCoffre, Guid id)
     {
         try
         {
-            var entrees = await _entreeService.GetByIdWithHistoriaqueAsync(id);
+            var entrees = await _entreeService.GetByIdWithHistoriqueAsync(idCoffre, id);
             if (entrees == null) return NotFound();
 
             return Ok(entrees);
@@ -121,7 +104,7 @@ public class EntreeController : ControllerBase
 
 
     [HttpPost("dossier/{idEntree}/{idDossier}")]
-    public async Task<IActionResult> Update(Guid idCoffre, Guid idEntree, Guid idDossier)
+    public async Task<IActionResult> MoveToFolder(Guid idCoffre, Guid idEntree, Guid idDossier)
     {
         try
         {
@@ -134,21 +117,8 @@ public class EntreeController : ControllerBase
         }
     }
 
-    [HttpGet("coffre")]
-    public async Task<IActionResult> GetByCoffre(Guid idCoffre)
-    {
-        var entrees = await _entreeService.GetAllByCoffreAsync(idCoffre);
-        if (entrees.Any())
-        {
-            //await _entreeService.AddLog(entrees.First(), User.GetCurrentUserId().userId, "Affichage des entrées");
-        }
-
-        return Ok(entrees);
-    }
-
-    // Delete route
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid idCoffre, Guid id)
     {
         try
         {
