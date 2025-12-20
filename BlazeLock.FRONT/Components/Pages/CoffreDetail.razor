@@ -200,10 +200,12 @@
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync(Id,FolderId);
+        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await ViewModel.ReloadEntrieesAsync(FolderId);
+        StateHasChanged();
     }
 }
