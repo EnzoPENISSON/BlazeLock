@@ -30,6 +30,9 @@ namespace BlazeLock.FRONT.ViewModels
 
         public Guid VaultId { get; private set; }
         public Guid? CurrentFolderId { get; set; }
+
+        public string CurrentFolderName { get; private set; } = "";
+        
         public Guid _currentEntryId;
 
         public string VaultName { get; private set; } = "";
@@ -330,6 +333,7 @@ namespace BlazeLock.FRONT.ViewModels
                 Id = folder.IdDossier,
                 Libelle = folder.Libelle
             };
+            CurrentFolderName = folder.Libelle;
             ErrorMessage = "";
             IsProcessing = false;
             CurrentModal = CoffreModalType.DeleteFolder;
@@ -506,6 +510,8 @@ namespace BlazeLock.FRONT.ViewModels
                 await _dossierApi.DeleteDossierAsync(VaultId, NewFolderForm.Id);
 
                 CloseModal();
+                await RefreshEntriesAsync(CurrentFolderId);
+                await RefreshFoldersAsync();
                 _nav.NavigateTo($"/coffre/{VaultId}");
             }
             catch (Exception ex)

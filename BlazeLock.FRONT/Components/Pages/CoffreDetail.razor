@@ -229,7 +229,7 @@
                    OnSubmit="@ViewModel.UpdateFolderAsync" />
 
 <DeleteFolderModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.DeleteFolder)"
-                   EntryTitle="@ViewModel.CurrentEntryTitle"
+                   FolderName="@ViewModel.CurrentFolderName"
                    IsProcessing="@ViewModel.IsProcessing"
                    ErrorMessage="@ViewModel.ErrorMessage"
                    OnClose="@ViewModel.CloseModal"

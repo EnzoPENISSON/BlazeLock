@@ -85,7 +85,7 @@ public partial class BlazeLockContext : DbContext
 
             entity.HasOne(d => d.Coffre).WithMany(p => p.Dossiers)
                 .HasForeignKey(d => d.IdCoffre)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Entree>(entity =>
@@ -106,7 +106,7 @@ public partial class BlazeLockContext : DbContext
 
             entity.HasOne(d => d.Dossier).WithMany(p => p.Entrees)
                 .HasForeignKey(d => d.IdDossier)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<HistoriqueEntree>(entity =>

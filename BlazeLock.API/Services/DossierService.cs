@@ -73,6 +73,12 @@ namespace BlazeLock.API.Services
                 Libelle = dto.Libelle,
                 IdCoffre = dto.IdCoffre,
             };
+
+            if (entity.Libelle == "Default")
+            {
+                throw new InvalidOperationException("Le nom 'Default' est réservé et ne peut pas être utilisé pour un dossier.");
+            }
+
             await _dossierRepository.AddAsync(entity);
 
         }
@@ -84,6 +90,10 @@ namespace BlazeLock.API.Services
             {
                 entity.Libelle = dossierDto.Libelle;
 
+                if (entity.Libelle == "Default")
+                {
+                    throw new InvalidOperationException("Le nom 'Default' est réservé et ne peut pas être utilisé pour un dossier.");
+                }
                 await _dossierRepository.UpdateDossierAsync(entity);
             }
         }
@@ -96,6 +106,12 @@ namespace BlazeLock.API.Services
                 Libelle = dto.Libelle,
                 IdCoffre = dto.IdCoffre,
             };
+
+            if (entity.Libelle == "Default") 
+            {
+                throw new InvalidOperationException("Le dossier par défaut ne peut pas être supprimé.");
+            }
+
             await _dossierRepository.DeleteDossier(entity);
         }
 

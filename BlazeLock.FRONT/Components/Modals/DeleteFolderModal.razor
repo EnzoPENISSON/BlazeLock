@@ -11,8 +11,10 @@
                 <h3 class="text-xl font-bold text-gray-900">Supprimer le dossier ?</h3>
                 <p class="text-sm text-gray-500 mt-2">
                     Êtes-vous sûr de vouloir supprimer
-                    <span class="font-bold text-gray-800">"@EntryTitle"</span> ?
+                    <span class="font-bold text-gray-800">"@FolderName"</span> ?
                     <br />Cette action est irréversible.
+                    <br />
+                    <span class="font-bold text-gray-800">Toutes les entrées contenues dans ce dossier seront également supprimées !</span>
                 </p>
             </div>
 
@@ -55,7 +57,7 @@
 
 @code {
     [Parameter] public bool IsVisible { get; set; }
-    [Parameter] public string EntryTitle { get; set; } = "Ce dossier";
+    [Parameter] public string FolderName { get; set; } = "Ce dossier";
     [Parameter] public bool IsProcessing { get; set; }
     [Parameter] public string ErrorMessage { get; set; }
 
