@@ -29,7 +29,7 @@ namespace BlazeLock.FRONT.ViewModels
         }
 
         public Guid VaultId { get; private set; }
-        public Guid? CurrentFolderId { get; private set; }
+        public Guid? CurrentFolderId { get; set; }
         public Guid _currentEntryId;
 
         public string VaultName { get; private set; } = "";
@@ -280,6 +280,61 @@ namespace BlazeLock.FRONT.ViewModels
             }
         }
 
+        public async Task UpdateFolderAsync()
+        {
+            IsProcessing = true;
+            ErrorMessage = "";
+            try
+            {
+                var dto = new DossierDto
+                {
+                    IdDossier = NewFolderForm.Id,
+                    IdCoffre = VaultId,
+                    Libelle = NewFolderForm.Libelle
+                };
+
+                await _dossierApi.UpdateDossierAsync(dto);
+
+                CloseModal();
+                await RefreshFoldersAsync();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erreur : " + ex.Message;
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
+        }
+
+        public void OpenUpdateFolderModal(DossierDto folderToEdit)
+        {
+            NewFolderForm = new FolderFormModel
+            {
+                Id = folderToEdit.IdDossier,
+                Libelle = folderToEdit.Libelle
+            };
+
+            ErrorMessage = "";
+            IsProcessing = false;
+
+            CurrentModal = CoffreModalType.UpdateFolder;
+        }
+
+        public void OpenDeleteFolderModal(DossierDto folder)
+        {
+            NewFolderForm = new FolderFormModel
+            {
+                Id = folder.IdDossier,
+                Libelle = folder.Libelle
+            };
+            ErrorMessage = "";
+            IsProcessing = false;
+            CurrentModal = CoffreModalType.DeleteFolder;
+        }
+
         public async Task OpenEditEntryModal(EntreeDto entry)
         {
             if (IsProcessing) return;
@@ -432,6 +487,26 @@ namespace BlazeLock.FRONT.ViewModels
 
                 CloseModal();
                 await RefreshEntriesAsync(CurrentFolderId);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erreur lors de la suppression : " + ex.Message;
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
+        }
+
+        public async Task DeleteFolderAsync()
+        {
+            IsProcessing = true;
+            try
+            {
+                await _dossierApi.DeleteDossierAsync(VaultId, NewFolderForm.Id);
+
+                CloseModal();
+                _nav.NavigateTo($"/coffre/{VaultId}");
             }
             catch (Exception ex)
             {

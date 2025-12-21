@@ -69,51 +69,95 @@
                             <i class="bi bi-search absolute left-3 top-3.5 text-gray-400"></i>
                             <input type="text" placeholder="Rechercher..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-medium">
                         </div>
-                        <nav class="space-y-1">
-                            @if (ViewModel.IsFoldersLoading)
-                            {
-                                <div class="flex flex-col justify-center items-center py-20">
-                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-                                </div>
-                            }
-                            else
-                            {
+                        @if (ViewModel.IsFoldersLoading)
+                        {
+                            <div class="flex flex-col justify-center items-center py-10">
+                                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <nav class="space-y-1 relative">
+
                                 @if (FolderId == Guid.Empty || FolderId == null)
                                 {
-                                    <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId)' class="cursor-pointer flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
-                                        <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i>Tous les éléments</span>
+                                    <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId)'
+                                       class="cursor-pointer flex items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm transition-all shadow-sm">
+                                        <i class="bi bi-collection-fill mr-3 text-lg"></i>
+                                        <span>Tous les éléments</span>
                                     </a>
                                 }
                                 else
                                 {
-                                    <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId)' class="cursor-pointer flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
-                                        <span class="flex items-center"><i class="bi bi-collection mr-3 text-lg"></i>Tous les éléments</span>
+                                    <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId)'
+                                       class="cursor-pointer flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium text-sm transition-colors">
+                                        <i class="bi bi-collection mr-3 text-lg"></i>
+                                        <span>Tous les éléments</span>
                                     </a>
                                 }
+
+                                <div class="my-2 border-t border-gray-100 mx-2"></div>
 
                                 @foreach (var fold in ViewModel.Folders)
                                 {
                                     @if (fold.IdDossier != ViewModel.DefaultFolderId)
                                     {
-                                        @if (fold.IdDossier == FolderId)
-                                        {
-                                            <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="cursor-pointer flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm">
-                                                <span class="flex items-center"><i class="bi bi-folder-fill mr-3 text-lg"></i> @fold.Libelle</span>
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)' class="cursor-pointer flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium text-sm transition-colors">
-                                                <span class="flex items-center"><i class="bi bi-folder mr-3 text-lg text-yellow-500"></i> @fold.Libelle</span>
-                                            </a>
-                                        }
+                                        var isActive = fold.IdDossier == FolderId;
+                                        var containerClass = isActive
+                                        ? "bg-blue-50 text-blue-700 font-bold shadow-sm"
+                                        : "text-gray-600 hover:bg-gray-50 font-medium hover:text-gray-900";
+
+                                        var iconClass = isActive
+                                        ? "bi-folder-fill text-blue-600"
+                                        : "bi-folder text-yellow-500";
+
+                                        <div class="@containerClass group relative flex items-center justify-between rounded-xl transition-all pr-2 cursor-pointer"
+                                             @onclick='() => Nav.NavigateTo("/coffre/" + ViewModel.VaultId + "/" + fold.IdDossier)'>
+
+                                            <div class="flex items-center px-4 py-3 overflow-hidden">
+                                                <i class="bi @iconClass mr-3 text-lg flex-shrink-0"></i>
+                                                <span class="truncate text-sm">@fold.Libelle</span>
+                                            </div>
+
+                                            <button class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick="() => ToggleMenu(fold.IdDossier)">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+
+                                            @if (_activeMenuFolderId == fold.IdDossier)
+                                            {
+                                                <div class="absolute right-0 top-10 z-50 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up"
+                                                     @onclick:stopPropagation="true">
+
+                                                    <button @onclick="() => ViewModel.OpenUpdateFolderModal(fold)"
+                                                            class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                                                        <i class="bi bi-pencil text-gray-400"></i> Renommer
+                                                    </button>
+
+                                                    <button @onclick="() => ViewModel.OpenDeleteFolderModal(fold)"
+                                                            class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50">
+                                                        <i class="bi bi-trash"></i> Supprimer
+                                                    </button>
+                                                </div>
+
+                                                <div class="fixed inset-0 z-40 cursor-default"
+                                                     @onclick="CloseMenu"
+                                                     @onclick:stopPropagation="true"></div>
+                                            }
+                                        </div>
                                     }
                                 }
-                            }
-                            <button @onclick="ViewModel.OpenFolderModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all flex items-center">
-                                <i class="bi bi-plus-lg mr-2"></i> Nouveau dossier
-                            </button>
-                        </nav>
+
+                                <button @onclick="ViewModel.OpenFolderModal"
+                                        class="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 font-semibold text-sm hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all group">
+                                    <div class="w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-blue-200 group-hover:text-blue-700 flex items-center justify-center transition-colors">
+                                        <i class="bi bi-plus text-lg"></i>
+                                    </div>
+                                    <span>Nouveau dossier</span>
+                                </button>
+                            </nav>
+                        }
                     </div>
                 </div>
 
@@ -177,6 +221,20 @@
                    OnClose="@ViewModel.CloseModal"
                    OnSubmit="@ViewModel.CreateFolderAsync" />
 
+<UpdateFolderModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.UpdateFolder)"
+                   FormModel="@ViewModel.NewFolderForm"
+                   IsProcessing="@ViewModel.IsProcessing"
+                   ErrorMessage="@ViewModel.ErrorMessage"
+                   OnClose="@ViewModel.CloseModal"
+                   OnSubmit="@ViewModel.UpdateFolderAsync" />
+
+<DeleteFolderModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.DeleteFolder)"
+                   EntryTitle="@ViewModel.CurrentEntryTitle"
+                   IsProcessing="@ViewModel.IsProcessing"
+                   ErrorMessage="@ViewModel.ErrorMessage"
+                   OnClose="@ViewModel.CloseModal"
+                   OnConfirm="@ViewModel.DeleteFolderAsync" />
+
 <MoveEntryModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.MoveEntry)"
                 Folders="@ViewModel.Folders"
                 IsProcessing="@ViewModel.IsProcessing"
@@ -197,6 +255,8 @@
     [Parameter] public Guid Id { get; set; }
     [Parameter] public Guid? FolderId { get; set; }
 
+    private Guid? _activeMenuFolderId;
+
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync(Id,FolderId);
@@ -207,5 +267,18 @@
     {
         await ViewModel.ReloadEntrieesAsync(FolderId);
         StateHasChanged();
+    }
+
+    private void ToggleMenu(Guid folderId)
+    {
+        if (_activeMenuFolderId == folderId)
+            _activeMenuFolderId = null;
+        else
+            _activeMenuFolderId = folderId;
+    }
+
+    private void CloseMenu()
+    {
+        _activeMenuFolderId = null;
     }
 }

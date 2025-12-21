@@ -6,6 +6,8 @@
         CreateEntry,
         UpdateEntry,
         CreateFolder,
+        UpdateFolder,
+        DeleteFolder,
         MoveEntry,
         DeleteEntry
     }
