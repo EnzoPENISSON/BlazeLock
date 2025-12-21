@@ -130,12 +130,12 @@
                                                 <div class="absolute right-0 top-10 z-50 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up"
                                                      @onclick:stopPropagation="true">
 
-                                                    <button @onclick="() => ViewModel.OpenUpdateFolderModal(fold)"
+                                                    <button @onclick="() => HandleRename(fold)"
                                                             class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
                                                         <i class="bi bi-pencil text-gray-400"></i> Renommer
                                                     </button>
 
-                                                    <button @onclick="() => ViewModel.OpenDeleteFolderModal(fold)"
+                                                    <button @onclick="() => HandleDeleteFolder(fold)"
                                                             class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50">
                                                         <i class="bi bi-trash"></i> Supprimer
                                                     </button>
@@ -281,4 +281,17 @@
     {
         _activeMenuFolderId = null;
     }
+
+    private async Task HandleRename(DossierDto fold)
+    {
+        CloseMenu();
+        ViewModel.OpenUpdateFolderModal(fold);
+    }
+
+    private async Task HandleDeleteFolder(DossierDto fold)
+    {
+        CloseMenu();
+        ViewModel.OpenDeleteFolderModal(fold);
+    }
+
 }

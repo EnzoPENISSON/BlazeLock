@@ -46,12 +46,12 @@
                  @onclick:stopPropagation="true">
 
                 <button class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                        @onclick="OnMoveClick">
+                        @onclick="HandleMove">
                     <i class="bi bi-folder-symlink text-gray-400"></i>
                     Changer de dossier
                 </button>
 
-                <button @onclick="DeleteOnclick"  class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50">
+                <button @onclick="HandleDelete" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-50">
                     <i class="bi bi-trash"></i>
                     Supprimer
                 </button>
@@ -84,6 +84,18 @@
     private void CloseMenu()
     {
         _isMenuOpen = false;
+    }
+
+    private async Task HandleMove()
+    {
+        _isMenuOpen = false;
+        await OnMoveClick.InvokeAsync();
+    }
+
+    private async Task HandleDelete()
+    {
+        _isMenuOpen = false;
+        await DeleteOnclick.InvokeAsync();
     }
 
 }
