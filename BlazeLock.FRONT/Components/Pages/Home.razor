@@ -63,7 +63,7 @@
 <UnlockCoffreModal IsVisible="@(ViewModel.SelectedCoffre != null)"
                    ViewModel="@ViewModel"
                    OnClose="@ViewModel.CloseModals"
-                   OnSubmit="@UnlockWrapper" />
+                   OnSubmit="UnlockWrapper" />
 
 @code {
     private string UserName = "";
@@ -108,6 +108,5 @@
     private async Task UnlockWrapper()
     {
         await ViewModel.UnlockSelectedAsync();
-        StateHasChanged();
     }
 }
