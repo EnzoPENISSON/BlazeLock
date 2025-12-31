@@ -31,11 +31,11 @@ public class EntreeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(Guid idCoffre)
+    public async Task<IActionResult> GetAllByCoffre(Guid idCoffre)
     {
         try
         {
-            var entrees = await _entreeService.GetAllAsync(idCoffre);
+            var entrees = await _entreeService.GetAllByCoffreAsync(idCoffre);
             return Ok(entrees);
         }
         catch (Exception ex)

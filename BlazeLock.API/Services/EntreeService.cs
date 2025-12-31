@@ -24,7 +24,7 @@ namespace BlazeLock.API.Services
             _logRepository = logRepository;
         }
 
-        public async Task<HashSet<EntreeDto>> GetAllAsync(Guid idCoffre)
+        public async Task<HashSet<EntreeDto>> GetAllAsync()
         {
             var entree = await _entreeRepository.GetAllAsync();
             var result = entree.Select(e =>
@@ -42,7 +42,7 @@ namespace BlazeLock.API.Services
                     Libelle = latest?.Libelle,
                     DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
 
-                    idCoffre = idCoffre,
+                    idCoffre = e.Dossier.IdCoffre,
 
                     Username = latest?.Username,
                     UsernameTag = latest?.UsernameTag,

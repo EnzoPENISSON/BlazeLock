@@ -1,6 +1,7 @@
 ﻿@using BlazeLock.DbLib
 @using BlazeLock.FRONT.ViewModels
 @using BlazeLock.FRONT.Components.Forms
+@using BlazeLock.FRONT.Components.Layouts
 @using Microsoft.AspNetCore.Components.Forms
 
 @if (IsVisible)
@@ -32,10 +33,13 @@
                         <div>
                             <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">Mot de passe (Requis)</label>
                             <div class="relative">
-                                <InputText type="password" @bind-Value="FormModel.Password" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" />
-                                <i class="bi bi-lock-fill absolute right-3 top-2.5 text-blue-300"></i>
+                                <InputText type="@_passwordFieldType" @bind-Value="FormModel.Password" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" />
+                                <button type="button" @onclick="TogglePasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600">
+                                    <i class="bi @(_passwordFieldType == "password" ? "bi-eye-fill" : "bi-eye-slash-fill")"></i>
+                                </button>
                             </div>
                             <ValidationMessage For="@(() => FormModel.Password)" class="text-red-500 text-xs" />
+                            <PasswordGenerator OnPasswordGenerated="HandlePasswordGenerated" />
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">URL (Optionnel)</label>
@@ -75,13 +79,24 @@
 }
 
 @code {
-    // These match exactly what you passed in CoffreDetail.razor
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EntryFormModel FormModel { get; set; } = new();
     [Parameter] public bool IsProcessing { get; set; }
     [Parameter] public string ErrorMessage { get; set; } = "";
 
-    // Callbacks
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSubmit { get; set; }
+
+    private string _passwordFieldType = "password";
+
+    private void TogglePasswordVisibility()
+    {
+        _passwordFieldType = _passwordFieldType == "password" ? "text" : "password";
+    }
+
+    private void HandlePasswordGenerated(string newPassword)
+    {
+        FormModel.Password = newPassword;
+        StateHasChanged();
+    }
 }
