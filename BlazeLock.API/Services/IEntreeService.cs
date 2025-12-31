@@ -5,7 +5,7 @@ namespace BlazeLock.API.Services
 {
     public interface IEntreeService
     {
-        Task<HashSet<EntreeDto>> GetAllAsync(Guid idCoffre);
+        Task<HashSet<EntreeDto>> GetAllAsync();
         Task<HashSet<EntreeDto>> GetAllByDossierAsync(Guid idCoffre, Guid IdDossier);
         Task<EntreeDto?> GetByIdAsync(Guid idEntree);
         Task<EntreeHistoriqueDto?> GetByIdWithHistoriqueAsync(Guid idCoffre,Guid idEntree);
