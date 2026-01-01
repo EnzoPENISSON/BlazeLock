@@ -24,5 +24,17 @@ namespace BlazeLock.FRONT.Services
                 return null;
             }
         }
+
+        public async Task AddLogAsync(Guid vaultId, string message)
+        {
+            try
+            {
+                await _httpClient.PostAsJsonAsync($"api/Log/{vaultId}", message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'ajout du log : {ex.Message}");
+            }
+        }
     }
 }

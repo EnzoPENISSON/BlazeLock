@@ -190,7 +190,8 @@
                                 <EntreeCard Entry="@entry" Folders="@ViewModel.Folders"
                                 OnClick="@(() => ViewModel.OpenEditEntryModal(entry))"
                                 OnMoveClick="@(() => ViewModel.OpenMoveEntryModal(entry))" 
-                                DeleteOnclick="@(() => ViewModel.OpenDeleteEntryModal(entry))" />
+                                DeleteOnclick="@(() => ViewModel.OpenDeleteEntryModal(entry))"
+                                OnCopyPassword="@ViewModel.CopyPasswordAsync" />
                             }
                         </div>
                     }

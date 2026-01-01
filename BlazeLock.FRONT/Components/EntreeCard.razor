@@ -31,7 +31,14 @@
         </div>
     </div>
 
-    <div class="relative">
+    <div class="relative flex items-center gap-2">
+        <button class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                @onclick:stopPropagation="true"
+                @onclick="HandleCopy"
+                title="Copier le mot de passe">
+            <i class="bi bi-clipboard"></i>
+        </button>
+
         <button class="p-2 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                 @onclick:stopPropagation="true"
                 @onclick="ToggleMenu">
@@ -73,6 +80,7 @@
 
     [Parameter] public EventCallback OnMoveClick { get; set; }
     [Parameter] public EventCallback DeleteOnclick { get; set; }
+    [Parameter] public EventCallback<EntreeDto> OnCopyPassword { get; set; }
 
     private bool _isMenuOpen = false;
 
@@ -96,6 +104,14 @@
     {
         _isMenuOpen = false;
         await DeleteOnclick.InvokeAsync();
+    }
+
+    private async Task HandleCopy()
+    {
+        if (OnCopyPassword.HasDelegate)
+        {
+            await OnCopyPassword.InvokeAsync(Entry);
+        }
     }
 
 }
