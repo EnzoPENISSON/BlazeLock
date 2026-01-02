@@ -39,6 +39,7 @@ namespace BlazeLock.API.Services
                 {
                     IdCoffre = p.IdCoffre,
                     IdUtilisateur = p.IdUtilisateur,
+                    Email = p.Utilisateur.email,
                     IsAdmin = p.IsAdmin
                 })
                 .ToHashSet();

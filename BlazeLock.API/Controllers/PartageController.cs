@@ -51,22 +51,22 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpGet("coffre/{id}")]
-        public async Task<IActionResult> GetByCoffre(Guid id)
+        [HttpGet("coffre/{idCoffre}")]
+        public async Task<IActionResult> GetByCoffre(Guid idCoffre)
         {
             try
             {
-                var partages = await _service.GetByCoffreAsync(id);
+                var partages = await _service.GetByCoffreAsync(idCoffre);
                 if (partages == null || !partages.Any()) return NoContent();
-                return Ok(partages);
+                return Ok(partages.ToList());
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des partages pour le coffre {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des partages pour le coffre {idCoffre}.");
             }
         }
 
-        [HttpPost]
+        [HttpPost("{idCoffre}")]
         public async Task<IActionResult> Create(PartageDto dto)
         {
             try
