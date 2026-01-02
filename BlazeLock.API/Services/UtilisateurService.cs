@@ -41,6 +41,8 @@ namespace BlazeLock.API.Services
             };
         }
 
+
+
         public async Task AddAsync(UtilisateurDto dto)
         {
             var entity = new Utilisateur { 
@@ -57,6 +59,17 @@ namespace BlazeLock.API.Services
                 return true;
             }
             return false;
+        }
+
+        public async Task<HashSet<UtilisateurDto>> SearchByEmailAsync(string term)
+        {
+            var utilisateurs = await _repository.SearchByEmailAsync(term);
+
+            return utilisateurs.Select(u => new UtilisateurDto
+            {
+                IdUtilisateur = u.IdUtilisateur,
+                email = u.email
+            }).ToHashSet();
         }
     }
 }

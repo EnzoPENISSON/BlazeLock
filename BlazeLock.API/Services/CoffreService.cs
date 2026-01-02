@@ -127,6 +127,5 @@ namespace BlazeLock.API.Services
             };
             await _logRepository.AddAsync(entity);
         }
-
     }
 }
