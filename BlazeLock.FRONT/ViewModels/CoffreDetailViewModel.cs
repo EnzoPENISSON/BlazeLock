@@ -3,6 +3,7 @@ using BlazeLock.FRONT.Components.Forms;
 using BlazeLock.FRONT.Components.Types;
 using BlazeLock.FRONT.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace BlazeLock.FRONT.ViewModels
 {
@@ -13,19 +14,25 @@ namespace BlazeLock.FRONT.ViewModels
         private readonly VaultKeyStore _keyStore;
         private readonly CryptoJs _crypto;
         private readonly NavigationManager _nav;
+        private readonly ILogAPIService _logApi;
+        private readonly IJSRuntime _js;
 
         public CoffreDetailViewModel(
             IEntreeAPIService entreeApi,
             IDossierAPIService dossierApi,
             VaultKeyStore keyStore,
             CryptoJs crypto, 
-            NavigationManager nav)
+            NavigationManager nav,
+            ILogAPIService logApi,
+            IJSRuntime js)
         {
             _entreeApi = entreeApi;
             _dossierApi = dossierApi;
             _keyStore = keyStore;
             _crypto = crypto;
             _nav = nav;
+            _logApi = logApi;
+            _js = js;
         }
 
         public Guid VaultId { get; private set; }
@@ -552,6 +559,27 @@ namespace BlazeLock.FRONT.ViewModels
             finally
             {
                 IsProcessing = false;
+            }
+        }
+
+        public async Task CopyPasswordAsync(EntreeDto entry)
+        {
+            try
+            {
+                string? masterKeyBase64 = _keyStore.GetKey(VaultId);
+                if (string.IsNullOrEmpty(masterKeyBase64)) return;
+
+                var password = await _crypto.DecryptDataAsync(entry.Password, entry.PasswordVi, entry.PasswordTag, masterKeyBase64);
+                
+                if (!string.IsNullOrEmpty(password))
+                {
+                    await _js.InvokeVoidAsync("copyToClipboard", password);
+                    await _logApi.AddLogAsync(VaultId, $"Mot de passe copié pour l'entrée : {entry.Libelle}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la copie du mot de passe : {ex.Message}");
             }
         }
     }

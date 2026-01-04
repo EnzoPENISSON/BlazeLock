@@ -17,7 +17,10 @@ namespace BlazeLock.API.Repositories
         {
             var context = await _contextFactory.CreateDbContextAsync();
 
-            var partages = await context.Partages.AsNoTracking().ToListAsync();
+            var partages = await context.Partages
+                .Include(l => l.Utilisateur)
+                .AsNoTracking()
+                .ToListAsync();
             return partages.ToHashSet();
         }
 
@@ -27,6 +30,7 @@ namespace BlazeLock.API.Repositories
 
             var partages = await context.Partages
                 .Where(p => p.IdCoffre == idCoffre)
+                .Include(l => l.Utilisateur)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -39,6 +43,7 @@ namespace BlazeLock.API.Repositories
 
             var partages = await context.Partages
                 .Where(p => p.IdUtilisateur == idUtilisateur)
+                .Include(l => l.Utilisateur)
                 .AsNoTracking()
                 .ToListAsync();
 

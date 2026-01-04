@@ -2,10 +2,8 @@
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using System.Security.Claims;
 
 namespace BlazeLock.API.Controllers
 {
@@ -102,7 +100,7 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpPost]
+            [HttpPost]
         public async Task<IActionResult> Create(CoffreDto dto)
         {
             try

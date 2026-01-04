@@ -41,5 +41,17 @@ namespace BlazeLock.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = dto.IdUtilisateur }, dto);
 
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return Ok(new List<UtilisateurDto>());
+            }
+
+            var results = await _serviceUtilisateur.SearchByEmailAsync(term);
+            return Ok(results);
+        }
     }
 }

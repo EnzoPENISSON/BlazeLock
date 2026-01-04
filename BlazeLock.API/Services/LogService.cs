@@ -84,7 +84,7 @@ namespace BlazeLock.API.Services
                 IdCoffre = idCoffre,
                 IdUtilisateur = idUtilisateur,
                 Texte = message,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.Now
             };
             await _logRepository.AddAsync(entity);
         }

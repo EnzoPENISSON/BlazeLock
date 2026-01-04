@@ -1,4 +1,4 @@
-ï»¿using BlazeLock.API.Extensions;
+using BlazeLock.API.Extensions;
 using BlazeLock.API.Helpers;
 using BlazeLock.API.Models;
 using BlazeLock.API.Services;
@@ -43,7 +43,7 @@ namespace BlazeLock.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la rÃ©cupÃ©ration des logs pour le coffre {idCoffre}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des logs pour le coffre {idCoffre}.");
             }
         }
 
@@ -62,7 +62,7 @@ namespace BlazeLock.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Erreur lors de la crÃ©ation du log.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erreur lors de la création du log.");
             }
         }
 
@@ -84,7 +84,7 @@ namespace BlazeLock.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la rÃ©cupÃ©ration du coffre {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération du coffre {id}.");
             }
         }
 
