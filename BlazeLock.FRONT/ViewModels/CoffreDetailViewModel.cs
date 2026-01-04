@@ -367,25 +367,33 @@ namespace BlazeLock.FRONT.ViewModels
                     Commentaire = comment
                 };
 
-                CurrentEntryHistory = await _entreeApi.GetByIdWithHistoriqueAsync(VaultId,entry.IdEntree);
+                CurrentEntryHistory = await _entreeApi.GetByIdWithHistoriqueAsync(VaultId, entry.IdEntree);
 
                 historyForms.Clear();
 
-                for (int i = 0; i < CurrentEntryHistory.historique.Count; i++)
+                if (CurrentEntryHistory?.historique != null)
                 {
-                    var hist = CurrentEntryHistory.historique.ToList()[i];
-                    var histPassword = await _crypto.DecryptDataAsync(hist.Password, hist.PasswordVi, hist.PasswordTag, masterKeyBase64);
-                    var histUsername = await _crypto.DecryptDataAsync(hist.Username, hist.UsernameVi, hist.UsernameTag, masterKeyBase64);
-                    var histUrl = await _crypto.DecryptDataAsync(hist.Url, hist.UrlVi, hist.UrlTag, masterKeyBase64);
-                    var histComment = await _crypto.DecryptDataAsync(hist.Commentaire, hist.CommentaireVi, hist.CommentaireTag, masterKeyBase64);
-                    historyForms.Add(new EntryFormModel
+                    var sortedHistory = CurrentEntryHistory.historique
+                                            .OrderByDescending(h => h.DateUpdate)
+                                            .ToList();
+
+                    foreach (var hist in sortedHistory)
                     {
-                        Libelle = hist.Libelle,
-                        Password = histPassword,
-                        Username = histUsername,
-                        Url = histUrl,
-                        Commentaire = histComment
-                    });
+                        var histPassword = await _crypto.DecryptDataAsync(hist.Password, hist.PasswordVi, hist.PasswordTag, masterKeyBase64);
+                        var histUsername = await _crypto.DecryptDataAsync(hist.Username, hist.UsernameVi, hist.UsernameTag, masterKeyBase64);
+                        var histUrl = await _crypto.DecryptDataAsync(hist.Url, hist.UrlVi, hist.UrlTag, masterKeyBase64);
+                        var histComment = await _crypto.DecryptDataAsync(hist.Commentaire, hist.CommentaireVi, hist.CommentaireTag, masterKeyBase64);
+
+                        historyForms.Add(new EntryFormModel
+                        {
+                            Libelle = hist.Libelle,
+                            Password = histPassword,
+                            Username = histUsername,
+                            Url = histUrl,
+                            Commentaire = histComment,
+                            DateUpdate = hist.DateUpdate
+                        });
+                    }
                 }
 
                 ErrorMessage = "";

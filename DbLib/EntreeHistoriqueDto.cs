@@ -8,7 +8,7 @@
 
         public Guid IdDossier { get; set; }
 
-        public HashSet<HistoriqueDto> historique { get; set; } = new();
+        public HashSet<EntreeDto> historique { get; set; } = new();
 
     }
 }
