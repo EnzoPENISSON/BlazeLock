@@ -10,5 +10,6 @@ namespace BlazeLock.FRONT.Services
         Task<bool> CreateEntreeAsync(EntreeDto entree);
         Task<bool> UpdateDossierAsync(Guid idCoffre, Guid targetFolderId, Guid entryId);
         Task<bool> DeleteEntreeAsync(Guid idCoffre, Guid id);
+        Task<EntreeHistoriqueDto?> GetByIdWithHistoriqueAsync(Guid idCoffre, Guid id);
     }
 }

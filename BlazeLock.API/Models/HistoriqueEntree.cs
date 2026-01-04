@@ -41,7 +41,7 @@ public partial class HistoriqueEntree
 
     public virtual Entree Entree { get; set; } = null!;
 
-    internal object Select(Func<object, HistoriqueDto> value)
+    internal object Select(Func<object, EntreeDto> value)
     {
         throw new NotImplementedException();
     }
