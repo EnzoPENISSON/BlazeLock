@@ -27,7 +27,7 @@ builder.Services.AddHttpClient<ILogAPIService, LogAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
-builder.Services.AddHttpClient<UserAPIService>(client =>
+builder.Services.AddHttpClient<IUserAPIService, UserAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
@@ -36,6 +36,10 @@ builder.Services.AddHttpClient<IEntreeAPIService, EntreeAPIService>(client =>
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient<IDossierAPIService, DossierAPIService>(client =>
+    client.BaseAddress = new Uri(apiEndpoint))
+    .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+
+builder.Services.AddHttpClient<IPartageAPIService, PartageAPIService>(client =>
     client.BaseAddress = new Uri(apiEndpoint))
     .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 

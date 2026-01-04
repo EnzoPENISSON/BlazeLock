@@ -8,5 +8,6 @@ namespace BlazeLock.API.Services
         Task<UtilisateurDto?> GetByIdAsync(Guid id);
         Task AddAsync(UtilisateurDto dto);
         Task<bool> ExistsAsync(Guid id);
+        Task<HashSet<UtilisateurDto>> SearchByEmailAsync(string term);
     }
 }

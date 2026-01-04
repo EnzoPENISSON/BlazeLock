@@ -8,11 +8,11 @@ namespace BlazeLock.FRONT.ViewModels
     public class HomeViewModel
     {
         private readonly IJSRuntime _js;
-        private readonly UserAPIService _api;
+        private readonly IUserAPIService _api;
         private readonly VaultKeyStore _keyStore;
         private readonly NavigationManager _nav;
 
-        public HomeViewModel(IJSRuntime js, UserAPIService api, VaultKeyStore keyStore, NavigationManager nav)
+        public HomeViewModel(IJSRuntime js, IUserAPIService api, VaultKeyStore keyStore, NavigationManager nav)
         {
             _js = js;
             _api = api;

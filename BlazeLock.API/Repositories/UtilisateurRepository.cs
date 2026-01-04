@@ -34,5 +34,17 @@ namespace BlazeLock.API.Repositories
             await context.Utilisateurs.AddAsync(utilisateur);
             await context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Utilisateur>> SearchByEmailAsync(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+                return new List<Utilisateur>();
+
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Utilisateurs
+                .Where(u => u.email.Contains(term))
+                .ToListAsync();
+        }
     }
 }

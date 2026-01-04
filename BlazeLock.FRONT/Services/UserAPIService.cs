@@ -78,6 +78,18 @@
                 exception.Redirect();
             }
         }
+
+        public async Task<List<UtilisateurDto>> SearchUtilisateursAsync(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return new List<UtilisateurDto>();
+            }
+
+            // Appel à l'API avec le terme en query string
+            var response = await _http.GetFromJsonAsync<List<UtilisateurDto>>($"api/utilisateur/search?term={Uri.EscapeDataString(term)}");
+            return response ?? new List<UtilisateurDto>();
+        }
     }
 
     public class VerifyResponse

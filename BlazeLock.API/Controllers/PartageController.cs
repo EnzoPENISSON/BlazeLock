@@ -1,5 +1,6 @@
 ﻿using BlazeLock.API.Extensions;
 using BlazeLock.API.Helpers;
+using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,13 @@ namespace BlazeLock.API.Controllers
     {
         private readonly IPartageService _service;
         private readonly ICoffreService _coffreService;
+        private readonly ILogService _logService;
 
-        public PartageController(IPartageService service, ICoffreService coffreService)
+        public PartageController(IPartageService service, ICoffreService coffreService, ILogService logService)
         {
             _service = service;
             _coffreService = coffreService;
+            _logService = logService;
         }
 
         [HttpGet]
@@ -51,27 +54,28 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpGet("coffre/{id}")]
-        public async Task<IActionResult> GetByCoffre(Guid id)
+        [HttpGet("coffre/{idCoffre}")]
+        public async Task<IActionResult> GetByCoffre(Guid idCoffre)
         {
             try
             {
-                var partages = await _service.GetByCoffreAsync(id);
+                var partages = await _service.GetByCoffreAsync(idCoffre);
                 if (partages == null || !partages.Any()) return NoContent();
-                return Ok(partages);
+                return Ok(partages.ToList());
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des partages pour le coffre {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Une erreur est survenue lors de la récupération des partages pour le coffre {idCoffre}.");
             }
         }
 
-        [HttpPost]
+        [HttpPost("{idCoffre}")]
         public async Task<IActionResult> Create(PartageDto dto)
         {
             try
             {
                 await _service.AddAsync(dto);
+                await _logService.Add(dto.IdCoffre, User.GetCurrentUserId().userId, "Affichage des dossier du coffre");
                 return Created(string.Empty, dto);
             }
             catch (Exception ex)
@@ -80,11 +84,16 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(PartageDto dto)
+        [HttpDelete("{idCoffre}")]
+        public async Task<IActionResult> Delete(Guid idCoffre, PartageDto dto)
         {
             try
             {
+                if (idCoffre != dto.IdCoffre)
+                {
+                    return BadRequest("L'ID du coffre dans l'URL ne correspond pas à celui dans le corps de la requête.");
+                }
+
                 var (userId, errorResult) = User.GetCurrentUserId();
                 if (errorResult != null) return errorResult;
 
@@ -100,6 +109,7 @@ namespace BlazeLock.API.Controllers
                 }
 
                 await _service.Delete(dto);
+                await _logService.Add(dto.IdCoffre, User.GetCurrentUserId().userId, $"Partage à l'utilisateur {dto.IdUtilisateur} supprimé ");
                 return Ok("Partage supprimé");
             }
             catch (Exception ex)
