@@ -191,7 +191,7 @@
                                 OnClick="@(() => ViewModel.OpenEditEntryModal(entry))"
                                 OnMoveClick="@(() => ViewModel.OpenMoveEntryModal(entry))" 
                                 DeleteOnclick="@(() => ViewModel.OpenDeleteEntryModal(entry))"
-                                OnCopyPassword="@ViewModel.CopyPasswordAsync" />
+                                OnCopyPassword="@ViewModel.CopyPasswordCryptedAsync" />
                             }
                         </div>
                     }
@@ -207,6 +207,7 @@
                    HistoryList="@ViewModel.historyForms"
                    ErrorMessage="@ViewModel.ErrorMessage"
                    OnClose="@ViewModel.CloseModal"
+                   OnCopyPassword="@ViewModel.CopyPasswordAsync"
                    OnSubmit="@ViewModel.SaveEntryAsync" />
 
 <CreateEntreeModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.CreateEntry)"

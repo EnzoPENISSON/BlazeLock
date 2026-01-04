@@ -562,7 +562,7 @@ namespace BlazeLock.FRONT.ViewModels
             }
         }
 
-        public async Task CopyPasswordAsync(EntreeDto entry)
+        public async Task CopyPasswordCryptedAsync(EntreeDto entry)
         {
             try
             {
@@ -575,6 +575,21 @@ namespace BlazeLock.FRONT.ViewModels
                 {
                     await _js.InvokeVoidAsync("copyToClipboard", password);
                     await _logApi.AddLogAsync(VaultId, $"Mot de passe copié pour l'entrée : {entry.Libelle}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la copie du mot de passe : {ex.Message}");
+            }
+        }
+        public async Task CopyPasswordAsync(EntryFormModel model)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(model.Password))
+                {
+                    await _js.InvokeVoidAsync("copyToClipboard", model.Password);
+                    await _logApi.AddLogAsync(VaultId, $"Mot de passe copié pour l'entrée : {model.Libelle}");
                 }
             }
             catch (Exception ex)
