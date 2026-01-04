@@ -21,7 +21,7 @@ namespace BlazeLock.FRONT.Services
 
         public async Task DeletePartageAsync(PartageDto partage)
         {
-            var request = new HttpRequestMessage(HttpMethod.Delete, "api/partage")
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"api/partage/{partage.IdCoffre}")
             {
                 Content = JsonContent.Create(partage)
             };

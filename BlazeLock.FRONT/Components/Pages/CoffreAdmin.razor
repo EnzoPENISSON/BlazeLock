@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using BlazeLock.DbLib
 @using BlazeLock.FRONT.Services
+@using BlazeLock.FRONT.Components.Modals
 @inject NavigationManager Nav
 @inject ILogAPIService LogService
 @inject IUserAPIService UserService
@@ -119,7 +120,7 @@
                                 <p class="text-sm font-medium text-gray-900">@partage.Email</p>
                                 <p class="text-sm text-gray-500">@(partage.IsAdmin ? "Administrateur" : "Membre")</p>
                             </div>
-                            <button @onclick="() => HandleDeleteShareAsync(partage)" class="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50 transition-colors">
+                            <button @onclick="() => ShowDeleteModal(partage)" class="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50 transition-colors">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </li>
@@ -197,6 +198,13 @@
     </div>
 </div>
 
+<DeleteShareModal IsVisible="_isDeleteModalVisible"
+                  UserEmail="@(_partageToDelete?.Email)"
+                  IsProcessing="_isProcessing"
+                  ErrorMessage="@_shareErrorMessage"
+                  OnClose="HideDeleteModal"
+                  OnConfirm="ConfirmDeleteShareAsync" />
+
 @code {
     [Parameter]
     public Guid Id { get; set; }
@@ -216,6 +224,11 @@
     private string? _shareSuccessMessage;
     private string? _shareErrorMessage;
     private List<PartageDto> _partages = new();
+
+    // Modal state
+    private bool _isDeleteModalVisible = false;
+    private PartageDto? _partageToDelete;
+    private bool _isProcessing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -316,6 +329,7 @@
 
         _shareSuccessMessage = null;
         _shareErrorMessage = null;
+        _isProcessing = true;
 
         try
         {
@@ -336,20 +350,49 @@
             _shareErrorMessage = $"Erreur lors du partage : {ex.Message}";
             Console.WriteLine($"Share error: {ex.Message}");
         }
+        finally
+        {
+            _isProcessing = false;
+        }
     }
 
-    private async Task HandleDeleteShareAsync(PartageDto partage)
+    private void ShowDeleteModal(PartageDto partage)
     {
+        _partageToDelete = partage;
+        _isDeleteModalVisible = true;
+        _shareSuccessMessage = null;
+        _shareErrorMessage = null;
+    }
+
+    private void HideDeleteModal()
+    {
+        _isDeleteModalVisible = false;
+        _partageToDelete = null;
+        _isProcessing = false;
+        _shareErrorMessage = null;
+    }
+
+    private async Task ConfirmDeleteShareAsync()
+    {
+        if (_partageToDelete == null) return;
+
+        _isProcessing = true;
+        _shareErrorMessage = null;
+
         try
         {
-            await PartageService.DeletePartageAsync(partage);
-            _shareSuccessMessage = $"L'accès pour {partage.Email} a été révoqué.";
+            await PartageService.DeletePartageAsync(_partageToDelete);
+            _shareSuccessMessage = $"L'accès pour {_partageToDelete.Email} a été révoqué.";
             await LoadPartages(); // Recharger la liste
         }
         catch (Exception ex)
         {
             _shareErrorMessage = $"Erreur lors de la suppression du partage : {ex.Message}";
             Console.WriteLine($"Delete share error: {ex.Message}");
+        }
+        finally
+        {
+            HideDeleteModal();
         }
     }
 }

@@ -80,11 +80,16 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(PartageDto dto)
+        [HttpDelete("{idCoffre}")]
+        public async Task<IActionResult> Delete(Guid idCoffre, PartageDto dto)
         {
             try
             {
+                if (idCoffre != dto.IdCoffre)
+                {
+                    return BadRequest("L'ID du coffre dans l'URL ne correspond pas à celui dans le corps de la requête.");
+                }
+
                 var (userId, errorResult) = User.GetCurrentUserId();
                 if (errorResult != null) return errorResult;
 
