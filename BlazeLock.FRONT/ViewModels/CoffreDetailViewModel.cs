@@ -43,9 +43,10 @@ namespace BlazeLock.FRONT.ViewModels
         public Guid DefaultFolderId { get; set; }
 
         public List<EntreeDto> Entries { get; private set; } = new();
-        public List<DossierDto> Folders { get; private set; } = new();
+        public List<DossierDto> Folders { get; private set; } = new(); 
 
         public string CurrentEntryTitle { get; private set; } = "";
+        public EntreeHistoriqueDto? CurrentEntryHistory { get; set; }
 
         public CoffreModalType CurrentModal { get; private set; } = CoffreModalType.None;
 
@@ -57,6 +58,7 @@ namespace BlazeLock.FRONT.ViewModels
         public string ErrorMessage { get; private set; } = "";
         public EntryFormModel NewEntryForm { get; set; } = new();
         public FolderFormModel NewFolderForm { get; set; } = new();
+        public List<EntryFormModel> historyForms { get; set; } = new();
 
         [Inject]
         public NavigationManager Nav { get; set; }
@@ -364,6 +366,35 @@ namespace BlazeLock.FRONT.ViewModels
                     Url = url,
                     Commentaire = comment
                 };
+
+                CurrentEntryHistory = await _entreeApi.GetByIdWithHistoriqueAsync(VaultId, entry.IdEntree);
+
+                historyForms.Clear();
+
+                if (CurrentEntryHistory?.historique != null)
+                {
+                    var sortedHistory = CurrentEntryHistory.historique
+                                            .OrderByDescending(h => h.DateUpdate)
+                                            .ToList();
+
+                    foreach (var hist in sortedHistory)
+                    {
+                        var histPassword = await _crypto.DecryptDataAsync(hist.Password, hist.PasswordVi, hist.PasswordTag, masterKeyBase64);
+                        var histUsername = await _crypto.DecryptDataAsync(hist.Username, hist.UsernameVi, hist.UsernameTag, masterKeyBase64);
+                        var histUrl = await _crypto.DecryptDataAsync(hist.Url, hist.UrlVi, hist.UrlTag, masterKeyBase64);
+                        var histComment = await _crypto.DecryptDataAsync(hist.Commentaire, hist.CommentaireVi, hist.CommentaireTag, masterKeyBase64);
+
+                        historyForms.Add(new EntryFormModel
+                        {
+                            Libelle = hist.Libelle,
+                            Password = histPassword,
+                            Username = histUsername,
+                            Url = histUrl,
+                            Commentaire = histComment,
+                            DateUpdate = hist.DateUpdate
+                        });
+                    }
+                }
 
                 ErrorMessage = "";
                 CurrentModal = CoffreModalType.UpdateEntry;

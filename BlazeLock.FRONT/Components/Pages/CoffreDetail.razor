@@ -203,6 +203,7 @@
 <UpdateEntreeModal IsVisible="@(ViewModel.CurrentModal == CoffreModalType.UpdateEntry)"
                    FormModel="@ViewModel.NewEntryForm"
                    IsProcessing="@ViewModel.IsProcessing"
+                   HistoryList="@ViewModel.historyForms"
                    ErrorMessage="@ViewModel.ErrorMessage"
                    OnClose="@ViewModel.CloseModal"
                    OnSubmit="@ViewModel.SaveEntryAsync" />

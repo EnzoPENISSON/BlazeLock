@@ -152,8 +152,8 @@ namespace BlazeLock.API.Services
             var result = new EntreeHistoriqueDto
             {
                 IdEntree = idEntree,
-                DateCreation = entree.DateCreation,
-                Historique = historique.Select(h => new HistoriqueDto
+                dateCreation = entree.DateCreation,
+                historique = historique.Select(h => new EntreeDto
                 {
                     DateUpdate = h.DateUpdate,
                     Libelle = h.Libelle,

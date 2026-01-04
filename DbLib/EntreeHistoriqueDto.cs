@@ -4,11 +4,11 @@
     {
         public Guid IdEntree { get; set; }
 
-        public DateTime DateCreation { get; set; }
+        public DateTime dateCreation { get; set; }
 
         public Guid IdDossier { get; set; }
 
-        public HashSet<HistoriqueDto> Historique { get; set; } = new();
+        public HashSet<EntreeDto> historique { get; set; } = new();
 
     }
 }

@@ -8,7 +8,7 @@ namespace BlazeLock.API.Repositories
         Task<HashSet<HistoriqueEntree>> GetAllAsync();
         Task<HistoriqueEntree?> GetByIdAsync(Guid idHistoriqueEntree);
         Task<HistoriqueEntree?> GetLastByIdAsync(Guid idHistoriqueEntree);
-        Task<HashSet<HistoriqueEntree>> GetAllByEntreeAsync(Guid idHistoriqueEntree);
+        Task<HashSet<HistoriqueEntree>> GetAllByEntreeAsync(Guid idEntree);
         Task AddAsync(HistoriqueEntree partage);
         Task DeleteHistoriqueEntree(HistoriqueEntree partage);
     }

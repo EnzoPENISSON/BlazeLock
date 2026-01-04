@@ -113,5 +113,23 @@ namespace BlazeLock.FRONT.Services
                 throw;
             }
         }
+
+        public async Task<EntreeHistoriqueDto?> GetByIdWithHistoriqueAsync(Guid idCoffre, Guid id)
+        {
+            try
+            {
+                var result = await _http.GetFromJsonAsync<EntreeHistoriqueDto>($"api/entree/{idCoffre}/historique/{id}");
+                return result;
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EntreeAPIService] Error fetching history for entry {id}: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
