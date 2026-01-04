@@ -1,5 +1,6 @@
 ﻿using BlazeLock.API.Extensions;
 using BlazeLock.API.Helpers;
+using BlazeLock.API.Models;
 using BlazeLock.API.Services;
 using BlazeLock.DbLib;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,13 @@ namespace BlazeLock.API.Controllers
     {
         private readonly IPartageService _service;
         private readonly ICoffreService _coffreService;
+        private readonly ILogService _logService;
 
-        public PartageController(IPartageService service, ICoffreService coffreService)
+        public PartageController(IPartageService service, ICoffreService coffreService, ILogService logService)
         {
             _service = service;
             _coffreService = coffreService;
+            _logService = logService;
         }
 
         [HttpGet]
@@ -72,6 +75,7 @@ namespace BlazeLock.API.Controllers
             try
             {
                 await _service.AddAsync(dto);
+                await _logService.Add(dto.IdCoffre, User.GetCurrentUserId().userId, "Affichage des dossier du coffre");
                 return Created(string.Empty, dto);
             }
             catch (Exception ex)
@@ -105,6 +109,7 @@ namespace BlazeLock.API.Controllers
                 }
 
                 await _service.Delete(dto);
+                await _logService.Add(dto.IdCoffre, User.GetCurrentUserId().userId, $"Partage à l'utilisateur {dto.IdUtilisateur} supprimé ");
                 return Ok("Partage supprimé");
             }
             catch (Exception ex)
