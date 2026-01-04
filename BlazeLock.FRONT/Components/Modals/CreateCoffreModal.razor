@@ -1,4 +1,5 @@
 ﻿@using BlazeLock.FRONT.ViewModels
+@using BlazeLock.FRONT.Components.Forms
 
 @if (IsVisible)
 {
@@ -36,10 +37,14 @@
                     <input type="password"
                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                            placeholder="••••••••"
-                           @bind="ViewModel.NewPassword"
+                           @bind-value="ViewModel.NewPassword"
+                           @bind-value:event="oninput"
                            disabled="@ViewModel.IsProcessing" />
+
                     <p class="mt-1 text-xs text-gray-500">Ce mot de passe chiffrera vos données localement.</p>
                 </div>
+
+                <PasswordStrengthMeter Password="@ViewModel.NewPassword" />
 
                 <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200 mt-2 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
                         @onclick="OnSubmit"
