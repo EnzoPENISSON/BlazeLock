@@ -3,6 +3,8 @@
 @using BlazeLock.FRONT.Components.Forms
 @using BlazeLock.FRONT.Components.Layouts
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 
 @if (IsVisible)
 {
@@ -52,10 +54,24 @@
                                 <div>
                                     <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">Mot de passe (Requis)</label>
                                     <div class="relative">
-                                        <InputText type="@_passwordFieldType" @bind-Value="FormModel.Password" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm pr-10 focus:ring-2 focus:ring-blue-100 outline-none" />
-                                        <button type="button" @onclick="TogglePasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600">
-                                            <i class="bi @(_passwordFieldType == "password" ? "bi-eye-fill" : "bi-eye-slash-fill")"></i>
-                                        </button>
+                                        <InputText type="@_passwordFieldType"
+                                                   @bind-Value="FormModel.Password"
+                                                   class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm pr-24 focus:ring-2 focus:ring-blue-100 outline-none" />
+
+                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                            <button type="button"
+                                                    @onclick="() => CopyToClipboard(FormModel.Password)"
+                                                    title="Copier"
+                                                    class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                            <button type="button"
+                                                    @onclick="TogglePasswordVisibility"
+                                                    title="Afficher/Masquer"
+                                                    class="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                <i class="bi @(_passwordFieldType == "password" ? "bi-eye-fill" : "bi-eye-slash-fill")"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <ValidationMessage For="@(() => FormModel.Password)" class="text-red-500 text-xs" />
                                     <PasswordGenerator OnPasswordGenerated="HandlePasswordGenerated" />
@@ -147,13 +163,23 @@
                                                         <input type="@GetHistoryInputType(item)"
                                                                value="@item.Password"
                                                                readonly
-                                                               class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm pr-10 focus:outline-none text-gray-600 font-mono" />
+                                                               class="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm pr-24 focus:outline-none text-gray-600 font-mono" />
 
-                                                        <button type="button"
-                                                                @onclick="() => ToggleHistoryVisibility(item)"
-                                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600 transition-colors">
-                                                            <i class="bi @(IsHistoryVisible(item) ? "bi-eye-slash-fill" : "bi-eye-fill")"></i>
-                                                        </button>
+                                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                                            <button type="button"
+                                                                    @onclick="() => CopyToClipboard(item.Password)"
+                                                                    title="Copier"
+                                                                    class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                                <i class="bi bi-clipboard"></i>
+                                                            </button>
+
+                                                            <button type="button"
+                                                                    @onclick="() => ToggleHistoryVisibility(item)"
+                                                                    title="Afficher/Masquer"
+                                                                    class="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                                                                <i class="bi @(IsHistoryVisible(item) ? "bi-eye-slash-fill" : "bi-eye-fill")"></i>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -239,5 +265,13 @@
             _revealedHistoryItems.Add(item);
         }
         StateHasChanged();
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
     }
 }
