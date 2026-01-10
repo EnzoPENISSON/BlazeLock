@@ -60,7 +60,7 @@ namespace BlazeLock.API.Controllers
             try
             {
                 var partages = await _service.GetByCoffreAsync(idCoffre);
-                if (partages == null || !partages.Any()) return NoContent();
+                if (partages == null || !partages.Any()) return Ok(new List<PartageDto>());
                 return Ok(partages.ToList());
             }
             catch (Exception ex)

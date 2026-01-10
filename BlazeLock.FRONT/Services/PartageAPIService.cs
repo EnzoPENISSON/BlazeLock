@@ -29,10 +29,10 @@ namespace BlazeLock.FRONT.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<List<PartageDto>> GetPartagesByCoffreIdAsync(Guid coffreId)
+        public async Task<List<PartageDto?>> GetPartagesByCoffreIdAsync(Guid coffreId)
         {
-            var response = await _httpClient.GetFromJsonAsync<List<PartageDto>>($"api/partage/coffre/{coffreId}");
-            return response ?? new List<PartageDto>();
+            var response = await _httpClient.GetFromJsonAsync<List<PartageDto?>>($"api/partage/coffre/{coffreId}");
+            return response ?? new List<PartageDto?>();
         }
     }
 }

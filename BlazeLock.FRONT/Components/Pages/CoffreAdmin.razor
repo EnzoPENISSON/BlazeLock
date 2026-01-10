@@ -3,10 +3,13 @@
 @using BlazeLock.DbLib
 @using BlazeLock.FRONT.Services
 @using BlazeLock.FRONT.Components.Modals
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inject NavigationManager Nav
 @inject ILogAPIService LogService
 @inject IUserAPIService UserService
 @inject IPartageAPIService PartageService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Administration du Coffre - BlazeLock</PageTitle>
 
@@ -223,7 +226,8 @@
     private bool _isShareAdmin = false;
     private string? _shareSuccessMessage;
     private string? _shareErrorMessage;
-    private List<PartageDto> _partages = new();
+    private List<PartageDto?> _partages = new();
+    private string? _currentUserEmail;
 
     // Modal state
     private bool _isDeleteModalVisible = false;
@@ -232,6 +236,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _currentUserEmail = authState.User.Identity?.Name;
+
         await LoadLogs();
         await LoadPartages();
     }
@@ -291,7 +298,19 @@
         _isSearching = true;
         try
         {
-            _searchResults = await UserService.SearchUtilisateursAsync(_searchTerm);
+            var results = await UserService.SearchUtilisateursAsync(_searchTerm);
+            
+            // Filter out current user from results
+            if (!string.IsNullOrEmpty(_currentUserEmail))
+            {
+                _searchResults = results
+                    .Where(u => !string.Equals(u.email, _currentUserEmail, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            else 
+            {
+                _searchResults = results;
+            }
         }
         catch (Exception ex)
         {
