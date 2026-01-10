@@ -47,6 +47,12 @@
             return response ?? new List<CoffreDto>();
         }
 
+        public async Task<List<PartageDto>> GetSharedCoffresAsync()
+        {
+            var response = await _http.GetFromJsonAsync<List<PartageDto>>("api/partage/mine");
+            return response ?? new List<PartageDto>();
+        }
+
         public async Task<bool> VerifyMasterKeyAsync(CoffreDto coffre)
         {
             var response = await _http.PostAsJsonAsync("api/coffre/verify-password", coffre);

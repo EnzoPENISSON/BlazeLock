@@ -11,7 +11,6 @@ namespace BlazeLock.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/partage")]
-    [RequireVaultSession]
     public class PartageController : ControllerBase
     {
         private readonly IPartageService _service;
@@ -54,7 +53,26 @@ namespace BlazeLock.API.Controllers
             }
         }
 
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetMyPartages()
+        {
+            try
+            {
+                var (userId, errorResult) = User.GetCurrentUserId();
+                if (errorResult != null) return errorResult;
+
+                var partages = await _service.GetByUtilisateurAsync(userId);
+                if (partages == null || !partages.Any()) return Ok(new List<PartageDto>());
+                return Ok(partages);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la récupération de vos partages.");
+            }
+        }
+
         [HttpGet("coffre/{idCoffre}")]
+        [RequireVaultSession] // Ajouté ici car cette route nécessite un coffre déverrouillé
         public async Task<IActionResult> GetByCoffre(Guid idCoffre)
         {
             try
@@ -70,6 +88,7 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpPost("{idCoffre}")]
+        [RequireVaultSession] // Ajouté ici
         public async Task<IActionResult> Create(PartageDto dto)
         {
             try
@@ -85,6 +104,7 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpDelete("{idCoffre}")]
+        [RequireVaultSession] // Ajouté ici
         public async Task<IActionResult> Delete(Guid idCoffre, PartageDto dto)
         {
             try
