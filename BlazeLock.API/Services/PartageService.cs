@@ -75,6 +75,11 @@ namespace BlazeLock.API.Services
             return await _repository.HasAccesss(coffreId, userId);
         }
 
+        public async Task<bool> IsCoffreAdmin(Guid coffreId, Guid userId)
+        {
+            return await _repository.IsCoffreAdmin(coffreId, userId);
+        }
+
         public async Task AddAsync(PartageDto dto)
         {
             var entity = new Partage { 

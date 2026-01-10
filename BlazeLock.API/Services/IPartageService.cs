@@ -8,6 +8,7 @@ namespace BlazeLock.API.Services
         Task<HashSet<PartageDto>> GetByCoffreAsync(Guid id);
         Task<HashSet<PartageDto>> GetByUtilisateurAsync(Guid id);
         Task<bool> HasAccess(Guid coffreId, Guid userId);
+        Task<bool> IsCoffreAdmin(Guid coffreId, Guid userId);
         Task AddAsync(PartageDto dto);
         Task Delete(PartageDto dto);
 

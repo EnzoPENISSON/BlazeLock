@@ -168,7 +168,6 @@ namespace BlazeLock.API.Controllers
 
             if (existingCoffre == null) return NotFound("Coffre not found");
             
-            // Correction ici : changement de || à &&. On interdit seulement si l'utilisateur n'est NI propriétaire NI invité.
             if (existingCoffre.IdUtilisateur != userId && !partageAccess) return Forbid();
 
             bool isValid = await _encryptService.VerifyMasterKey(

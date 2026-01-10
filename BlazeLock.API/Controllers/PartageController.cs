@@ -72,11 +72,16 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpGet("coffre/{idCoffre}")]
-        [RequireVaultSession] // Ajouté ici car cette route nécessite un coffre déverrouillé
+        //[RequireVaultSession] - Removed because admin page might be accessed without unlocking vault (just for management)
         public async Task<IActionResult> GetByCoffre(Guid idCoffre)
         {
             try
             {
+                var (userId, errorResult) = User.GetCurrentUserId();
+                if (errorResult != null) return errorResult;
+
+                if (!await IsOwnerOrAdmin(idCoffre, userId)) return Forbid();
+
                 var partages = await _service.GetByCoffreAsync(idCoffre);
                 if (partages == null || !partages.Any()) return Ok(new List<PartageDto>());
                 return Ok(partages.ToList());
@@ -88,13 +93,18 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpPost("{idCoffre}")]
-        [RequireVaultSession] // Ajouté ici
+        //[RequireVaultSession] - Removed for same reason
         public async Task<IActionResult> Create(PartageDto dto)
         {
             try
             {
+                var (userId, errorResult) = User.GetCurrentUserId();
+                if (errorResult != null) return errorResult;
+
+                if (!await IsOwnerOrAdmin(dto.IdCoffre, userId)) return Forbid();
+
                 await _service.AddAsync(dto);
-                await _logService.Add(dto.IdCoffre, User.GetCurrentUserId().userId, "Affichage des dossier du coffre");
+                await _logService.Add(dto.IdCoffre, userId, "Affichage des dossier du coffre");
                 return Created(string.Empty, dto);
             }
             catch (Exception ex)
@@ -104,7 +114,7 @@ namespace BlazeLock.API.Controllers
         }
 
         [HttpDelete("{idCoffre}")]
-        [RequireVaultSession] // Ajouté ici
+        //[RequireVaultSession] - Removed
         public async Task<IActionResult> Delete(Guid idCoffre, PartageDto dto)
         {
             try
@@ -117,19 +127,10 @@ namespace BlazeLock.API.Controllers
                 var (userId, errorResult) = User.GetCurrentUserId();
                 if (errorResult != null) return errorResult;
 
-                var coffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
-                if (coffre == null)
-                {
-                    return NotFound("Le coffre associé à ce partage n'a pas été trouvé.");
-                }
-
-                if (coffre.IdUtilisateur != userId)
-                {
-                    return Forbid();
-                }
+                if (!await IsOwnerOrAdmin(idCoffre, userId)) return Forbid();
 
                 await _service.Delete(dto);
-                await _logService.Add(dto.IdCoffre, User.GetCurrentUserId().userId, $"Partage à l'utilisateur {dto.IdUtilisateur} supprimé ");
+                await _logService.Add(dto.IdCoffre, userId, $"Partage à l'utilisateur {dto.IdUtilisateur} supprimé ");
                 return Ok("Partage supprimé");
             }
             catch (Exception ex)
@@ -138,5 +139,14 @@ namespace BlazeLock.API.Controllers
             }
         }
 
+        private async Task<bool> IsOwnerOrAdmin(Guid coffreId, Guid userId)
+        {
+            var coffre = await _coffreService.GetByIdAsync(coffreId);
+            if (coffre == null) return false;
+
+            if (coffre.IdUtilisateur == userId) return true;
+
+            return await _service.IsCoffreAdmin(coffreId, userId);
+        }
     }
 }

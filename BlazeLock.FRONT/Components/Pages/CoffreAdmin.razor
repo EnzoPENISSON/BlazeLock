@@ -239,8 +239,15 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _currentUserEmail = authState.User.Identity?.Name;
 
-        await LoadLogs();
-        await LoadPartages();
+        try 
+        {
+           await LoadPartages();
+           await LoadLogs();
+        }
+        catch(Exception)
+        {
+             Nav.NavigateTo($"/coffre/{Id}");
+        }
     }
 
     private async Task LoadPartages()
@@ -251,8 +258,9 @@
         }
         catch (Exception ex)
         {
-            _shareErrorMessage = "Erreur lors de la récupération des partages.";
+            _shareErrorMessage = "Erreur lors de la récupération des partages ou accès refusé.";
             Console.WriteLine($"Error fetching partages: {ex.Message}");
+            throw; 
         }
     }
 

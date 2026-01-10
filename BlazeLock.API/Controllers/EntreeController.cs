@@ -107,7 +107,7 @@ public class EntreeController : ControllerBase
             await _entreeService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
             await _entreeService.AddAsync(dto);
-            await _logService.Add(dto.idCoffre, User.GetCurrentUserId().userId, "Création de l'entrée " + dto.Libelle);
+            //await _logService.Add(idCoffre, User.GetCurrentUserId().userId, "Création de l'entrée " + dto.Libelle);
 
             return CreatedAtAction(nameof(GetById),
                 new { idCoffre = idCoffre, id = dto.IdEntree },

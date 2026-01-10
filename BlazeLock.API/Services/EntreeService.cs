@@ -14,14 +14,16 @@ namespace BlazeLock.API.Services
         private readonly IDossierRepository _dossierRepository;
         private readonly ICoffreRepository _coffreRepository;
         private readonly ILogRepository _logRepository;
+        private readonly IPartageService _partageService;
 
-        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository, ICoffreRepository coffreRepository, ILogRepository logRepository)
+        public EntreeService(IEntreeRepository EntreeRepository, IHistoriqueEntreeRepository HistoriqueEntreeRepository, IDossierRepository dossierRepository, ICoffreRepository coffreRepository, ILogRepository logRepository, IPartageService partageService)
         {
             _entreeRepository = EntreeRepository;
             _historiqueEntreeRepository = HistoriqueEntreeRepository;
             _dossierRepository = dossierRepository;
             _coffreRepository = coffreRepository;
             _logRepository = logRepository;
+            _partageService = partageService;
         }
 
         public async Task<HashSet<EntreeDto>> GetAllAsync()
@@ -292,31 +294,10 @@ namespace BlazeLock.API.Services
             var coffre = await _coffreRepository.GetByIdAsync(dossier.IdCoffre);
             if (coffre == null) return new BadRequestObjectResult("Le coffre associé à cette entrée n'a pas été trouvé.");
 
-            if (coffre.IdUtilisateur != userId) return new UnauthorizedObjectResult("Utilisateur non autorisé");
+            var partageAccess = await _partageService.HasAccess(coffre.IdCoffre, userId);
+            if (coffre.IdUtilisateur != userId && !partageAccess ) return new UnauthorizedObjectResult("Utilisateur non autorisé");
 
             return null;
-        }
-
-
-        public  async Task AddLog(EntreeDto entree, Guid idUtilisateur, string message)
-        {
-            Dossier? dossier = await _dossierRepository.GetByIdAsync(entree.IdDossier);
-            Guid idCoffre = dossier.IdCoffre;
-
-            if (idCoffre == Guid.Empty)
-            {
-                Dossier? existingDefaultFolder = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", entree.idCoffre);
-                idCoffre = existingDefaultFolder.IdCoffre;
-            }
-
-            var entity = new Log
-            {
-                IdCoffre = idCoffre,
-                IdUtilisateur = idUtilisateur,
-                Texte = message,
-                Timestamp = DateTime.UtcNow
-            };
-            await _logRepository.AddAsync(entity);
         }
 
         public async Task DeleteEntree(Guid id)

@@ -13,7 +13,6 @@ namespace BlazeLock.API.Services
         Task updateAsync(Guid idEntree, Guid IdDossier);
         Task<IActionResult?> VerifyUserAccess(EntreeDto entreeDto, (Guid, IActionResult?) utilisateur);
         Task<HashSet<EntreeDto>> GetAllByCoffreAsync(Guid idCoffre);
-        Task AddLog(EntreeDto entree, Guid idUtilisateur, string message);
         Task DeleteEntree(Guid id);
 
     }
