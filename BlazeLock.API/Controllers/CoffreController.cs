@@ -113,6 +113,12 @@ namespace BlazeLock.API.Controllers
                 {
                     return NotFound("Utilisateur non trouvé.");
                 }
+
+                if (_encryptService.IsValid(password: dto.ClearPassword ?? "") == false)
+                {
+                    return BadRequest("Le mot de passe ne respecte pas les critères de sécurité.");
+                }
+
                 dto.IdUtilisateur = userId;
                 await _encryptService.HashMasterKey(dto); // Hash the master key before and creating the coffre
                 await _coffreService.AddLog(dto.IdCoffre, userId, "Création du coffre");

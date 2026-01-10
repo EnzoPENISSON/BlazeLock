@@ -7,5 +7,6 @@ namespace BlazeLock.API.Services
         public Task HashMasterKey(CoffreDto newCoffre);
         public Task<bool> VerifyMasterKey(string masterKey, byte[] storedSalt, byte[] storedHash);
         Task<byte[]> GetDerivedKey(string masterKey, byte[] storedSalt);
+        bool IsValid(string password);
     }
 }
