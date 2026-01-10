@@ -180,15 +180,15 @@ namespace BlazeLock.API.Controllers
                 string sessionKey = $"Session_{userId}_{dto.IdCoffre}";
 
                 var cacheOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(5))
-                    .SetAbsoluteExpiration(TimeSpan.FromHours(1))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2)) // Session active for 5 minutes of inactivity
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(6)) // Maximum session duration of 6 minutes
                     .SetPriority(CacheItemPriority.High);
 
                 _cache.Set(sessionKey, derivedKey, cacheOptions);
 
                 await _coffreService.AddLog(dto.IdCoffre, userId, "Ouverture du coffre");
 
-                return Ok(new { IsValid = true, Message = "Session active for 5 minutes" });
+                return Ok(new { IsValid = true, Message = "Session active for 6 minutes" });
             }
 
             await _coffreService.AddLog(dto.IdCoffre, userId, "Erreur lors de l'ouverture du coffre");
