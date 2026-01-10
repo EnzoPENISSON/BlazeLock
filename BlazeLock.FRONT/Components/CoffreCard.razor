@@ -10,16 +10,42 @@
             <div class="p-3 rounded-xl transition-colors duration-300 @(IsUnlocked ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500")">
                 <i class="bi @(IsUnlocked ? "bi-unlock-fill" : "bi-lock-fill") text-2xl"></i>
             </div>
+
             @if (IsUnlocked)
             {
-                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">Ouvert</span>
+                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide mr-6">Ouvert</span>
             }
         </div>
 
-        <h5 class="text-lg font-bold truncate mb-1 @(IsUnlocked ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800") transition-colors">
-            @Coffre.Libelle.ToString()
+        <h5 class="text-lg font-bold truncate mb-1 @(IsUnlocked ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800") transition-colors pr-4">
+            @Coffre.Libelle
         </h5>
         <p class="text-xs text-gray-400 font-mono">ID: ...@Coffre.IdCoffre.ToString().Substring(24)</p>
+    </div>
+
+    <div class="absolute top-4 right-2">
+        <button class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors z-10 relative"
+                @onclick:stopPropagation="true"
+                @onclick="ToggleMenu">
+            <i class="bi bi-three-dots-vertical"></i>
+        </button>
+
+        @if (_isMenuOpen)
+        {
+            <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-fade-in-up"
+                 @onclick:stopPropagation="true">
+
+                <button class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                        @onclick="HandleDelete">
+                    <i class="bi bi-trash"></i>
+                    Supprimer
+                </button>
+            </div>
+
+            <div class="fixed inset-0 z-40 cursor-default"
+                 @onclick="CloseMenu"
+                 @onclick:stopPropagation="true"></div>
+        }
     </div>
 </div>
 
@@ -27,4 +53,26 @@
     [Parameter, EditorRequired] public CoffreDto Coffre { get; set; } = default!;
     [Parameter] public bool IsUnlocked { get; set; }
     [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public EventCallback<CoffreDto> OnDelete { get; set; }
+
+    private bool _isMenuOpen = false;
+
+    private void ToggleMenu()
+    {
+        _isMenuOpen = !_isMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        _isMenuOpen = false;
+    }
+
+    private async Task HandleDelete()
+    {
+        _isMenuOpen = false;
+        if (OnDelete.HasDelegate)
+        {
+            await OnDelete.InvokeAsync(Coffre);
+        }
+    }
 }

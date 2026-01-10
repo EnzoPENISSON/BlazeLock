@@ -179,6 +179,7 @@ public partial class BlazeLockContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("id_log");
             entity.Property(e => e.IdCoffre)
+                .IsRequired(false)
                 .HasMaxLength(50)
                 .HasColumnName("id_coffre");
             entity.Property(e => e.Texte)
@@ -188,9 +189,10 @@ public partial class BlazeLockContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("timestamp_");
 
-            entity.HasOne(d => d.Coffre).WithMany(p => p.Logs)
-                .HasForeignKey(d => d.IdCoffre)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(d => d.Coffre)
+              .WithMany(p => p.Logs)
+              .HasForeignKey(d => d.IdCoffre)
+              .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.Logs)
                 .HasForeignKey(d => d.IdUtilisateur)
@@ -213,7 +215,7 @@ public partial class BlazeLockContext : DbContext
 
             entity.HasOne(d => d.Coffre).WithMany(p => p.Partages)
                 .HasForeignKey(d => d.IdCoffre)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.Partages)
                 .HasForeignKey(d => d.IdUtilisateur)

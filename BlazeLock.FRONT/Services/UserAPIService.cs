@@ -31,6 +31,16 @@
             return true;
         }
 
+        public async Task DeleteCoffreAsync(Guid idCoffre)
+        {
+            var response = await _http.DeleteAsync($"api/coffre/{idCoffre}");
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Erreur API ({response.StatusCode}): {error}");
+            }
+        }
+
         public async Task<List<CoffreDto>> GetMyCoffresAsync()
         {
             var response = await _http.GetFromJsonAsync<List<CoffreDto>>("api/coffre/mine");

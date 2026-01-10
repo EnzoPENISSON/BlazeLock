@@ -46,11 +46,15 @@ namespace BlazeLock.API.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteCoffre(Coffre coffre)
+        public async Task Delete(Guid idCoffre)
         {
             var context = await _contextFactory.CreateDbContextAsync();
-            context.Coffres.Remove(coffre);
-            await context.SaveChangesAsync();
+            var coffre = await context.Coffres.FindAsync(idCoffre);
+            if (coffre != null)
+            {
+                context.Coffres.Remove(coffre);
+                await context.SaveChangesAsync();
+            }
         }
 
     }

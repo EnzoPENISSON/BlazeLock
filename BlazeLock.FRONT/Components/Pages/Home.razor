@@ -48,6 +48,7 @@
                 {
                     <CoffreCard Coffre="coffre"
                                 IsUnlocked="@ViewModel.IsUnlocked(coffre.IdCoffre)"
+                                OnDelete="@(() => RequestDelete(coffre))"
                                 OnClick="() => HandleCoffreClick(coffre)" />
                 }
             </div>
@@ -65,8 +66,17 @@
                    OnClose="@ViewModel.CloseModals"
                    OnSubmit="UnlockWrapper" />
 
+<DeleteConfirmationModal IsVisible="_showDeleteModal"
+                         IsProcessing="_isDeleting"
+                         ItemName="@(_vaultToDelete?.Libelle ?? "")"
+                         OnClose="CancelDelete"
+                         OnConfirm="ConfirmDelete" />
+
 @code {
     private string UserName = "";
+    private bool _showDeleteModal = false;
+    private bool _isDeleting = false;
+    private CoffreDto? _vaultToDelete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,4 +118,42 @@
     {
         await ViewModel.UnlockSelectedAsync();
     }
+
+
+    private void RequestDelete(CoffreDto coffre)
+    {
+        _vaultToDelete = coffre;
+        _showDeleteModal = true;
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteModal = false;
+        _vaultToDelete = null;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (_vaultToDelete == null) return;
+
+        _isDeleting = true;
+        try
+        {
+            await ViewModel.DeleteVaultAsync(_vaultToDelete);
+
+            _showDeleteModal = false;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting vault: {ex.Message}");
+        }
+        finally
+        {
+            _isDeleting = false;
+            _vaultToDelete = null;
+        }
+    }
+
 }

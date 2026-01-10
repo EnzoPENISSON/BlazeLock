@@ -135,10 +135,21 @@ namespace BlazeLock.FRONT.ViewModels
             finally { IsProcessing = false; }
         }
 
+        public async Task DeleteVaultAsync(CoffreDto coffre)
+        {
+            await _api.DeleteCoffreAsync(coffre.IdCoffre);
+            _keyStore.Remove(coffre.IdCoffre);
+            MyCoffres.Remove(coffre);
+            await LoadDataAsync();
+        }
+
         private void SetFeedback(bool success, string message)
         {
             IsSuccess = success;
             FeedbackMessage = message;
         }
+        
     }
+
+
 }

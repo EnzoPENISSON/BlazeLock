@@ -92,17 +92,9 @@ namespace BlazeLock.API.Services
             await _dossierRepository.AddAsync(newDefaultFolder);
         }
 
-        public async Task Delete(CoffreDto dto)
+        public async Task Delete(Guid id)
         {
-            var entity = new Coffre
-            {
-                IdCoffre = dto.IdCoffre,
-                IdUtilisateur = dto.IdUtilisateur,
-                Libelle = dto.Libelle,
-                HashMasterkey = dto.HashMasterkey,
-                Salt = dto.Salt
-            };
-            await _coffreRepository.DeleteCoffre(entity);
+            await _coffreRepository.Delete(id);
         }
 
         public async Task<IActionResult?> VerifyUserAccess(CoffreDto coffreDto, (Guid, IActionResult?) utilisateur)
@@ -116,7 +108,7 @@ namespace BlazeLock.API.Services
             return null;
         }
 
-        public async Task AddLog(Guid idCoffre, Guid idUtilisateur, string message)
+        public async Task AddLog(Guid? idCoffre, Guid idUtilisateur, string message)
         {
             var entity = new Log
             {
