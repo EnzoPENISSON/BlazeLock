@@ -7,7 +7,7 @@
 
         private readonly Dictionary<Guid, DateTime> _lastAccessTime = new();
 
-        private readonly TimeSpan _timeoutDuration = TimeSpan.FromMinutes(10);
+        private readonly TimeSpan _timeoutDuration = TimeSpan.FromMinutes(6);
 
         public bool IsUnlocked(Guid id)
         {
