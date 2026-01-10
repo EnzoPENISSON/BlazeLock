@@ -13,7 +13,8 @@ public partial class Log
 
     public DateTime Timestamp { get; set; } = DateTime.Now;
 
-    public Guid IdCoffre { get; set; }
+    // To keep Log entries even if the Coffre is deleted
+    public Guid? IdCoffre { get; set; }
 
     public virtual Coffre Coffre { get; set; } = null!;
     public Guid IdUtilisateur { get; set; }

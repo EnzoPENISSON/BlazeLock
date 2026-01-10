@@ -100,7 +100,7 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-            [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> Create(CoffreDto dto)
         {
             try
@@ -124,22 +124,24 @@ namespace BlazeLock.API.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(CoffreDto dto)
+        [HttpDelete("{idCoffre}")]
+        public async Task<IActionResult> Delete(Guid idCoffre)
         {
-            try
+            try 
             {
-                await _coffreService.VerifyUserAccess(dto, User.GetCurrentUserId());
-
                 var (userId, errorResult) = User.GetCurrentUserId();
-                await _coffreService.AddLog(dto.IdCoffre, userId, "Suppression du coffre");
-
-                await _coffreService.Delete(dto);
-                return Ok("Coffre supprimé");
+                if (errorResult != null) return errorResult;
+                var existingCoffre = await _coffreService.GetByIdAsync(idCoffre);
+                if (existingCoffre == null) return NotFound();
+                if (existingCoffre.IdUtilisateur != userId)
+                    return Forbid();
+                await _coffreService.Delete(idCoffre);
+                await _coffreService.AddLog(null, userId, $"Suppression du coffre '{idCoffre}'");
+                return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du dossier.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Une erreur est survenue lors de la suppression du coffre.");
             }
         }
 

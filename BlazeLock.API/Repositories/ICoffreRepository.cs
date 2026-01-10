@@ -9,6 +9,6 @@ namespace BlazeLock.API.Repositories
         Task<Coffre?> GetByIdAsync(Guid? idCoffre);
         Task<HashSet<Coffre>> GetByUtilisateurAsync(Guid idUtilisateur);
         Task AddAsync(Coffre partage);
-        Task DeleteCoffre(Coffre partage);
+        Task Delete(Guid idCoffre);
     }
 }

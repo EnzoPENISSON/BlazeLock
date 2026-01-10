@@ -38,6 +38,8 @@
                                     <i class="bi @(_passwordFieldType == "password" ? "bi-eye-fill" : "bi-eye-slash-fill")"></i>
                                 </button>
                             </div>
+                            <PasswordStrengthMeter Password="@FormModel.Password" />
+
                             <ValidationMessage For="@(() => FormModel.Password)" class="text-red-500 text-xs" />
                             <PasswordGenerator OnPasswordGenerated="HandlePasswordGenerated" />
                         </div>

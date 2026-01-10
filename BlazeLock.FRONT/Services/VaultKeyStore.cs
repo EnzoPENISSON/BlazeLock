@@ -76,6 +76,11 @@
             }
         }
 
+        public void Remove(Guid id)
+        {
+            Lock(id);
+        }
+
         private void Lock(Guid id)
         {
             _unlockedKeys.Remove(id);
