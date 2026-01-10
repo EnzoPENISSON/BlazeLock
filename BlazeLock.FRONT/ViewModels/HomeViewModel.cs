@@ -1,7 +1,9 @@
 ﻿using BlazeLock.DbLib;
+using BlazeLock.FRONT.Components.Forms;
 using BlazeLock.FRONT.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.ComponentModel.DataAnnotations;
 
 namespace BlazeLock.FRONT.ViewModels
 {
@@ -27,10 +29,13 @@ namespace BlazeLock.FRONT.ViewModels
         public CoffreDto? SelectedCoffre { get; private set; }
         public bool IsProcessing { get; private set; }
 
-        public string FeedbackMessage { get; private set; } = "";
-        public bool IsSuccess { get; private set; }
+        public string FeedbackMessage { get; set; } = "";
+        public bool IsSuccess { get; set; }
 
         public string NewLibelle { get; set; } = "";
+
+        [Required]
+        [StrongPassword]
         public string NewPassword { get; set; } = "";
         public string UnlockPassword { get; set; } = "";
 

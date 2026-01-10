@@ -8,6 +8,7 @@ namespace BlazeLock.FRONT.Components.Forms
         public string Libelle { get; set; } = "";
 
         [Required(ErrorMessage = "Le mot de passe est requis")]
+        [StrongPassword]
         public string Password { get; set; } = "";
 
         public string Username { get; set; } = "";

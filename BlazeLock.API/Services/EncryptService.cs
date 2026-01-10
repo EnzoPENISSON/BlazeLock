@@ -1,5 +1,6 @@
 ﻿using BlazeLock.DbLib;
 using Konscious.Security.Cryptography;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Text;
 namespace BlazeLock.API.Services
@@ -54,6 +55,27 @@ namespace BlazeLock.API.Services
 
                 return await argon2.GetBytesAsync(KeySize);
             }
+        }
+
+        public bool IsValid(string password)
+        {
+
+            if (string.IsNullOrEmpty(password))
+                return false;
+
+            int score = 0;
+            if (password.Length >= 8) score++;
+            if (password.Length >= 12) score++;
+            if (password.Any(char.IsDigit)) score++;
+            if (password.Any(char.IsUpper)) score++;
+            if (password.Any(ch => !char.IsLetterOrDigit(ch))) score++;
+
+            if (score < 2)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

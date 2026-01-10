@@ -47,7 +47,7 @@
                 <PasswordStrengthMeter Password="@ViewModel.NewPassword" />
 
                 <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200 mt-2 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
-                        @onclick="OnSubmit"
+                        @onclick="HandleSubmit"
                         disabled="@ViewModel.IsProcessing">
                     @if (ViewModel.IsProcessing)
                     {
@@ -69,4 +69,20 @@
     [Parameter] public HomeViewModel ViewModel { get; set; } = default!;
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSubmit { get; set; }
+
+    private async Task HandleSubmit()
+    {
+        ViewModel.FeedbackMessage = "";
+
+        var validator = new StrongPasswordAttribute();
+
+        if (!validator.IsValid(ViewModel.NewPassword))
+        {
+            ViewModel.IsSuccess = false;
+            ViewModel.FeedbackMessage = "Le mot de passe est trop faible. Ajoutez des majuscules, chiffres ou symboles.";
+            return;
+        }
+
+        await OnSubmit.InvokeAsync();
+    }
 }
