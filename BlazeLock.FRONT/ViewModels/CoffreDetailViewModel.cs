@@ -199,7 +199,7 @@ namespace BlazeLock.FRONT.ViewModels
 
             try
             {
-                var key = _keyStore.GetKey(entry.idCoffre);
+                var key = _keyStore.GetKey(entry.IdCoffre);
                 if (string.IsNullOrEmpty(key)) return "";
 
                 var url = await _crypto.DecryptDataAsync(entry.Url, entry.UrlVi, entry.UrlTag, key);
@@ -258,7 +258,7 @@ namespace BlazeLock.FRONT.ViewModels
                 var dto = new EntreeDto
                 {
                     IdDossier = Guid.Empty,
-                    idCoffre = VaultId,
+                    IdCoffre = VaultId,
                     Libelle = NewEntryForm.Libelle,
                     DateCreation = DateTime.UtcNow,
                     DateUpdate = DateTime.UtcNow
@@ -493,7 +493,7 @@ namespace BlazeLock.FRONT.ViewModels
                 dto.CommentaireVi = Convert.FromBase64String(commResult.Iv);
                 dto.CommentaireTag = Convert.FromBase64String(commResult.Tag);
 
-                dto.idCoffre = VaultId;
+                dto.IdCoffre = VaultId;
                 dto.IdDossier = CurrentFolderId ?? Guid.Empty;
 
                 await _entreeApi.CreateEntreeAsync(dto);

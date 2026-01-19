@@ -4,7 +4,7 @@
     {
         public Guid IdEntree { get; set; }
         public Guid IdDossier { get; set; }
-        public Guid idCoffre { get; set; }
+        public Guid IdCoffre { get; set; }
         public DateTime DateCreation { get; set; }
         public string? Libelle { get; set; }
         public DateTime DateUpdate { get; set; }

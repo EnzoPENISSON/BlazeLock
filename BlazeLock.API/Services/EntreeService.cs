@@ -44,7 +44,7 @@ namespace BlazeLock.API.Services
                     Libelle = latest?.Libelle,
                     DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
 
-                    idCoffre = e.Dossier.IdCoffre,
+                    IdCoffre = e.Dossier.IdCoffre,
 
                     Username = latest?.Username,
                     UsernameTag = latest?.UsernameTag,
@@ -86,7 +86,7 @@ namespace BlazeLock.API.Services
                     Libelle = latest?.Libelle,
                     DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
 
-                    idCoffre = idCoffre,
+                    IdCoffre = idCoffre,
 
                     Username = latest?.Username,
                     UsernameTag = latest?.UsernameTag,
@@ -122,6 +122,8 @@ namespace BlazeLock.API.Services
             var result = new EntreeDto
             {
                 IdEntree = idEntree,
+                IdCoffre = entree.Dossier.IdCoffre,
+                IdDossier = entree.IdDossier,
                 DateCreation = entree.DateCreation,
                 DateUpdate = historique.DateUpdate,
                 Libelle = historique.Libelle,
@@ -184,7 +186,7 @@ namespace BlazeLock.API.Services
 
             if (existingEntree == null)
             {
-                var existingDefaultFolder = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", dto.idCoffre);
+                var existingDefaultFolder = await _dossierRepository.GetByLibelleAndCoffreIdAsync("Default", dto.IdCoffre);
                 var newEntree = new Entree
                 {
                     IdEntree = dto.IdEntree == Guid.Empty ? Guid.NewGuid() : dto.IdEntree,
@@ -242,7 +244,7 @@ namespace BlazeLock.API.Services
                     Libelle = latest?.Libelle,
                     DateUpdate = latest?.DateUpdate ?? DateTime.MinValue,
 
-                    idCoffre = idCoffre,
+                    IdCoffre = idCoffre,
 
                     Username = latest?.Username,
                     UsernameTag = latest?.UsernameTag,

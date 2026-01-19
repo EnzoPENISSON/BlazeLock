@@ -59,7 +59,7 @@ namespace BlazeLock.FRONT.Services
             try
             {
                 // Note: Ensure entree.idCoffre is set before calling this
-                var response = await _http.PostAsJsonAsync($"api/entree/{entree.idCoffre}", entree);
+                var response = await _http.PostAsJsonAsync($"api/entree/{entree.IdCoffre}", entree);
 
                 if (!response.IsSuccessStatusCode)
                 {
