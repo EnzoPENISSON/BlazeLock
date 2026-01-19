@@ -16,6 +16,7 @@ namespace BlazeLock.FRONT.ViewModels
         private readonly NavigationManager _nav;
         private readonly ILogAPIService _logApi;
         private readonly IJSRuntime _js;
+        private readonly IUserAPIService _userApi;
 
         public CoffreDetailViewModel(
             IEntreeAPIService entreeApi,
@@ -24,7 +25,8 @@ namespace BlazeLock.FRONT.ViewModels
             CryptoJs crypto, 
             NavigationManager nav,
             ILogAPIService logApi,
-            IJSRuntime js)
+            IJSRuntime js,
+            IUserAPIService userApi)
         {
             _entreeApi = entreeApi;
             _dossierApi = dossierApi;
@@ -33,6 +35,7 @@ namespace BlazeLock.FRONT.ViewModels
             _nav = nav;
             _logApi = logApi;
             _js = js;
+            _userApi = userApi;
         }
 
         public Guid VaultId { get; private set; }
@@ -44,6 +47,7 @@ namespace BlazeLock.FRONT.ViewModels
 
         public string VaultName { get; private set; } = "";
         public bool HasAccess { get; private set; } = false;
+        public bool IsAdmin { get; private set; } = false; 
         public bool IsLoading { get; private set; } = true;
         public bool IsFoldersLoading { get; private set; } = true;
 
@@ -76,11 +80,14 @@ namespace BlazeLock.FRONT.ViewModels
             CurrentFolderId = folderId;
             IsLoading = true;
             IsFoldersLoading = true;
+            IsAdmin = false;
 
             if (_keyStore.IsUnlocked(VaultId))
             {
                 HasAccess = true;
                 VaultName = _keyStore.GetName(VaultId) ?? "Coffre";
+
+                await CheckAdminRights();
 
                 await RefreshFoldersAsync();
 
@@ -94,6 +101,33 @@ namespace BlazeLock.FRONT.ViewModels
             }
             IsLoading = false;
             IsFoldersLoading = false;
+        }
+        
+        private async Task CheckAdminRights()
+        {
+            try
+            {
+                // Check if owner
+                var myCoffres = await _userApi.GetMyCoffresAsync();
+                if (myCoffres.Any(c => c.IdCoffre == VaultId))
+                {
+                    IsAdmin = true;
+                    return;
+                }
+
+                // Check if admin via share
+                var sharedCoffres = await _userApi.GetSharedCoffresAsync();
+                var share = sharedCoffres.FirstOrDefault(p => p.IdCoffre == VaultId);
+                if (share != null && share.IsAdmin)
+                {
+                    IsAdmin = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking admin rights: {ex.Message}");
+                IsAdmin = false;
+            }
         }
 
         public async Task ReloadEntrieesAsync(Guid? folderId)
@@ -165,7 +199,7 @@ namespace BlazeLock.FRONT.ViewModels
 
             try
             {
-                var key = _keyStore.GetKey(entry.idCoffre);
+                var key = _keyStore.GetKey(entry.IdCoffre);
                 if (string.IsNullOrEmpty(key)) return "";
 
                 var url = await _crypto.DecryptDataAsync(entry.Url, entry.UrlVi, entry.UrlTag, key);
@@ -224,7 +258,7 @@ namespace BlazeLock.FRONT.ViewModels
                 var dto = new EntreeDto
                 {
                     IdDossier = Guid.Empty,
-                    idCoffre = VaultId,
+                    IdCoffre = VaultId,
                     Libelle = NewEntryForm.Libelle,
                     DateCreation = DateTime.UtcNow,
                     DateUpdate = DateTime.UtcNow
@@ -459,7 +493,7 @@ namespace BlazeLock.FRONT.ViewModels
                 dto.CommentaireVi = Convert.FromBase64String(commResult.Iv);
                 dto.CommentaireTag = Convert.FromBase64String(commResult.Tag);
 
-                dto.idCoffre = VaultId;
+                dto.IdCoffre = VaultId;
                 dto.IdDossier = CurrentFolderId ?? Guid.Empty;
 
                 await _entreeApi.CreateEntreeAsync(dto);

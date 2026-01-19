@@ -1,4 +1,4 @@
-﻿ using BlazeLock.API.Models;
+﻿using BlazeLock.API.Models;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 
@@ -29,8 +29,9 @@ namespace BlazeLock.API.Repositories
         public async Task<Entree?> GetByIdAsync(Guid idEntree)
         {
             var context = await _contextFactory.CreateDbContextAsync();
-
-            return await context.Entrees.FindAsync(idEntree);
+            return await context.Entrees
+                .Include(e => e.Dossier)
+                .FirstOrDefaultAsync(e => e.IdEntree == idEntree);
         }
 
         public async Task<HashSet<Entree>> GetAllByCoffreAsync(Guid idCoffre)

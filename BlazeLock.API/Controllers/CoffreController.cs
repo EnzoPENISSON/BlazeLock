@@ -16,15 +16,16 @@ namespace BlazeLock.API.Controllers
         private readonly IEncryptService _encryptService;
         private readonly ILogService _logService;
         private readonly IUtilisateurService _utilisateurService;
-
+        private readonly IPartageService _partageService;
         private readonly IMemoryCache _cache;
 
-        public CoffreController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService, IUtilisateurService utilisateurService, IMemoryCache cache)
+        public CoffreController(ICoffreService coffreService, ILogService logService, IEncryptService encryptService, IUtilisateurService utilisateurService, IMemoryCache cache, IPartageService partageService)
         {
             _coffreService = coffreService;
             _logService = logService;
             _encryptService = encryptService;
             _utilisateurService = utilisateurService;
+            _partageService = partageService;
             _cache = cache;
         }
 
@@ -89,7 +90,10 @@ namespace BlazeLock.API.Controllers
                 if (coffre == null) return NotFound();
 
                 var (userId, _) = User.GetCurrentUserId();
-                if (coffre.IdUtilisateur != userId)
+
+                var hasAccess = await _partageService.HasAccess(id, userId);
+
+                if (coffre.IdUtilisateur != userId && !hasAccess)
                     return Forbid(); 
 
                 return Ok(coffre);
@@ -158,11 +162,13 @@ namespace BlazeLock.API.Controllers
 
             var (userId, errorResult) = User.GetCurrentUserId();
             if (errorResult != null) return Forbid();
+            var partageAccess = await _partageService.HasAccess(dto.IdCoffre, userId);
 
             var existingCoffre = await _coffreService.GetByIdAsync(dto.IdCoffre);
 
             if (existingCoffre == null) return NotFound("Coffre not found");
-            if (existingCoffre.IdUtilisateur != userId) return Forbid();
+            
+            if (existingCoffre.IdUtilisateur != userId && !partageAccess) return Forbid();
 
             bool isValid = await _encryptService.VerifyMasterKey(
                 dto.ClearPassword,

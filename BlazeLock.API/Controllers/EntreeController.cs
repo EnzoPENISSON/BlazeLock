@@ -54,7 +54,7 @@ public class EntreeController : ControllerBase
             if (entree == null) return NotFound();
             
             await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
-            await _logService.Add(entree.idCoffre, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
+            await _logService.Add(entree.IdCoffre, User.GetCurrentUserId().userId, "Affichage de l'entrée " + entree.Libelle);
 
             return Ok(entree);
         }
@@ -107,7 +107,7 @@ public class EntreeController : ControllerBase
             await _entreeService.VerifyUserAccess(dto, User.GetCurrentUserId());
 
             await _entreeService.AddAsync(dto);
-            await _logService.Add(dto.idCoffre, User.GetCurrentUserId().userId, "Création de l'entrée " + dto.Libelle);
+            await _logService.Add(idCoffre, User.GetCurrentUserId().userId, "Création de l'entrée " + dto.Libelle);
 
             return CreatedAtAction(nameof(GetById),
                 new { idCoffre = idCoffre, id = dto.IdEntree },
@@ -129,7 +129,7 @@ public class EntreeController : ControllerBase
             await _entreeService.updateAsync(idEntree, idDossier);
             EntreeDto? entree = await _entreeService.GetByIdAsync(idEntree);
             DossierDto? dossier = await _dossierService.GetByIdAsync(idDossier);
-            await _logService.Add(idCoffre, User.GetCurrentUserId().userId, "Ajout de l'entrée " + entree.Libelle + "dans le dossier " + dossier.Libelle);
+            await _logService.Add(idCoffre, User.GetCurrentUserId().userId, "Ajout de l'entrée " + entree.Libelle + " dans le dossier " + dossier.Libelle);
             return Ok();
         }
         catch (Exception ex)
@@ -147,7 +147,7 @@ public class EntreeController : ControllerBase
             if (entree == null) return NotFound();
             await _entreeService.VerifyUserAccess(entree, User.GetCurrentUserId());
             await _entreeService.DeleteEntree(id);
-            await _logService.Add(entree.idCoffre, User.GetCurrentUserId().userId, "Suppression de l'entrée " + entree.Libelle);
+            await _logService.Add(entree.IdCoffre, User.GetCurrentUserId().userId, "Suppression de l'entrée " + entree.Libelle);
             return NoContent();
         }
         catch (Exception ex)

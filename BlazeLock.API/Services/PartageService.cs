@@ -55,11 +55,29 @@ namespace BlazeLock.API.Services
                 {
                     IdCoffre = p.IdCoffre,
                     IdUtilisateur = p.IdUtilisateur,
-                    IsAdmin = p.IsAdmin
+                    IsAdmin = p.IsAdmin,
+                    Coffre = p.Coffre == null ? null : new CoffreDto
+                    {
+                        IdCoffre = p.Coffre.IdCoffre,
+                        IdUtilisateur = p.Coffre.IdUtilisateur,
+                        Libelle = p.Coffre.Libelle,
+                        HashMasterkey = p.Coffre.HashMasterkey,
+                        Salt = p.Coffre.Salt
+                    }
                 })
                 .ToHashSet();
 
             return result;
+        }
+
+        public async Task<bool> HasAccess(Guid coffreId, Guid userId)
+        {
+            return await _repository.HasAccesss(coffreId, userId);
+        }
+
+        public async Task<bool> IsCoffreAdmin(Guid coffreId, Guid userId)
+        {
+            return await _repository.IsCoffreAdmin(coffreId, userId);
         }
 
         public async Task AddAsync(PartageDto dto)

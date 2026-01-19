@@ -44,10 +44,23 @@ namespace BlazeLock.API.Repositories
             var partages = await context.Partages
                 .Where(p => p.IdUtilisateur == idUtilisateur)
                 .Include(l => l.Utilisateur)
+                .Include(l => l.Coffre)
                 .AsNoTracking()
                 .ToListAsync();
 
             return partages.ToHashSet();
+        }
+
+        public async Task<bool> HasAccesss(Guid idCoffre, Guid idUtilisateur)
+        {
+            var context = await _contextFactory.CreateDbContextAsync();
+
+            var hasAccess = await context.Partages
+                .Where(p => p.IdUtilisateur == idUtilisateur)
+                .Where(p => p.IdCoffre == idCoffre)
+                .AnyAsync();
+
+            return hasAccess;
         }
 
         public async Task AddAsync(Partage partage)

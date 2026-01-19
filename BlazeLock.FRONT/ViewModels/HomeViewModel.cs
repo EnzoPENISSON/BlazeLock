@@ -23,6 +23,7 @@ namespace BlazeLock.FRONT.ViewModels
         }
 
         public List<CoffreDto> MyCoffres { get; private set; } = new();
+        public List<PartageDto> SharedCoffres { get; private set; } = new();
         public bool IsLoading { get; private set; } = true;
 
         public bool IsCreating { get; private set; }
@@ -42,12 +43,14 @@ namespace BlazeLock.FRONT.ViewModels
         public bool IsUnlocked(Guid id) => _keyStore.IsUnlocked(id);
         public string GetDisplayName(Guid id) => _keyStore.GetName(id) ?? "";
         public bool HasCoffres => MyCoffres.Any();
+        public bool HasSharedCoffres => SharedCoffres.Any();
 
         public async Task LoadDataAsync()
         {
             IsLoading = true;
             try {
                 MyCoffres = await _api.GetMyCoffresAsync();
+                SharedCoffres = await _api.GetSharedCoffresAsync();
             }
             catch { /* Handle error */ }
             finally {

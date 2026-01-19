@@ -6,5 +6,6 @@
         public Guid IdCoffre { get; set; }
         public bool IsAdmin { get; set; }
         public string Email { get; set; } = string.Empty;
+        public CoffreDto? Coffre { get; set; }
     }
 }
